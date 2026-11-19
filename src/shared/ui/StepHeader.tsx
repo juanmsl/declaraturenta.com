@@ -1,0 +1,27 @@
+import type { ReactNode } from 'react';
+
+import { Text } from './Text';
+
+type StepHeaderProps = {
+  title: ReactNode;
+  description?: ReactNode;
+  /** Shown next to the title, e.g. a box chip. */
+  badge?: ReactNode;
+};
+
+/** Question and explanation at the top of a flow screen. */
+export const StepHeader = ({ title, description, badge }: StepHeaderProps) => (
+  <header className='flex max-w-160 flex-col gap-3'>
+    <div className='flex items-center gap-3'>
+      <Text variant='title-l' as='h1'>
+        {title}
+      </Text>
+      {badge}
+    </div>
+    {description && (
+      <Text variant='body-l' className='text-fg-secondary'>
+        {description}
+      </Text>
+    )}
+  </header>
+);

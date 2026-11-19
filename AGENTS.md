@@ -10,7 +10,8 @@ Read this before changing anything. Keep it short and current.
 2. **Code in English, UI in Spanish (Colombia).** Identifiers, comments, docs and commit messages
    in English. Every user-facing string in Spanish, written inline in the component
    ([ADR 0008](./docs/adrs/0008-project-structure-and-language.md)). Use the "experto cercano"
-   voice: tutea, explica simple, con rigor tributario.
+   voice: tutea, explica simple, con rigor tributario. Copy is gender-neutral
+   ([ADR 0014](./docs/adrs/0014-neutral-copy.md)).
 3. **Follow Figma.** File `6yCjrloMnOYF9nxj8pQqob`. Every screen and component has a node ID in
    [`docs/design.md`](./docs/design.md). Match it before inventing anything.
 4. **Polpo first** ([ADR 0003](./docs/adrs/0003-polpo-ui-library.md)). Use Polpo components,

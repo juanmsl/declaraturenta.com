@@ -19,3 +19,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0011](./0011-brand-assets-from-figma.md)        | Logo as SVG exported from Figma; local progress components     | Accepted |
 | [0012](./0012-tax-engine-in-domain.md)           | Tax calculation engine in `src/domain`                         | Accepted |
 | [0013](./0013-declaration-state.md)              | Declaration state: Context persisted in localStorage           | Accepted |
+| [0014](./0014-neutral-copy.md)                   | Gender-neutral copy                                            | Accepted |

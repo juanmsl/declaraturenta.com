@@ -27,7 +27,7 @@ export const AppLayout = () => {
       <SideRail steps={steps} />
       <div className='flex min-w-0 flex-1 flex-col'>
         <TopBar location={location} steps={steps} />
-        <main className='flex-1'>
+        <main className='flex flex-1 flex-col'>
           <Outlet />
         </main>
       </div>

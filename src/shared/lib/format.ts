@@ -43,3 +43,7 @@ export const formatTimeAgo = (date: Date, now: Date = new Date()): string => {
   }
   return relativeTimeFormatter.format(0, 'second');
 };
+
+/** Formats a plain number with Colombian separators: `4.500`, `1.973,53`. */
+export const formatNumber = (value: number, maximumFractionDigits = 0): string =>
+  new Intl.NumberFormat(LOCALE, { maximumFractionDigits }).format(value);
