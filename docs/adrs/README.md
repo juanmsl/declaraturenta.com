@@ -20,3 +20,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0012](./0012-tax-engine-in-domain.md)           | Tax calculation engine in `src/domain`                         | Accepted |
 | [0013](./0013-declaration-state.md)              | Declaration state: Context persisted in localStorage           | Accepted |
 | [0014](./0014-neutral-copy.md)                   | Gender-neutral copy                                            | Accepted |
+| [0015](./0015-simulated-exogenous-import.md)     | Simulated exogenous import with a local dropzone               | Accepted |

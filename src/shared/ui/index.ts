@@ -5,6 +5,7 @@ export * from './Button';
 export * from './CalcRow';
 export * from './Chip';
 export * from './Diamond';
+export * from './FileDropzone';
 export * from './Icon';
 export * from './Logo';
 export * from './StepHeader';
