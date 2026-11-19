@@ -34,6 +34,12 @@ describe('buildForm210', () => {
     expect(value(93)).toBe((value(91) ?? 0) - (value(92) ?? 0));
   });
 
+  it('keeps the tax boxes consistent', () => {
+    expect(value(121)).toBe((value(116) ?? 0) + (value(118) ?? 0) + (value(119) ?? 0) + (value(120) ?? 0));
+    expect(value(126)).toBe((value(121) ?? 0) - (value(125) ?? 0));
+    expect(value(129)).toBe((value(126) ?? 0) + (value(127) ?? 0) - (value(128) ?? 0));
+  });
+
   it('marks every box as verified against the official instructions', () => {
     expect(form.get(77)?.verified).toBe(true);
     expect(form.get(139)?.verified).toBe(true);

@@ -69,6 +69,9 @@ export const sampleDeclaration: DeclarationData = {
   },
   capital: { concepts: [], independentContributions: 0, costs: 0 },
   nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
+  pensions: { concepts: [], nonTaxableIncome: 0, months: 12 },
+  dividends: { concepts: [] },
+  occasionalGains: { concepts: [] },
   assets: [
     {
       id: 'apartment',

@@ -23,8 +23,19 @@ export const ART_241_BRACKETS: readonly TaxBracket[] = [
   { fromUvt: 31_000, toUvt: null, rate: 0.39, fixedUvt: 10_352 },
 ];
 
-export const findBracket = (taxableUvt: number): TaxBracket => {
-  const bracket = ART_241_BRACKETS.find(
+/** Art. 241 table in force until 2016, used for dividends of 2016 and earlier (box 119). */
+export const ART_241_UNTIL_2016_BRACKETS: readonly TaxBracket[] = [
+  ZERO_BRACKET,
+  { fromUvt: 1090, toUvt: 1700, rate: 0.19, fixedUvt: 0 },
+  { fromUvt: 1700, toUvt: 4100, rate: 0.28, fixedUvt: 116 },
+  { fromUvt: 4100, toUvt: null, rate: 0.33, fixedUvt: 788 },
+];
+
+export const findBracket = (
+  taxableUvt: number,
+  brackets: readonly TaxBracket[] = ART_241_BRACKETS,
+): TaxBracket => {
+  const bracket = brackets.find(
     candidate =>
       taxableUvt > candidate.fromUvt && (candidate.toUvt === null || taxableUvt <= candidate.toUvt),
   );
@@ -40,9 +51,13 @@ export type TableTax = {
 };
 
 /** Tax on a taxable net income (renta líquida gravable) using the art. 241 table. */
-export const computeTableTax = (taxableIncome: number, uvtValue: number = UVT_2025): TableTax => {
+export const computeTableTax = (
+  taxableIncome: number,
+  uvtValue: number = UVT_2025,
+  brackets: readonly TaxBracket[] = ART_241_BRACKETS,
+): TableTax => {
   const taxableUvt = Math.max(0, pesosToUvt(taxableIncome, uvtValue));
-  const bracket = findBracket(taxableUvt);
+  const bracket = findBracket(taxableUvt, brackets);
   const taxUvt = taxableUvt <= 0 ? 0 : (taxableUvt - bracket.fromUvt) * bracket.rate + bracket.fixedUvt;
 
   return { taxableUvt, bracket, taxUvt, tax: roundToThousand(taxUvt * uvtValue) };

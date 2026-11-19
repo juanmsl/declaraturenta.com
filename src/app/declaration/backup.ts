@@ -1,4 +1,5 @@
 import { STATE_VERSION } from './declaration-state';
+import { migrateState } from './migrate-state';
 import type { DeclarationState } from './declaration-state';
 
 /**
@@ -47,10 +48,10 @@ export const parseBackup = (text: string): { state: DeclarationState; createdAt:
   }
   if (!isRecord(parsed) || parsed.app !== APP_ID || !isRecord(parsed.state))
     throw new BackupError('not-a-backup');
-  if (parsed.version !== STATE_VERSION || parsed.state.version !== STATE_VERSION)
-    throw new BackupError('outdated');
+  const state = parsed.version === parsed.state.version ? migrateState(parsed.state) : null;
+  if (!state) throw new BackupError('outdated');
   return {
-    state: parsed.state as DeclarationState,
+    state,
     createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : '',
   };
 };

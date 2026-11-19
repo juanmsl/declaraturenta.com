@@ -36,8 +36,11 @@ export type DeclarationState = {
   savedAt: string | null;
 };
 
-/** Bump when `DeclarationState` changes shape; older saved states fall back to the initial one. */
-export const STATE_VERSION = 7;
+/**
+ * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
+ * be migrated fall back to the initial one.
+ */
+export const STATE_VERSION = 8;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,

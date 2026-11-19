@@ -6,6 +6,15 @@ import { computeTableTax } from './income-tax-table';
 import type { TableTax } from './income-tax-table';
 import { computeLaborIncome } from './labor-income';
 import type { LaborIncomeResult } from './labor-income';
+import { computeDividends, computeOccasionalGains, computePensions } from './other-schedules';
+import type {
+  DividendConcept,
+  DividendResult,
+  OccasionalGainConcept,
+  OccasionalGainsResult,
+  PensionData,
+  PensionResult,
+} from './other-schedules';
 import { UVT_2025, uvtToPesos } from './uvt';
 
 /** Box 28 cap: 1 % of purchases with electronic invoice, up to 240 UVT (art. 336 E.T.). */
@@ -105,6 +114,12 @@ export type DeclarationData = {
     /** Box 77. */
     costs: number;
   };
+  /** Cédula de pensiones (boxes 99–103). */
+  pensions: PensionData;
+  /** Cédula de dividendos y participaciones (boxes 104–110). */
+  dividends: { concepts: DividendConcept[] };
+  /** Ganancias ocasionales (boxes 112–115). */
+  occasionalGains: { concepts: OccasionalGainConcept[] };
   assets: Asset[];
   debts: Debt[];
   deductions: {
@@ -136,7 +151,10 @@ export type DeclarationResult = {
   labor: LaborIncomeResult;
   capital: CapitalIncomeResult;
   nonLabor: NonLaborIncomeResult;
-  /** Gross income of every schedule (filing test 1). */
+  pensions: PensionResult;
+  dividends: DividendResult;
+  occasionalGains: OccasionalGainsResult;
+  /** Gross income of the general, pensions and dividends schedules (filing test 1). */
   grossIncome: number;
   /**
    * Box 91: renta líquida of the general schedule (41 + 42 + 53 + 57 + 69 + 73 + 86 + 90). Without
@@ -154,11 +172,20 @@ export type DeclarationResult = {
   dependentsAddition: number;
   /** Box 92: exempt income and deductions that reduce net income. */
   totalBenefits: number;
-  /** Renta líquida gravable (boxes 97 and 111). */
+  /** Renta líquida gravable cédula general (box 97). */
   taxableIncome: number;
+  /** Box 111: 97 (renta presuntiva is 0 %) + 103 + 107 + 108 − 118. */
+  tableBase: number;
+  /** Box 116: art. 241 table over box 111. */
   tableTax: TableTax;
+  /** Box 121 = 116 + 118 + 119 + 120. */
+  totalIncomeTax: number;
+  /** Box 125: only the dividends discount (124) is modeled. */
+  taxDiscounts: number;
   /** Impuesto neto de renta (box 126). */
   netIncomeTax: number;
+  /** Box 127. */
+  occasionalGainsTax: number;
   /** Impuesto a cargo (box 129). */
   taxDue: number;
   withholdings: number;
@@ -246,12 +273,22 @@ export const computeDeclaration = (
   const grossLaborIncome = data.labor.salaries + data.labor.otherPayments;
   const capital = computeCapitalIncome(data.capital);
   const nonLabor = computeNonLaborIncome(data.nonLabor);
-  const grossIncome = grossLaborIncome + capital.grossIncome + nonLabor.grossIncome;
+  const pensions = computePensions(data.pensions, uvtValue);
+  const dividends = computeDividends(data.dividends.concepts, uvtValue);
+  const occasionalGains = computeOccasionalGains(data.occasionalGains.concepts, uvtValue);
+  const generalGrossIncome = grossLaborIncome + capital.grossIncome + nonLabor.grossIncome;
+  const grossIncome =
+    generalGrossIncome +
+    pensions.grossIncome +
+    dividends.until2016 +
+    dividends.firstSubcedule +
+    dividends.secondSubcedule +
+    dividends.foreign;
   const laborNetIncome = Math.max(0, grossLaborIncome - data.labor.nonTaxableIncome);
   const generalNetIncome = laborNetIncome + capital.netIncome + nonLabor.netIncome;
   const benefitsCapBase = Math.max(
     0,
-    grossIncome - data.labor.nonTaxableIncome - capital.nonTaxableIncome - nonLabor.nonTaxableIncome,
+    generalGrossIncome - data.labor.nonTaxableIncome - capital.nonTaxableIncome - nonLabor.nonTaxableIncome,
   );
 
   const obligation = evaluateFilingObligation(
@@ -298,9 +335,14 @@ export const computeDeclaration = (
     : 0;
   const totalBenefits = labor.cappedBenefits + electronicInvoiceDeduction + dependentsAddition;
   const taxableIncome = Math.max(0, generalNetIncome - totalBenefits);
-  const tableTax = computeTableTax(taxableIncome, uvtValue);
-  const netIncomeTax = tableTax.tax;
-  const taxDue = netIncomeTax;
+  const tableBase = taxableIncome + pensions.taxableIncome + dividends.baseForTable;
+  const tableTax = computeTableTax(tableBase, uvtValue);
+  const totalIncomeTax =
+    tableTax.tax + dividends.secondSubceduleTax + dividends.until2016Tax + dividends.foreignTax;
+  const taxDiscounts = dividends.discount;
+  const netIncomeTax = Math.max(0, totalIncomeTax - taxDiscounts);
+  const occasionalGainsTax = occasionalGains.tax;
+  const taxDue = netIncomeTax + occasionalGainsTax;
 
   const advance = computeAdvancePayment({
     filingCount: data.general.filingCount,
@@ -321,6 +363,9 @@ export const computeDeclaration = (
     labor,
     capital,
     nonLabor,
+    pensions,
+    dividends,
+    occasionalGains,
     grossIncome,
     generalNetIncome,
     benefitsCapBase,
@@ -328,8 +373,12 @@ export const computeDeclaration = (
     dependentsAddition,
     totalBenefits,
     taxableIncome,
+    tableBase,
     tableTax,
+    totalIncomeTax,
+    taxDiscounts,
     netIncomeTax,
+    occasionalGainsTax,
     taxDue,
     withholdings: data.withholdings,
     advance,
@@ -353,6 +402,9 @@ export const createEmptyDeclaration = (): DeclarationData => ({
   },
   capital: { concepts: [], independentContributions: 0, costs: 0 },
   nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
+  pensions: { concepts: [], nonTaxableIncome: 0, months: 12 },
+  dividends: { concepts: [] },
+  occasionalGains: { concepts: [] },
   assets: [],
   debts: [],
   deductions: { housingInterestPaid: 0, prepaidHealthPaid: 0, dependents: 0 },

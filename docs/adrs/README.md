@@ -36,3 +36,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0028](./0028-help-guide-and-faq.md)                            | Help: guide and searchable frequent questions                    | Accepted |
 | [0029](./0029-compact-braid-favicon-and-section-marker.md)      | Compact braid, favicon and section marker                        | Accepted |
 | [0030](./0030-form-210-validated-against-dian-instructions.md)  | Form 210 validated against the DIAN instructions                 | Accepted |
+| [0031](./0031-pensions-dividends-and-occasional-gains.md)       | Pensions, dividends and occasional gains                         | Accepted |
