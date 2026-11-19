@@ -37,8 +37,8 @@ the business model comes last, after the platform is fully functional.
 
 Ask the owner before resolving these.
 
-- **Tax rules**: boxes 77–139 still need a pass against the official DIAN PDF; the occasional
-  gains, pensions and dividends schedules are not calculated.
+- **Tax rules**: boxes 28–141 are checked against the official DIAN instructions (ADR 0030). The
+  fees (43–57), pensions, dividends and occasional gains schedules are not calculated yet.
 - **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
   only in progress" rule; we follow Figma.
 - Business model (last).
@@ -46,5 +46,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Validate boxes 77–139 against the official DIAN PDF (box 127 and 138/139 rules included).
-2. Calculate the pending schedules (pensions, dividends, occasional gains).
+1. Calculate the pending schedules: fees (43–57), pensions (99–103), dividends (104–110) and
+   occasional gains (112–115, 127).

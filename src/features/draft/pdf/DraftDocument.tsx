@@ -6,7 +6,6 @@ import figtree600 from '@fontsource/figtree/files/figtree-latin-600-normal.woff?
 import figtree700 from '@fontsource/figtree/files/figtree-latin-700-normal.woff?url';
 
 import type { Form210Box } from '@/domain/form-210';
-import { LAST_VERIFIED_BOX } from '@/domain/form-210';
 import type { Taxpayer } from '@/domain/taxpayer';
 import { TAX_YEAR } from '@/domain/uvt';
 import { formatCurrency, formatLongDate, formatNumber } from '@/shared/lib/format';
@@ -206,8 +205,7 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt }: DraftDocum
 
       <View style={s.footer} fixed>
         <Text style={{ flex: 1 }}>
-          Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta. Las
-          casillas {LAST_VERIFIED_BOX + 1} a 139 están en revisión frente al formulario oficial.
+          Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta.
         </Text>
         <Text render={({ pageNumber, totalPages }) => `${String(pageNumber)} / ${String(totalPages)}`} />
       </View>

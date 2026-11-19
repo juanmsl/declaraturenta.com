@@ -10,7 +10,7 @@ import { UVT_2025, uvtToPesos } from './uvt';
 
 /** Box 28 cap: 1 % of purchases with electronic invoice, up to 240 UVT (art. 336 E.T.). */
 export const ELECTRONIC_INVOICE_CAP_UVT = 240;
-/** Box 139: 72 UVT per dependent, up to 4 (art. 336 E.T.). Boxes 77–139 still to validate. */
+/** Box 139: 72 UVT per dependent, up to 4 (art. 336 E.T.). */
 export const ADDITIONAL_DEPENDENT_UVT = 72;
 export const MAX_ADDITIONAL_DEPENDENTS = 4;
 
@@ -138,8 +138,16 @@ export type DeclarationResult = {
   nonLabor: NonLaborIncomeResult;
   /** Gross income of every schedule (filing test 1). */
   grossIncome: number;
-  /** Box 91: renta líquida of the general schedule (34 + 46 + 61 + 78). */
+  /**
+   * Box 91: renta líquida of the general schedule (41 + 42 + 53 + 57 + 69 + 73 + 86 + 90). Without
+   * losses, compensations or ECE income it equals 34 + 46 + 61 + 78.
+   */
   generalNetIncome: number;
+  /**
+   * Base of the 40 % cap: gross income of the general schedule minus its non-taxable income
+   * (32 + 43 + 58 + 74 − 33 − 44 − 59 − 76). Costs and returns are not subtracted (DIAN instructions).
+   */
+  benefitsCapBase: number;
   /** Box 28 after its cap. */
   electronicInvoiceDeduction: number;
   /** Box 139: 72 UVT per dependent, up to 4, capped at boxes 42 + 57. */
@@ -241,6 +249,10 @@ export const computeDeclaration = (
   const grossIncome = grossLaborIncome + capital.grossIncome + nonLabor.grossIncome;
   const laborNetIncome = Math.max(0, grossLaborIncome - data.labor.nonTaxableIncome);
   const generalNetIncome = laborNetIncome + capital.netIncome + nonLabor.netIncome;
+  const benefitsCapBase = Math.max(
+    0,
+    grossIncome - data.labor.nonTaxableIncome - capital.nonTaxableIncome - nonLabor.nonTaxableIncome,
+  );
 
   const obligation = evaluateFilingObligation(
     {
@@ -262,7 +274,7 @@ export const computeDeclaration = (
       prepaidHealthPaid: data.deductions.prepaidHealthPaid,
       hasDependent: data.deductions.dependents > 0,
       includeDeductions,
-      capBase: generalNetIncome,
+      capBase: benefitsCapBase,
     },
     uvtValue,
   );
@@ -311,6 +323,7 @@ export const computeDeclaration = (
     nonLabor,
     grossIncome,
     generalNetIncome,
+    benefitsCapBase,
     electronicInvoiceDeduction,
     dependentsAddition,
     totalBenefits,

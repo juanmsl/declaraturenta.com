@@ -34,9 +34,16 @@ describe('buildForm210', () => {
     expect(value(93)).toBe((value(91) ?? 0) - (value(92) ?? 0));
   });
 
-  it('marks boxes 77 and above as not verified yet', () => {
-    expect(form.get(76)?.verified).toBe(true);
-    expect(form.get(77)?.verified).toBe(false);
+  it('marks every box as verified against the official instructions', () => {
+    expect(form.get(77)?.verified).toBe(true);
+    expect(form.get(139)?.verified).toBe(true);
+  });
+
+  it('keeps the official DIAN title of each box', () => {
+    expect(form.get(91)?.officialTitle).toBe(
+      'Renta líquida cédula general (41 + 42 + 53 + 57 + 69 + 73 + 86 + 90)',
+    );
+    expect(form.get(141)?.officialTitle).toBe('Aporte voluntario');
   });
 
   it('labels matrix boxes with row and column', () => {
@@ -48,7 +55,7 @@ describe('buildForm210', () => {
 
   it('finds the boxes fed by a box', () => {
     expect(findDependentBoxes(form, 32).map(box => box.number)).toEqual([34]);
-    expect(findDependentBoxes(form, 34).map(box => box.number)).toEqual([42, 91]);
+    expect(findDependentBoxes(form, 34).map(box => box.number)).toEqual([42]);
   });
 
   it('highlights the balance in favor', () => {

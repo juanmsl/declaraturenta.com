@@ -1,13 +1,13 @@
 import type { DeclarationData, DeclarationResult } from './declaration';
 import { EDITABLE_BOXES, getBoxConcepts, isCountBox } from './box-concepts';
 import { ADDITIONAL_DEPENDENT_UVT } from './declaration';
+import { OFFICIAL_BOX_TITLES } from './form-210-titles';
 
 /**
- * Formulario 210 (taxable year 2025, DIAN 2026 form). Box labels, kinds and formulas follow the
- * Figma screen 09. Boxes 28–76 are verified against the DIAN 2026 instructions; boxes 77–139
- * still have to be validated against the official PDF.
+ * Formulario 210 (taxable year 2025). Short labels and kinds follow the Figma screen 09; official
+ * titles and formulas of boxes 28–141 are checked against the official DIAN instructions (ADR 0030).
  */
-export const LAST_VERIFIED_BOX = 76;
+export const LAST_VERIFIED_BOX = 141;
 
 /**
  * - `entered`: filled by the user or the exogenous report; opens its concepts.
@@ -18,7 +18,10 @@ export type BoxKind = 'entered' | 'calculated' | 'not-applicable' | 'highlighted
 
 export type Form210Box = {
   number: number;
+  /** Short label for the screen. */
   label: string;
+  /** Title exactly as printed in the DIAN form, to find the box in the portal. */
+  officialTitle: string;
   value: number;
   kind: BoxKind;
   /** Formula with box numbers (calculated boxes), e.g. `= 32 − 33`. */
@@ -122,13 +125,16 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   52: { kind: 'calculated', formula: '= 50 + 51' },
   68: { kind: 'calculated', formula: '= 66 + 67' },
   85: { kind: 'calculated', formula: '= 83 + 84' },
-  41: { kind: 'calculated', formula: '= 37 + 40, tope 40 % y 1.340 UVT' },
+  41: {
+    kind: 'calculated',
+    formula: '= 37 + 40, tope del 40 % de los ingresos menos 33, 44, 59 y 76, hasta 1.340 UVT',
+  },
   53: { kind: 'calculated', formula: '= 49 + 52, con tope restante' },
   69: { kind: 'calculated', formula: '= 65 + 68, con tope restante' },
   86: { kind: 'calculated', formula: '= 82 + 85, con tope restante' },
-  54: { kind: 'calculated', formula: '= 46 − 53' },
-  70: { kind: 'calculated', formula: '= 61 + 62 − 69' },
-  87: { kind: 'calculated', formula: '= 78 + 79 − 86' },
+  54: { kind: 'calculated', formula: '= 43 − 44 − 45 − 53' },
+  70: { kind: 'calculated', formula: '= 58 + 62 − 59 − 60 − 69' },
+  87: { kind: 'calculated', formula: '= 74 + 79 − 75 − 76 − 77 − 86' },
   55: { kind: 'calculated', formula: '= 44 + 45 − 43' },
   71: { kind: 'calculated', formula: '= 59 + 60 − 58 − 62' },
   88: { kind: 'calculated', formula: '= 75 + 76 + 77 − 74 − 79' },
@@ -139,7 +145,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   57: { kind: 'calculated', formula: '= 54 − 56' },
   73: { kind: 'calculated', formula: '= 70 − 72' },
   90: { kind: 'calculated', formula: '= 87 − 89' },
-  91: { label: 'Renta líquida', kind: 'calculated', formula: '= 34 + 46 + 61 + 78' },
+  91: { label: 'Renta líquida', kind: 'calculated', formula: '= 41 + 42 + 53 + 57 + 69 + 73 + 86 + 90' },
   92: {
     label: 'Rentas exentas y deducciones imputables',
     kind: 'calculated',
@@ -151,24 +157,48 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   96: { label: 'Rentas gravables', kind: 'entered' },
   97: { label: 'Renta líquida gravable', kind: 'calculated', formula: '= 93 + 96 − 94 − 95' },
   98: { label: 'Renta presuntiva', kind: 'entered' },
+  99: { label: 'Ingresos brutos por pensiones', kind: 'entered' },
+  100: { label: 'Ingresos no constitutivos de renta', kind: 'entered' },
+  101: { label: 'Renta líquida', kind: 'calculated', formula: '= 99 − 100' },
+  102: {
+    label: 'Rentas exentas de pensiones',
+    kind: 'calculated',
+    formula: 'Hasta 1.000 UVT por cada mes de pensión (art. 206 num. 5 E.T.)',
+  },
+  103: { label: 'Renta líquida gravable de pensiones', kind: 'calculated', formula: '= 101 − 102' },
+  104: { label: 'Dividendos 2016 y anteriores, y otros', kind: 'entered' },
+  105: { label: 'Ingresos no constitutivos de renta', kind: 'entered' },
+  106: { label: 'Renta líquida ordinaria 2016 y anteriores', kind: 'calculated', formula: '= 104 − 105' },
+  107: { label: 'Dividendos 2017 y siguientes, 1.ª subcédula', kind: 'entered' },
+  108: { label: 'Dividendos 2017 y siguientes, 2.ª subcédula', kind: 'entered' },
+  109: { label: 'Dividendos recibidos del exterior', kind: 'entered' },
+  110: { label: 'Rentas exentas de la casilla 109', kind: 'entered' },
   111: {
     label:
       'Renta líquida gravable total (cédula general o renta presuntiva, pensiones y dividendos · art. 241 E.T.)',
     kind: 'calculated',
     formula: '= máx(97, 98) + 103 + 107 + 108 − 118',
   },
+  112: { label: 'Ingresos por ganancias ocasionales', kind: 'entered' },
+  113: { label: 'Costos por ganancias ocasionales', kind: 'entered' },
+  114: { label: 'Ganancias ocasionales no gravadas y exentas', kind: 'entered' },
+  115: { label: 'Ganancias ocasionales gravables', kind: 'calculated', formula: '= 112 − 113 − 114' },
   116: {
     label: 'Cédula general, pensiones y dividendos',
     kind: 'calculated',
-    formula: 'Tabla art. 241 sobre 111',
+    formula: 'Tabla art. 241 sobre 111, si 97 es mayor que 98',
   },
   117: {
     label: 'Renta presuntiva, pensiones y dividendos',
     kind: 'calculated',
-    formula: 'Tabla art. 241 sobre renta presuntiva',
+    formula: 'Tabla art. 241 sobre 111, si 98 es mayor que 97',
   },
   118: { label: 'Dividendos 2017 y siguientes, 2.ª subcédula', kind: 'calculated', formula: '= 108 × 35 %' },
-  119: { label: 'Dividendos año 2016', kind: 'calculated', formula: 'Ver cálculo' },
+  119: {
+    label: 'Dividendos año 2016',
+    kind: 'calculated',
+    formula: 'Tabla art. 241 vigente hasta 2016 sobre 106',
+  },
   120: { label: 'Dividendos recibidos del exterior', kind: 'calculated', formula: '= (109 − 110) × 35 %' },
   121: {
     label: 'Total impuesto sobre las rentas líquidas gravables',
@@ -177,7 +207,11 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   },
   122: { label: 'Impuestos pagados en el exterior', kind: 'entered' },
   123: { label: 'Donaciones', kind: 'entered' },
-  124: { label: 'Dividendos, participaciones y otros', kind: 'entered' },
+  124: {
+    label: 'Dividendos, participaciones y otros',
+    kind: 'calculated',
+    formula: '19 % de (107 + 108 − 118) por encima de 1.090 UVT',
+  },
   125: { label: 'Total descuentos tributarios', kind: 'calculated', formula: '= 122 + 123 + 124' },
   126: { label: 'Impuesto neto de renta', kind: 'calculated', formula: '= 121 − 125' },
   127: {
@@ -193,7 +227,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   133: {
     label: 'Anticipo de renta para el año siguiente',
     kind: 'calculated',
-    formula: 'Ver cálculo del anticipo',
+    formula: '25 %, 50 % o 75 % de 126 (o del promedio de dos años) − 132',
   },
   134: { label: 'Saldo a pagar por impuesto', kind: 'calculated', formula: '= 129 + 133 − 130 − 131 − 132' },
   135: { label: 'Sanciones', kind: 'entered' },
@@ -205,6 +239,12 @@ const BOX_SPECS: Record<number, BoxSpec> = {
     kind: 'calculated',
     formula: `= 138 × ${ADDITIONAL_DEPENDENT_UVT} UVT, hasta 4 y sin pasar de 42 + 57`,
   },
+  140: {
+    label: 'Superó el tope indicativo de costos (art. 336-1 E.T.)',
+    kind: 'not-applicable',
+    note: 'Solo si 45 ÷ 43 supera el 60 %',
+  },
+  141: { label: 'Aporte voluntario', kind: 'entered', note: 'Opcional' },
 };
 
 /** Boxes of the "Otras cédulas" sections (pensions, dividends, occasional gains), collapsed while 0. */
@@ -336,6 +376,7 @@ export const buildForm210 = (data: DeclarationData, result: DeclarationResult): 
     form.set(number, {
       number,
       label: spec.label ?? matrixLabel(number) ?? `Casilla ${String(number)}`,
+      officialTitle: OFFICIAL_BOX_TITLES[number] ?? `Casilla ${String(number)}`,
       value: values[number] ?? 0,
       kind: isResult ? (number === resultBox ? 'highlighted' : 'calculated') : spec.kind,
       formula: spec.formula,

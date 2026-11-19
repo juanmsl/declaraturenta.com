@@ -8,7 +8,8 @@ import { UVT_2025, uvtToPesos } from './uvt';
  * - Prepaid health: up to 16 UVT a month, 192 UVT a year (art. 387 E.T.).
  * - Exempt 25 % of labor payments, up to 790 UVT a year (art. 206 num. 10 E.T., Ley 2277 de 2022),
  *   computed after non-taxable income, deductions and other exempt income.
- * - Exempt income plus deductions are capped at 40 % of net income, up to 1.340 UVT (art. 336 E.T.).
+ * - Exempt income plus deductions are capped at 40 % of the general schedule's gross income minus
+ *   its non-taxable income, up to 1.340 UVT (art. 336 E.T., DIAN instructions of box 92).
  */
 export const LABOR_LIMITS_UVT = {
   housingInterest: 1200,
@@ -35,8 +36,8 @@ export type LaborIncomeInput = {
   /** False until the user reaches the deductions step, so the estimate excludes them. */
   includeDeductions: boolean;
   /**
-   * Net income of the whole general schedule (box 91). The 40 % cap of art. 336 E.T. applies to
-   * it, not only to labor income. Defaults to the labor net income.
+   * Base of the 40 % cap of art. 336 E.T. for the whole general schedule: gross income minus
+   * non-taxable income of every column (costs are not subtracted). Defaults to the labor net income.
    */
   capBase?: number;
 };
@@ -63,7 +64,7 @@ export type LaborIncomeResult = {
   totalExempt: number;
   /** Deductions + exempt income before the cap. */
   benefitsBeforeCap: number;
-  /** Cap: lower of 40 % of net income and 1.340 UVT. */
+  /** Cap: lower of 40 % of the cap base and 1.340 UVT. */
   benefitsCap: number;
   /** Box 41. */
   cappedBenefits: number;

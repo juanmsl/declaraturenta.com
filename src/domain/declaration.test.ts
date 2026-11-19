@@ -113,4 +113,11 @@ describe('capital and non-labor income', () => {
     expect(result.labor.benefitsCap).toBe(66_730_660);
     expect(result.taxableIncome).toBe(result.generalNetIncome - result.totalBenefits);
   });
+
+  it('takes the 40 % cap base from gross income minus non-taxable income, without costs', () => {
+    const result = computeDeclaration(withOtherIncome);
+    // 32 + 58 + 74 − 33 − 59 − 76: the 500.000 of costs in box 77 do not reduce the base.
+    expect(result.benefitsCapBase).toBe(195_000_000 - 16_200_000 - 5_544_000);
+    expect(result.benefitsCapBase).toBeGreaterThan(result.generalNetIncome);
+  });
 });
