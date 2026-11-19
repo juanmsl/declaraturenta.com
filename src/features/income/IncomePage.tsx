@@ -3,11 +3,12 @@ import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FLOW_STEPS } from '@/app/flow';
-import type { DeclarationData } from '@/domain/declaration';
+import { INFLATION_COMPONENT_RATE } from '@/domain/declaration';
+import type { DeclarationData, IncomeConcept } from '@/domain/declaration';
 import { TAX_YEAR } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
-import { formatCurrency } from '@/shared/lib/format';
+import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { detectZeroSlip } from '@/shared/lib/zero-slip';
 import {
   Alert,
@@ -26,11 +27,46 @@ const EXOGENOUS_ORIGIN = { variant: 'exogenous', label: 'Desde exógena' } as co
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
+const ADJUSTMENT_ID = 'income-adjustment';
+const INFLATION_PERCENT = formatNumber(INFLATION_COMPONENT_RATE * 100);
+
+/**
+ * Sets the total of an income schedule. Reported concepts are kept; the difference with what the
+ * user writes becomes one adjustment concept, so the 210 detail still shows where each peso comes from.
+ */
+const withTotal = (
+  concepts: readonly IncomeConcept[],
+  total: number,
+  financial: boolean,
+): IncomeConcept[] => {
+  const kept = concepts.filter(concept => concept.id !== ADJUSTMENT_ID);
+  const difference = total - sum(kept.map(concept => concept.amount));
+  return difference === 0
+    ? kept
+    : [
+        ...kept,
+        {
+          id: ADJUSTMENT_ID,
+          label: 'Ajuste que escribiste en Ingresos',
+          entity: 'Lo ingresaste tú',
+          amount: difference,
+          origin: 'user',
+          ...(financial ? { financial: true } : {}),
+        },
+      ];
+};
+
+const isFromExogenous = (concepts: readonly IncomeConcept[]) =>
+  concepts.length > 0 && concepts.every(concept => concept.origin === 'exogenous');
+
 /** Screen 04 · Ingresos (Figma node 9:783). */
 export const IncomePage = () => {
   const navigate = useNavigate();
-  const { state, dispatch } = useDeclaration();
-  const { labor } = state.data;
+  const { state, dispatch, result } = useDeclaration();
+  const { labor, capital, nonLabor } = state.data;
+  const { capital: capitalResult } = result;
+  const capitalTotal = sum(capital.concepts.map(concept => concept.amount));
+  const nonLaborTotal = sum(nonLabor.concepts.map(concept => concept.amount));
 
   const reportedSalaries = sum(labor.concepts.map(concept => concept.amount));
   const employer = labor.concepts[0]?.entity;
@@ -100,6 +136,52 @@ export const IncomePage = () => {
         hint='Por ejemplo, una bonificación de otro empleador. Si no tuviste, déjalo en 0.'
       />
 
+      <div className='flex flex-col gap-1'>
+        <Text variant='title-s' as='h2'>
+          Rendimientos financieros y otros ingresos
+        </Text>
+        <Text variant='body-m' className='text-fg-secondary'>
+          También cuentan los intereses de tus cuentas e inversiones y otros pagos que recibiste. Si no
+          tuviste, déjalos en 0.
+        </Text>
+      </div>
+      <MoneyField
+        name='capitalIncome'
+        label='Intereses y rendimientos financieros (casilla 58)'
+        value={capitalTotal}
+        onChange={total => {
+          dispatch({
+            type: 'updateData',
+            update: data => ({
+              ...data,
+              capital: { ...data.capital, concepts: withTotal(data.capital.concepts, total, true) },
+            }),
+          });
+        }}
+        origin={isFromExogenous(capital.concepts) ? EXOGENOUS_ORIGIN : undefined}
+        hint={
+          capitalResult.inflationComponent > 0
+            ? `Cuentas, CDT y fondos de inversión. El ${INFLATION_PERCENT} % no es renta: restamos ${formatCurrency(capitalResult.inflationComponent)} por ti (casilla 59).`
+            : `Cuentas, CDT y fondos de inversión. El ${INFLATION_PERCENT} % no es renta; lo restamos por ti.`
+        }
+      />
+      <MoneyField
+        name='nonLaborIncome'
+        label='Otros ingresos (casilla 74)'
+        value={nonLaborTotal}
+        onChange={total => {
+          dispatch({
+            type: 'updateData',
+            update: data => ({
+              ...data,
+              nonLabor: { ...data.nonLabor, concepts: withTotal(data.nonLabor.concepts, total, false) },
+            }),
+          });
+        }}
+        origin={isFromExogenous(nonLabor.concepts) ? EXOGENOUS_ORIGIN : undefined}
+        hint='Pagos que no vienen de tu trabajo ni de tus inversiones, por ejemplo reintegros o incentivos de comercios.'
+      />
+
       <Text id='independent-question' variant='title-s' as='h2'>
         ¿Tuviste también ingresos como independiente?
       </Text>
@@ -128,8 +210,8 @@ export const IncomePage = () => {
 
       {labor.hasIndependentIncome && (
         <Alert variant='info' title='Aún no calculamos honorarios'>
-          Pronto podrás declarar aquí tus ingresos como independiente. Por ahora tu cálculo solo incluye tus
-          rentas de trabajo como persona empleada.
+          Pronto podrás declarar aquí tus ingresos como independiente. Por ahora tu cálculo incluye tus rentas
+          de trabajo como persona empleada, tus rendimientos financieros y tus otros ingresos.
         </Alert>
       )}
 
@@ -158,9 +240,13 @@ const IncomeEstimate = () => {
           : 'Aún faltan tus deducciones. Este valor suele bajar.'
       }
     >
-      <CalcRow label='Ingresos brutos' value={estimate.grossLaborIncome} />
-      <CalcRow variant='subtract' label='No constitutivos de renta' value={estimate.labor.nonTaxableIncome} />
-      <CalcRow variant='subtotal' label='Renta líquida' value={estimate.labor.netIncome} />
+      <CalcRow label='Ingresos brutos' value={estimate.grossIncome} />
+      <CalcRow
+        variant='subtract'
+        label='No constitutivos de renta'
+        value={estimate.grossIncome - estimate.generalNetIncome}
+      />
+      <CalcRow variant='subtotal' label='Renta líquida' value={estimate.generalNetIncome} />
       <CalcRow
         variant='subtract'
         label={estimateIncludesDeductions ? 'Deducciones y exentas' : 'Renta exenta del 25 % (tope 790 UVT)'}

@@ -67,6 +67,66 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       origin: null,
       strong: true,
     },
+    ...(result.capital.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Cédula general · Rentas de capital' },
+          {
+            type: 'line',
+            box: 58,
+            label: 'Ingresos brutos por rentas de capital',
+            value: result.capital.grossIncome,
+            origin: hasExogenous(data.capital.concepts) ? 'exogenous' : 'user',
+          },
+          {
+            type: 'line',
+            box: 59,
+            label: 'Ingresos no constitutivos de renta',
+            value: result.capital.nonTaxableIncome,
+            origin: 'box',
+          },
+          {
+            type: 'line',
+            box: 61,
+            label: 'Renta líquida',
+            value: result.capital.netIncome,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
+    ...(result.nonLabor.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Cédula general · Rentas no laborales' },
+          {
+            type: 'line',
+            box: 74,
+            label: 'Ingresos brutos por rentas no laborales',
+            value: result.nonLabor.grossIncome,
+            origin: hasExogenous(data.nonLabor.concepts) ? 'exogenous' : 'user',
+          },
+          {
+            type: 'line',
+            box: 78,
+            label: 'Renta líquida',
+            value: result.nonLabor.netIncome,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
+    ...(result.capital.grossIncome > 0 || result.nonLabor.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Cédula general · Total' },
+          {
+            type: 'line',
+            box: 91,
+            label: 'Renta líquida de la cédula general',
+            value: result.generalNetIncome,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
     {
       type: 'line',
       box: 92,

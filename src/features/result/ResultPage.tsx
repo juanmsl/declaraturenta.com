@@ -15,7 +15,7 @@ const [firstStep, , , , , , draftStep] = FLOW_STEPS;
 export const ResultPage = () => {
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
-  const { labor, tableTax } = result;
+  const { tableTax } = result;
   const inFavor = result.amountInFavor > 0;
   const toPay = result.amountToPay > 0;
   const { bracket } = tableTax;
@@ -90,9 +90,13 @@ export const ResultPage = () => {
             Cómo llegamos aquí
           </Text>
           <div className='flex flex-col'>
-            <CalcRow label='Ingresos brutos' value={result.grossLaborIncome} />
-            <CalcRow variant='subtract' label='No constitutivos de renta' value={labor.nonTaxableIncome} />
-            <CalcRow variant='subtotal' label='Renta líquida' value={labor.netIncome} />
+            <CalcRow label='Ingresos brutos' value={result.grossIncome} />
+            <CalcRow
+              variant='subtract'
+              label='No constitutivos de renta'
+              value={result.grossIncome - result.generalNetIncome}
+            />
+            <CalcRow variant='subtotal' label='Renta líquida' value={result.generalNetIncome} />
             <CalcRow variant='subtract' label='Deducciones y exentas' value={result.totalBenefits} />
             <CalcRow variant='subtotal' label='Renta líquida gravable' value={result.taxableIncome} />
             <CalcRow label='Impuesto sobre la renta' value={result.netIncomeTax} />

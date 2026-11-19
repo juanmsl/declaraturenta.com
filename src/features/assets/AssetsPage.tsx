@@ -48,7 +48,9 @@ export const AssetsPage = () => {
 
   const saveHolding = (draft: HoldingDraft) => {
     if (!editing) return;
-    const item = { ...draft, origin: 'user' as const };
+    // Saving confirms the value: it is the user's from now on and no longer needs review.
+    // Saving confirms the value: it is the user's from now on and no longer needs review.
+    const item = { ...draft, origin: 'user' as const, needsReview: false };
     dispatch({
       type: 'updateData',
       update: data =>
@@ -102,6 +104,13 @@ export const AssetsPage = () => {
         description='Tu patrimonio no paga impuesto de renta, pero la DIAN lo usa para revisar que tus ingresos cuadren con lo que tienes.'
       />
 
+      {assets.some(asset => asset.needsReview) && (
+        <Alert variant='warning' title='Revisa el valor de tu vehículo'>
+          La DIAN reporta su avalúo, pero en la declaración va el costo fiscal: lo que pagaste por él. Tócalo
+          en la lista para corregirlo.
+        </Alert>
+      )}
+
       <HoldingSection
         title='Bienes y derechos'
         addLabel='Agregar un bien'
@@ -116,6 +125,7 @@ export const AssetsPage = () => {
           detail: asset.detail,
           amount: asset.amount,
           origin: asset.origin,
+          needsReview: asset.needsReview === true,
           onEdit: () => {
             setEditing({ type: 'asset', draft: { ...asset }, isNew: false });
           },
@@ -192,6 +202,7 @@ type HoldingRow = {
   detail: string;
   amount: number;
   origin: ValueOrigin;
+  needsReview?: boolean;
   onEdit: () => void;
 };
 
@@ -242,7 +253,9 @@ const HoldingSection = ({
                 {item.detail}
               </Text>
             </span>
-            {item.origin === 'exogenous' ? (
+            {item.needsReview ? (
+              <Chip variant='review'>Revisar</Chip>
+            ) : item.origin === 'exogenous' ? (
               <Chip variant='exogenous'>Desde exógena</Chip>
             ) : (
               <Chip variant='box'>Lo ingresaste tú</Chip>

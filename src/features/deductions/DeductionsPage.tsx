@@ -83,7 +83,7 @@ export const DeductionsPage = () => {
   ];
 
   const capByPercent =
-    Math.round(labor.netIncome * BENEFITS_CAP_RATE) <= uvtToPesos(LABOR_LIMITS_UVT.benefitsCap);
+    Math.round(result.generalNetIncome * BENEFITS_CAP_RATE) <= uvtToPesos(LABOR_LIMITS_UVT.benefitsCap);
 
   const handleContinue = () => {
     dispatch({ type: 'completeStep', step: 'deductions' });
@@ -179,7 +179,7 @@ const DeductionsEstimate = () => {
 
   return (
     <EstimatePanel note={note}>
-      <CalcRow variant='subtotal' label='Renta líquida' value={estimate.labor.netIncome} />
+      <CalcRow variant='subtotal' label='Renta líquida' value={estimate.generalNetIncome} />
       <CalcRow variant='subtract' label='Exentas y deducciones' value={estimate.totalBenefits} />
       <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
       <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />

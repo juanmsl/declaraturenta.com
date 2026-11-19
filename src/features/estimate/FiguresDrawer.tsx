@@ -39,16 +39,31 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
         {estimateIncludesDeductions ? '' : ' Todavía no incluimos tus deducciones.'}
       </Text>
       <div className='flex flex-col'>
-        <CalcRow label={<WithBox label='Ingresos brutos' box={32} />} value={estimate.grossLaborIncome} />
+        <CalcRow
+          label={<WithBox label='Ingresos por tu trabajo' box={32} />}
+          value={estimate.grossLaborIncome}
+        />
+        {estimate.capital.grossIncome > 0 && (
+          <CalcRow
+            label={<WithBox label='Rendimientos financieros' box={58} />}
+            value={estimate.capital.grossIncome}
+          />
+        )}
+        {estimate.nonLabor.grossIncome > 0 && (
+          <CalcRow
+            label={<WithBox label='Otros ingresos' box={74} />}
+            value={estimate.nonLabor.grossIncome}
+          />
+        )}
         <CalcRow
           variant='subtract'
           label={<WithBox label='No constitutivos de renta' box={33} />}
-          value={labor.nonTaxableIncome}
+          value={estimate.grossIncome - estimate.generalNetIncome}
         />
         <CalcRow
           variant='subtotal'
-          label={<WithBox label='Renta líquida' box={34} />}
-          value={labor.netIncome}
+          label={<WithBox label='Renta líquida' box={91} />}
+          value={estimate.generalNetIncome}
         />
         <CalcRow
           variant='subtract'

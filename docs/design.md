@@ -26,6 +26,7 @@ rail and the isotype. No flags or stereotypes.
 | 10 · Móvil · Usa un computador | `23:3012`  | < 1280 px         | Built  |
 | 11 · Página no encontrada      | `61:7844`  | `*`               | Built  |
 | 12 · Error inesperado          | `61:7890`  | error element     | Built  |
+| 05d · Vehículo por revisar     | `71:8118`  | `/patrimonio`     | Built  |
 
 ## Tokens
 
