@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router';
 import { LuArrowRight } from 'react-icons/lu';
 
+import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FLOW_STEPS } from '@/app/flow';
 import { TAX_YEAR } from '@/domain/uvt';
-import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { Button, Text } from '@/shared/ui';
 
 import { ChecklistCard } from './components/ChecklistCard';
@@ -15,7 +15,7 @@ const [firstStep, exogenousStep] = FLOW_STEPS;
 /** Screen 01 · Inicio (Figma node 7:2). */
 export const HomePage = () => {
   const navigate = useNavigate();
-  const taxpayer = sampleTaxpayer;
+  const { taxpayer } = useDeclaration().state;
 
   return (
     <div className='flex flex-col gap-8 px-14 py-12'>

@@ -12,11 +12,9 @@ const SMALL_SCREEN_QUERY = '(max-width: 1279.98px)';
 export const App = () => {
   const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
 
-  if (isSmallScreen) return <UseComputerPage />;
-
   return (
     <DeclarationProvider>
-      <RouterProvider router={router} />
+      {isSmallScreen ? <UseComputerPage /> : <RouterProvider router={router} />}
     </DeclarationProvider>
   );
 };

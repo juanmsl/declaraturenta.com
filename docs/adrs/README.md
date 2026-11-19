@@ -29,3 +29,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0021](./0021-small-screen-view.md)                    | Small-screen view: "Usa un computador" below 1280 px           | Accepted |
 | [0022](./0022-not-found-and-error-pages.md)            | Not-found and error pages                                      | Accepted |
 | [0023](./0023-dian-dependents-and-occasional-gains.md) | Dependents (138–139) and occasional gains rate (127) per DIAN  | Accepted |
+| [0024](./0024-exogenous-xlsx-import.md)                | Reading the DIAN exogenous report (.xlsx)                      | Accepted |

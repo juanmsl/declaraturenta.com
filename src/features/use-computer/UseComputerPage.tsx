@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { LuCalendar, LuDownload, LuFileText, LuHouse, LuLandmark } from 'react-icons/lu';
 
+import { useDeclaration } from '@/app/declaration/declaration-context';
 import laptopBase from '@/assets/illustrations/laptop-base.svg';
 import laptopScreen from '@/assets/illustrations/laptop-screen.svg';
-import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { formatLongDate } from '@/shared/lib/format';
 import { Button, Icon, Logo, Text } from '@/shared/ui';
 
@@ -18,6 +18,7 @@ const COPIED_FEEDBACK_MS = 2000;
 
 /** Screen 10 · Móvil · Usa un computador (Figma 23:3012). Shown below 1280 px (ADR 0021). */
 export const UseComputerPage = () => {
+  const { taxpayer } = useDeclaration().state;
   const link = window.location.origin;
   const displayLink = window.location.host;
   const canShare = typeof navigator.share === 'function';
@@ -111,7 +112,7 @@ export const UseComputerPage = () => {
             <Text variant='note' className='text-fg-warning'>
               Tu fecha límite
             </Text>
-            <Text variant='body-m-strong'>{formatLongDate(sampleTaxpayer.filingDeadline)}</Text>
+            <Text variant='body-m-strong'>{formatLongDate(taxpayer.filingDeadline)}</Text>
           </div>
         </div>
       </main>

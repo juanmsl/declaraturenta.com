@@ -37,6 +37,8 @@ export type Asset = {
   detail: string;
   amount: number;
   origin: ValueOrigin;
+  /** Imported with an informative value the user must check (e.g. a vehicle's appraisal). */
+  needsReview?: boolean;
 };
 
 export type Debt = {
@@ -219,3 +221,24 @@ export const computeDeclaration = (
     amountInFavor: Math.max(0, -balance),
   };
 };
+
+/** A return with nothing filled in, used when the user imports their own exogenous report. */
+export const createEmptyDeclaration = (): DeclarationData => ({
+  general: { filingCount: 'third-or-more', previousYearNetTax: 0, electronicInvoicePurchases: 0 },
+  obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
+  labor: {
+    salaries: 0,
+    concepts: [],
+    otherPayments: 0,
+    nonTaxableIncome: 0,
+    voluntaryContributions: 0,
+    hasIndependentIncome: false,
+  },
+  assets: [],
+  debts: [],
+  deductions: { housingInterestPaid: 0, prepaidHealthPaid: 0, dependents: 0 },
+  withholdings: 0,
+  previousYearAdvance: 0,
+  previousBalanceInFavor: 0,
+  refundPreference: 'refund',
+});

@@ -9,7 +9,7 @@ import { computeDeclaration } from '@/domain/declaration';
 import { BENEFITS_CAP_RATE, LABOR_LIMITS_UVT } from '@/domain/labor-income';
 import { uvtToPesos } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
-import { sampleExogenous } from '@/mocks/sample-exogenous';
+import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, StepHeader, StepLayout, Text } from '@/shared/ui';
 
@@ -45,7 +45,8 @@ export const DeductionsPage = () => {
       amount: labor.housingDeduction,
       colorClass: 'bg-action',
       origin:
-        imported && deductions.housingInterestPaid === sampleExogenous.housingInterest.amount
+        imported &&
+        deductions.housingInterestPaid === reportedTotal(state.exogenous.report, 'housing-interest')
           ? 'exogenous'
           : 'user',
     },
@@ -67,7 +68,7 @@ export const DeductionsPage = () => {
       amount: labor.prepaidHealth,
       colorClass: 'bg-mint',
       origin:
-        imported && deductions.prepaidHealthPaid === sampleExogenous.prepaidHealth.amount
+        imported && deductions.prepaidHealthPaid === reportedTotal(state.exogenous.report, 'prepaid-health')
           ? 'exogenous'
           : 'user',
     },

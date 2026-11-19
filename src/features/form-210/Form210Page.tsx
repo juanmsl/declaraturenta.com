@@ -11,7 +11,6 @@ import type { FilingCount } from '@/domain/advance-payment';
 import { buildForm210, OTHER_SCHEDULES, SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
 import type { Form210, Form210Box } from '@/domain/form-210';
 import { TAX_YEAR } from '@/domain/uvt';
-import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { Alert, BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
 
 import { BoxDetailDrawer } from './BoxDetailDrawer';
@@ -59,7 +58,7 @@ export const Form210Page = () => {
     setIsDownloading(true);
     try {
       const { downloadDraftPdf } = await import('@/features/draft/pdf/download-draft-pdf');
-      await downloadDraftPdf(sampleTaxpayer, state.data, result);
+      await downloadDraftPdf(state.taxpayer, state.data, result);
     } finally {
       setIsDownloading(false);
     }
@@ -91,8 +90,8 @@ export const Form210Page = () => {
         </Button>
         <div className='flex-1' />
         <Text variant='note' className='text-fg-muted'>
-          {sampleTaxpayer.fullName}
-          {sampleTaxpayer.isSample ? ' · datos de ejemplo' : ''}
+          {state.taxpayer.fullName}
+          {state.taxpayer.isSample ? ' · datos de ejemplo' : ''}
         </Text>
         <Button variant='secondary' onClick={() => void handleDownload()} isLoading={isDownloading}>
           Descargar PDF

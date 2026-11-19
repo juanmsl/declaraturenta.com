@@ -6,7 +6,7 @@ import { FLOW_STEPS } from '@/app/flow';
 import type { DeclarationData } from '@/domain/declaration';
 import { TAX_YEAR } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
-import { sampleExogenous } from '@/mocks/sample-exogenous';
+import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency } from '@/shared/lib/format';
 import { detectZeroSlip } from '@/shared/lib/zero-slip';
 import {
@@ -36,7 +36,8 @@ export const IncomePage = () => {
   const employer = labor.concepts[0]?.entity;
   const salariesFromExogenous = labor.concepts.length > 0 && labor.salaries === reportedSalaries;
   const contributionsFromExogenous =
-    labor.concepts.length > 0 && labor.nonTaxableIncome === sampleExogenous.mandatoryContributions;
+    labor.concepts.length > 0 &&
+    labor.nonTaxableIncome === reportedTotal(state.exogenous.report, 'labor-non-taxable');
   const salarySlip = labor.concepts.length > 0 ? detectZeroSlip(labor.salaries, reportedSalaries) : null;
 
   const updateLabor = (patch: Partial<DeclarationData['labor']>) => {

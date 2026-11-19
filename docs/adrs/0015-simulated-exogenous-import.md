@@ -1,6 +1,6 @@
 # 0015. Simulated exogenous import with a local file dropzone
 
-- Status: Accepted
+- Status: Superseded by [0024](./0024-exogenous-xlsx-import.md)
 - Date: 2026-11-19
 
 ## Context

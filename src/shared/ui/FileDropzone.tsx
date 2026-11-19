@@ -17,17 +17,27 @@ type FileDropzoneProps = {
   onFileSelected: (file: File) => void;
   /** When set, shows the selected file instead of the empty drop area. */
   selected?: { name: string; description: string };
+  /** Error found after reading the file (e.g. it is not the expected report). */
+  error?: string | null;
 };
 
 /**
  * Drag-and-drop or click-to-choose file area (dashed card from Figma screen 03).
  * Local component because Polpo's InputFile has fixed English copy (see ADR 0015).
  */
-export const FileDropzone = ({ accept, maxSize, hint, onFileSelected, selected }: FileDropzoneProps) => {
+export const FileDropzone = ({
+  accept,
+  maxSize,
+  hint,
+  onFileSelected,
+  selected,
+  error: externalError = null,
+}: FileDropzoneProps) => {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [pickError, setError] = useState<string | null>(null);
+  const error = pickError ?? externalError;
 
   const pickFile = (file: File | undefined) => {
     if (!file) return;

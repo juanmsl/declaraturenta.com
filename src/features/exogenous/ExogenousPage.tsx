@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { IconType } from 'react-icons';
 import {
   LuArrowRight,
   LuBriefcase,
+  LuCar,
+  LuChartLine,
   LuCircleHelp,
+  LuCoins,
+  LuCreditCard,
   LuHouse,
   LuLandmark,
   LuReceipt,
@@ -12,88 +17,109 @@ import {
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FLOW_STEPS } from '@/app/flow';
-import { applyExogenous, clearExogenous, countReportingEntities } from '@/domain/exogenous';
+import { buildExogenousReport, clearExogenous, countReportingEntities } from '@/domain/exogenous';
+import type { ExogenousItem, ExogenousItemKind } from '@/domain/exogenous';
+import { parseExogenousSheet } from '@/domain/exogenous-file';
 import { TAX_YEAR } from '@/domain/uvt';
-import { sampleExogenous } from '@/mocks/sample-exogenous';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const HOUSING_ITEM_ID = 'housing-interest';
-
-type FoundItem = {
-  id: string;
-  icon: IconType;
-  label: string;
-  entity: string;
-  amount: number;
-  needsConfirmation?: boolean;
-};
 
 const [, , incomeStep] = FLOW_STEPS;
 
-/** Screen 03 · Importar exógena (Figma node 9:448). The upload is simulated with sample data. */
+/** Sections of "Esto encontramos", in order, with the kinds they show. */
+const GROUPS: readonly { title: string; kinds: readonly ExogenousItemKind[] }[] = [
+  { title: 'Ingresos', kinds: ['labor-income', 'capital-income', 'non-labor-income'] },
+  {
+    title: 'Aportes y retenciones',
+    kinds: ['labor-non-taxable', 'other-non-taxable', 'voluntary-pension', 'withholding'],
+  },
+  { title: 'Patrimonio', kinds: ['asset', 'debt'] },
+  {
+    title: 'Deducciones y otros',
+    kinds: ['housing-interest', 'prepaid-health', 'electronic-invoice', 'previous-balance'],
+  },
+];
+
+const ICONS: Record<ExogenousItemKind, IconType> = {
+  'labor-income': LuBriefcase,
+  'labor-non-taxable': LuWallet,
+  'other-non-taxable': LuWallet,
+  'voluntary-pension': LuWallet,
+  withholding: LuReceipt,
+  'capital-income': LuChartLine,
+  'non-labor-income': LuCoins,
+  asset: LuLandmark,
+  debt: LuCreditCard,
+  'housing-interest': LuHouse,
+  'prepaid-health': LuReceipt,
+  'previous-balance': LuReceipt,
+  'electronic-invoice': LuReceipt,
+  informative: LuReceipt,
+};
+
+/** Kinds read from the file that the calculation does not use yet (next delivery, ADR 0024). */
+const NOT_CALCULATED: readonly ExogenousItemKind[] = [
+  'capital-income',
+  'non-labor-income',
+  'other-non-taxable',
+];
+
+const REVIEW_TEXT = {
+  duplicate:
+    'Tu empleador y tu fondo reportaron el mismo aporte voluntario. Lo tomamos una sola vez; confírmalo con tus certificados.',
+  vehicle:
+    'La DIAN reporta el avalúo del vehículo, pero en tu declaración va su costo fiscal (lo que pagaste). Lo podrás corregir en Patrimonio.',
+  housing:
+    'Compara los intereses de vivienda con el certificado de tu banco antes de usarlos como deducción.',
+} as const;
+
+/** Lines with the same kind, concept and entity are shown together (e.g. several CDT yields). */
+const groupItems = (items: readonly ExogenousItem[]): ExogenousItem[] => {
+  const grouped = new Map<string, ExogenousItem>();
+  for (const item of items) {
+    const key = `${item.kind}|${item.label}|${item.entity}`;
+    const current = grouped.get(key);
+    grouped.set(key, current ? { ...current, amount: current.amount + item.amount } : { ...item });
+  }
+  return [...grouped.values()];
+};
+
+/** Screen 03 · Importar exógena (Figma node 9:448). Reads the DIAN .xlsx in the browser (ADR 0024). */
 export const ExogenousPage = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useDeclaration();
-  const { data, exogenous } = state;
-  const report = sampleExogenous;
+  const { exogenous } = state;
+  const { report } = exogenous;
+  const [error, setError] = useState<string | null>(null);
+  const [isReading, setIsReading] = useState(false);
 
-  const bankAccounts = data.assets.filter(
-    asset => asset.origin === 'exogenous' && asset.kind === 'bank-account',
-  );
-  const items: FoundItem[] = [
-    {
-      id: 'labor',
-      icon: LuBriefcase,
-      label: 'Pagos laborales',
-      entity: report.withholdingAgent,
-      amount: data.labor.salaries,
-    },
-    {
-      id: 'withholdings',
-      icon: LuBriefcase,
-      label: 'Retención en la fuente',
-      entity: report.withholdingAgent,
-      amount: data.withholdings,
-    },
-    ...bankAccounts.map(account => ({
-      id: account.id,
-      icon: LuLandmark,
-      label: `Saldo en cuentas al 31 de diciembre`,
-      entity: account.detail,
-      amount: account.amount,
-    })),
-    {
-      id: HOUSING_ITEM_ID,
-      icon: LuHouse,
-      label: 'Intereses del crédito de vivienda',
-      entity: report.housingInterest.entity,
-      amount: data.deductions.housingInterestPaid,
-      needsConfirmation: true,
-    },
-    {
-      id: 'prepaid-health',
-      icon: LuReceipt,
-      label: 'Pagos de medicina prepagada',
-      entity: report.prepaidHealth.entity,
-      amount: data.deductions.prepaidHealthPaid,
-    },
-    {
-      id: 'pension',
-      icon: LuWallet,
-      label: 'Aportes obligatorios a pensión',
-      entity: report.pensionFund,
-      amount: report.pensionContributions,
-    },
-  ];
-  const isConfirmed = (item: FoundItem) =>
-    !item.needsConfirmation || exogenous.confirmedItems.includes(item.id);
-  const pendingItems = items.filter(item => !isConfirmed(item));
+  const visibleItems = report.items.filter(item => item.kind !== 'informative' && item.amount > 0);
+  const informativeCount = report.items.filter(item => item.kind === 'informative').length;
+  const isConfirmed = (item: ExogenousItem) => !item.review || exogenous.confirmedItems.includes(item.id);
+  const pendingItems = visibleItems.filter(item => !isConfirmed(item));
 
-  const handleFile = (file: File) => {
-    dispatch({ type: 'importExogenous', fileName: file.name });
-    dispatch({ type: 'updateData', update: current => applyExogenous(current, report) });
+  const handleFile = async (file: File) => {
+    setError(null);
+    setIsReading(true);
+    try {
+      const { readSheet } = await import('read-excel-file/browser');
+      const parsed = parseExogenousSheet(await readSheet(file));
+      if (parsed.year !== null && parsed.year !== TAX_YEAR) {
+        setError(
+          `Este reporte es del año ${String(parsed.year)}. Descarga el del año gravable ${String(TAX_YEAR)}.`,
+        );
+        return;
+      }
+      dispatch({ type: 'importExogenous', report: buildExogenousReport(parsed, file.name) });
+    } catch {
+      setError(
+        'No pudimos leer este archivo como un reporte de exógena de la DIAN. Descárgalo de nuevo en Excel (.xlsx).',
+      );
+    } finally {
+      setIsReading(false);
+    }
   };
 
   const handleUseData = () => {
@@ -110,6 +136,8 @@ export const ExogenousPage = () => {
     void navigate(incomeStep.path);
   };
 
+  const reviews = [...new Set(pendingItems.map(item => item.review).filter(review => review !== undefined))];
+
   return (
     <StepLayout aside={<DownloadHelpPanel />} className='gap-5 pt-9 pb-11'>
       <StepHeader
@@ -118,15 +146,20 @@ export const ExogenousPage = () => {
       />
 
       <FileDropzone
-        accept='.xlsx,.xls,.pdf'
+        accept='.xlsx'
         maxSize={MAX_FILE_SIZE}
-        hint='Excel (.xlsx) o PDF, como lo descargas de la DIAN.'
-        onFileSelected={handleFile}
+        hint={
+          isReading
+            ? 'Leyendo tu archivo…'
+            : 'Excel (.xlsx), como lo descargas de la DIAN. Se lee en este navegador; no lo enviamos a ningún lado.'
+        }
+        onFileSelected={file => void handleFile(file)}
+        error={error}
         selected={
           exogenous.fileName
             ? {
                 name: exogenous.fileName,
-                description: `Leído · ${countReportingEntities(report)} entidades reportaron ${items.length} datos sobre ti`,
+                description: `Leído · ${String(countReportingEntities(report))} entidades reportaron ${String(visibleItems.length)} datos sobre ti`,
               }
             : undefined
         }
@@ -137,34 +170,63 @@ export const ExogenousPage = () => {
           <Text variant='title-m' as='h2'>
             Esto encontramos
           </Text>
-          <ul className='flex flex-col rounded-lg border border-line bg-surface px-5'>
-            {items.map(item => (
-              <li
-                key={item.id}
-                className='flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0'
-              >
-                <Icon icon={item.icon} size={20} className='text-fg-secondary' />
-                <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-                  <Text variant='body-m-strong'>{item.label}</Text>
-                  <Text variant='note' className='text-fg-muted'>
-                    {item.entity}
-                  </Text>
-                </div>
-                {isConfirmed(item) ? (
-                  <Chip variant='exogenous'>Listo</Chip>
-                ) : (
-                  <Chip variant='review'>Confirma</Chip>
-                )}
-                <Text variant='figure-m' className='w-32.5 shrink-0 text-right'>
-                  {formatCurrency(item.amount)}
+          {GROUPS.map(group => {
+            const items = groupItems(visibleItems.filter(item => group.kinds.includes(item.kind))).sort(
+              (a, b) => group.kinds.indexOf(a.kind) - group.kinds.indexOf(b.kind),
+            );
+            if (items.length === 0) return null;
+            return (
+              <section key={group.title} className='flex flex-col gap-2'>
+                <Text variant='caption' as='h3' className='text-fg-muted'>
+                  {group.title}
                 </Text>
-              </li>
-            ))}
-          </ul>
-          {pendingItems.some(item => item.id === HOUSING_ITEM_ID) && (
-            <Alert variant='info' title='Confirma los intereses de vivienda'>
-              {report.housingInterest.entity} reportó {formatCurrency(data.deductions.housingInterestPaid)}.
-              Compáralo con tu certificado antes de usarlo como deducción.
+                <ul className='flex flex-col rounded-lg border border-line bg-surface px-5'>
+                  {items.map(item => (
+                    <li
+                      key={item.id}
+                      className='flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0'
+                    >
+                      <Icon
+                        icon={item.assetKind === 'vehicle' ? LuCar : ICONS[item.kind]}
+                        size={20}
+                        className='text-fg-secondary'
+                      />
+                      <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
+                        <Text variant='body-m-strong'>{item.label}</Text>
+                        <Text variant='note' className='text-fg-muted'>
+                          {item.entity}
+                        </Text>
+                      </div>
+                      {NOT_CALCULATED.includes(item.kind) ? (
+                        <Chip variant='cap'>Pronto</Chip>
+                      ) : isConfirmed(item) ? (
+                        <Chip variant='exogenous'>Listo</Chip>
+                      ) : (
+                        <Chip variant='review'>Confirma</Chip>
+                      )}
+                      <Text variant='figure-m' className='w-32.5 shrink-0 text-right'>
+                        {formatCurrency(item.amount)}
+                      </Text>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+          {informativeCount > 0 && (
+            <Text variant='note' className='text-fg-muted'>
+              También leímos {informativeCount} datos informativos (movimientos, consumos con tarjeta e
+              inversiones del año) que solo cuentan para saber si debes declarar.
+            </Text>
+          )}
+          {reviews.map(review => (
+            <Alert key={review} variant='info' title='Revisa este dato'>
+              {REVIEW_TEXT[review]}
+            </Alert>
+          ))}
+          {visibleItems.some(item => NOT_CALCULATED.includes(item.kind)) && (
+            <Alert variant='warning' title='Aún no calculamos rendimientos ni otros ingresos'>
+              Los guardamos y los sumaremos a tu declaración en la próxima versión.
             </Alert>
           )}
         </>

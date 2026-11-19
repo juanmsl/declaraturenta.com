@@ -5,7 +5,6 @@ import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FORM_210_PATH } from '@/app/flow';
-import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, Text } from '@/shared/ui';
 
@@ -46,7 +45,7 @@ export const DraftPage = () => {
     setDownloadError(false);
     try {
       const { downloadDraftPdf } = await import('./pdf/download-draft-pdf');
-      await downloadDraftPdf(sampleTaxpayer, state.data, result);
+      await downloadDraftPdf(state.taxpayer, state.data, result);
       dispatch({ type: 'completeStep', step: 'draft-210' });
     } catch {
       setDownloadError(true);
