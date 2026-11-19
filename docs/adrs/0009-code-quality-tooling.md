@@ -9,7 +9,7 @@ The owner wants a development standard from day one.
 
 ## Decision
 
-- ESLint 9 (flat config) with `typescript-eslint` strict + stylistic type-checked rules,
+- ESLint 10 (flat config; upgraded from 9 on 2026-11-19 at the owner's request) with `typescript-eslint` strict + stylistic type-checked rules,
   `react-hooks`, `react-refresh` and `eslint-config-prettier`. ESLint 10 exists, but the owner
   chose v9; npm marks 9.x as deprecated.
 - Prettier with `prettier-plugin-tailwindcss` (single quotes, JSX single quotes, width 110).

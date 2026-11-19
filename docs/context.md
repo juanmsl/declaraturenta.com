@@ -10,7 +10,7 @@ the business model comes last, after the platform is fully functional.
 
 ## Built
 
-- Tooling: pnpm 11.10.0, Vite 8, React 19, TypeScript 6, Tailwind 4, ESLint 9, Prettier, Vitest,
+- Tooling: pnpm 11.10.0, Vite 8, React 19, TypeScript 6, Tailwind 4, ESLint 10, Prettier, Vitest,
   husky + lint-staged + commitlint.
 - Theme: Figma colors, radius and the 12 text styles (`src/styles/index.css`).
 - Screens 01–10 of the flow, 11 · 404 and 12 · error (ADR 0022), local copy 13–13c (ADR 0027) and
@@ -44,7 +44,6 @@ Ask the owner before resolving these.
 - **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
   only in progress" rule; we follow Figma.
 - Business model (last).
-- ESLint 9 is deprecated upstream (the owner chose v9 on purpose).
 
 ## Next steps (proposed)
 

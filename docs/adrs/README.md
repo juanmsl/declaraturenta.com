@@ -14,7 +14,7 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0006](./0006-icons-react-icons-lucide.md)                      | Icons from `react-icons/lu`                                      | Accepted |
 | [0007](./0007-routing-react-router.md)                          | Routing with React Router 8 (library mode)                       | Accepted |
 | [0008](./0008-project-structure-and-language.md)                | Feature-based structure; English code, Spanish UI                | Accepted |
-| [0009](./0009-code-quality-tooling.md)                          | Code quality: ESLint 9, Prettier, Vitest, husky, commitlint      | Accepted |
+| [0009](./0009-code-quality-tooling.md)                          | Code quality: ESLint 10, Prettier, Vitest, husky, commitlint     | Accepted |
 | [0010](./0010-self-hosted-fonts.md)                             | Self-hosted fonts with Fontsource                                | Accepted |
 | [0011](./0011-brand-assets-from-figma.md)                       | Logo as SVG exported from Figma; local progress components       | Accepted |
 | [0012](./0012-tax-engine-in-domain.md)                          | Tax calculation engine in `src/domain`                           | Accepted |
