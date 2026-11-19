@@ -9,10 +9,12 @@ type StatusPageProps = {
   description: string;
   actions: ReactNode;
   note?: string;
+  /** Shown under the note (e.g. download a copy of the data). */
+  extraAction?: ReactNode;
 };
 
 /** Layout of the 404 and error pages (Figma screens 11 and 12): top bar with the logo, centered message. */
-export const StatusPage = ({ eyebrow, title, description, actions, note }: StatusPageProps) => (
+export const StatusPage = ({ eyebrow, title, description, actions, note, extraAction }: StatusPageProps) => (
   <div className='flex min-h-dvh min-w-7xl flex-col bg-canvas'>
     <header className='flex h-18 shrink-0 items-center border-b border-line bg-surface px-30'>
       <a
@@ -39,6 +41,7 @@ export const StatusPage = ({ eyebrow, title, description, actions, note }: Statu
             {note}
           </Text>
         )}
+        {extraAction && <div>{extraAction}</div>}
       </div>
     </main>
   </div>

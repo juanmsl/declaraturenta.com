@@ -11,22 +11,25 @@ rail and the isotype. No flags or stereotypes.
 
 ## Screens
 
-| Screen                         | Figma node | Route             | Status |
-| ------------------------------ | ---------- | ----------------- | ------ |
-| 01 · Inicio                    | `7:2`      | `/`               | Built  |
-| 02 · ¿Debo declarar?           | `7:350`    | `/debo-declarar`  | Built  |
-| 03 · Importar exógena          | `9:448`    | `/exogena`        | Built  |
-| 04 · Ingresos                  | `9:783`    | `/ingresos`       | Built  |
-| 05 · Patrimonio                | `14:1386`  | `/patrimonio`     | Built  |
-| 06 · Deducciones y exentas     | `10:871`   | `/deducciones`    | Built  |
-| 07 · Resultado                 | `10:1188`  | `/resultado`      | Built  |
-| 08 · Borrador 210              | `11:1213`  | `/borrador-210`   | Built  |
-| 09 · Formulario 210            | `18:1572`  | `/formulario-210` | Built  |
-| 09b · Detalle casilla 32       | `19:2267`  | `?casilla=N`      | Built  |
-| 10 · Móvil · Usa un computador | `23:3012`  | < 1280 px         | Built  |
-| 11 · Página no encontrada      | `61:7844`  | `*`               | Built  |
-| 12 · Error inesperado          | `61:7890`  | error element     | Built  |
-| 05d · Vehículo por revisar     | `71:8118`  | `/patrimonio`     | Built  |
+| Screen                                | Figma node | Route             | Status |
+| ------------------------------------- | ---------- | ----------------- | ------ |
+| 01 · Inicio                           | `7:2`      | `/`               | Built  |
+| 02 · ¿Debo declarar?                  | `7:350`    | `/debo-declarar`  | Built  |
+| 03 · Importar exógena                 | `9:448`    | `/exogena`        | Built  |
+| 04 · Ingresos                         | `9:783`    | `/ingresos`       | Built  |
+| 05 · Patrimonio                       | `14:1386`  | `/patrimonio`     | Built  |
+| 06 · Deducciones y exentas            | `10:871`   | `/deducciones`    | Built  |
+| 07 · Resultado                        | `10:1188`  | `/resultado`      | Built  |
+| 08 · Borrador 210                     | `11:1213`  | `/borrador-210`   | Built  |
+| 09 · Formulario 210                   | `18:1572`  | `/formulario-210` | Built  |
+| 09b · Detalle casilla 32              | `19:2267`  | `?casilla=N`      | Built  |
+| 10 · Móvil · Usa un computador        | `23:3012`  | < 1280 px         | Built  |
+| 11 · Página no encontrada             | `61:7844`  | `*`               | Built  |
+| 12 · Error inesperado                 | `61:7890`  | error element     | Built  |
+| 05d · Vehículo por revisar            | `71:8118`  | `/patrimonio`     | Built  |
+| 13 · Copia local · Menú               | `73:8236`  | top bar           | Built  |
+| 13b · Copia local · Reemplazar datos  | `73:8370`  | dialog            | Built  |
+| 13c · Copia local · Archivo no válido | `73:8506`  | dialog            | Built  |
 
 ## Tokens
 

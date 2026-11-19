@@ -1,6 +1,8 @@
 import { LuArrowRight, LuCircleAlert } from 'react-icons/lu';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
 
+import { downloadBackup } from '@/app/declaration/backup';
+import { useDeclaration } from '@/app/declaration/declaration-context';
 import { Button, Chip } from '@/shared/ui';
 
 import { NotFoundPage } from './NotFoundPage';
@@ -12,6 +14,7 @@ import { StatusPage } from './StatusPage';
  */
 export const ErrorPage = () => {
   const error = useRouteError();
+  const { state } = useDeclaration();
 
   if (isRouteErrorResponse(error) && error.status === 404) return <NotFoundPage />;
 
@@ -43,6 +46,17 @@ export const ErrorPage = () => {
             Ir al inicio
           </Button>
         </>
+      }
+      note='Si el problema sigue, descarga una copia de tus datos antes de cerrar.'
+      extraAction={
+        <Button
+          variant='secondary'
+          onClick={() => {
+            downloadBackup(state);
+          }}
+        >
+          Descargar copia de mis datos
+        </Button>
       }
     />
   );

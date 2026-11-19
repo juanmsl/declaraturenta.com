@@ -55,6 +55,7 @@ export type DeclarationAction =
   | { type: 'importExogenous'; report: ExogenousReport }
   | { type: 'confirmExogenousItem'; itemId: string }
   | { type: 'toggleSchedule'; scheduleId: string }
+  | { type: 'restore'; state: DeclarationState }
   | { type: 'reset' };
 
 /** An action stamped with the time it was dispatched, so the reducer stays pure. */
@@ -100,6 +101,8 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
           : [...state.activeSchedules, action.scheduleId],
         savedAt: action.at,
       };
+    case 'restore':
+      return { ...action.state, savedAt: action.at };
     case 'reset':
       return createInitialState();
   }

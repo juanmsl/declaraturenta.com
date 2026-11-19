@@ -6,6 +6,7 @@ import { Braid, Button, Icon, Text } from '@/shared/ui';
 
 import { useDeclaration } from '../declaration/declaration-context';
 
+import { CopyMenu } from './CopyMenu';
 import type { StepProgress } from './useFlowProgress';
 
 type TopBarProps = {
@@ -36,6 +37,7 @@ export const TopBar = ({ location, steps }: TopBarProps) => {
           </Text>
         </div>
       )}
+      <CopyMenu />
       <Button variant='ghost' type='button' className='shrink-0'>
         Ayuda
       </Button>

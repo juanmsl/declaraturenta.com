@@ -5,6 +5,7 @@ export * from './BraidSegment';
 export * from './Button';
 export * from './CalcRow';
 export * from './Chip';
+export * from './Dialog';
 export * from './Diamond';
 export * from './Drawer';
 export * from './FileDropzone';
