@@ -27,9 +27,7 @@ export const TopBar = ({ location, steps }: TopBarProps) => {
       <Text variant='caption' className='shrink-0 text-fg-secondary'>
         {location}
       </Text>
-      <div className='min-w-0'>
-        <Braid states={steps.map(step => step.state)} label={`Progreso de tu declaración: ${location}`} />
-      </div>
+      <Braid states={steps.map(step => step.state)} label={`Progreso de tu declaración: ${location}`} />
       <div className='min-w-2.5 flex-1' />
       {state.savedAt && (
         <div className='flex shrink-0 items-center gap-1.5' role='status'>

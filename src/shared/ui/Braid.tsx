@@ -1,4 +1,6 @@
-import { BraidSegment } from './BraidSegment';
+import { cn } from 'polpo/helpers';
+
+import { Diamond } from './Diamond';
 import type { ProgressState } from './Diamond';
 
 type BraidProps = {
@@ -7,7 +9,10 @@ type BraidProps = {
   label: string;
 };
 
-/** The "trenza": one woven segment per flow section. */
+/**
+ * The compact "trenza" (Figma "Trenza/Paso"): one diamond per flow step joined by a thread.
+ * The thread after a completed step is sun; the rest is the base line.
+ */
 export const Braid = ({ states, label }: BraidProps) => {
   const completed = states.filter(state => state === 'done').length;
 
@@ -18,10 +23,15 @@ export const Braid = ({ states, label }: BraidProps) => {
       aria-valuemin={0}
       aria-valuemax={states.length}
       aria-valuenow={completed}
-      className='flex items-center gap-1 overflow-clip'
+      className='flex items-center'
     >
       {states.map((state, index) => (
-        <BraidSegment key={index} state={state} />
+        <div key={index} className='flex items-center'>
+          <Diamond state={state} />
+          {index < states.length - 1 && (
+            <span aria-hidden className={cn('h-0.5 w-4', state === 'done' ? 'bg-sun' : 'bg-line')} />
+          )}
+        </div>
       ))}
     </div>
   );
