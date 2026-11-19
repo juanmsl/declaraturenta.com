@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router';
 
 import { AssetsPage } from '@/features/assets/AssetsPage';
 import { DeductionsPage } from '@/features/deductions/DeductionsPage';
+import { DraftPage } from '@/features/draft/DraftPage';
 import { ExogenousPage } from '@/features/exogenous/ExogenousPage';
 import { HomePage } from '@/features/home/HomePage';
 import { IncomePage } from '@/features/income/IncomePage';
@@ -9,18 +10,8 @@ import { ResultPage } from '@/features/result/ResultPage';
 import { ShouldFilePage } from '@/features/should-file/ShouldFilePage';
 import { StepPlaceholderPage } from '@/features/step-placeholder/StepPlaceholderPage';
 
-import { FLOW_STEPS } from './flow';
-import type { FlowStepId } from './flow';
+import { FORM_210_PATH } from './flow';
 import { AppLayout } from './layout/AppLayout';
-
-const BUILT_STEPS = new Set<FlowStepId>([
-  'should-file',
-  'exogenous',
-  'income',
-  'assets',
-  'deductions',
-  'result',
-]);
 
 export const router = createBrowserRouter([
   {
@@ -34,11 +25,9 @@ export const router = createBrowserRouter([
       { path: 'patrimonio', element: <AssetsPage /> },
       { path: 'deducciones', element: <DeductionsPage /> },
       { path: 'resultado', element: <ResultPage /> },
-      // Screens not built yet render a placeholder so navigation works end to end.
-      ...FLOW_STEPS.filter(step => !BUILT_STEPS.has(step.id)).map(step => ({
-        path: step.path.slice(1),
-        element: <StepPlaceholderPage step={step} />,
-      })),
+      { path: 'borrador-210', element: <DraftPage /> },
     ],
   },
+  // Screen 09 has its own layout (no side rail). Placeholder until it is built.
+  { path: FORM_210_PATH, element: <StepPlaceholderPage title='Formulario 210' /> },
 ]);

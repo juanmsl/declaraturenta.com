@@ -80,3 +80,6 @@ export const FLOW_STEPS = [
 
 export const findStepByPath = (pathname: string): FlowStep | undefined =>
   FLOW_STEPS.find(step => pathname === step.path || pathname.startsWith(`${step.path}/`));
+
+/** Full Formulario 210 view (screen 09). `?casilla=N` opens the detail of box N (screen 09b). */
+export const FORM_210_PATH = '/formulario-210';

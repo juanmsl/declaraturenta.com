@@ -32,4 +32,16 @@ describe('computeDeclaration', () => {
     });
     expect(result.grossLaborIncome).toBe(182_000_000);
   });
+
+  it('applies box 28 and box 139 with their caps', () => {
+    const result = computeDeclaration({
+      ...sampleDeclaration,
+      general: { ...sampleDeclaration.general, electronicInvoicePurchases: 20_000_000 },
+      deductions: { ...sampleDeclaration.deductions, additionalDependents: 6 },
+    });
+    expect(result.electronicInvoiceDeduction).toBe(11_951_760);
+    expect(result.dependentsAddition).toBe(14_342_112);
+    expect(result.totalBenefits).toBe(65_520_000 + 11_951_760 + 14_342_112);
+    expect(result.taxableIncome).toBe(163_800_000 - result.totalBenefits);
+  });
 });

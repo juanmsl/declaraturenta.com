@@ -27,7 +27,8 @@ Imports use the `@/` alias for `src/`. Features may import from `app/flow`, `sha
 
 React Router 8 in library mode (`createBrowserRouter` + `RouterProvider` from `react-router/dom`).
 All screens render inside `AppLayout`. Paths are user-facing, so they are in Spanish and come from
-`FLOW_STEPS` in `src/app/flow.ts`. Screens not built yet render `StepPlaceholderPage`.
+`FLOW_STEPS` in `src/app/flow.ts`. The full Formulario 210 (`/formulario-210`, screen 09) lives outside `AppLayout` because it has
+its own layout; `?casilla=N` opens the detail of box N (screen 09b).
 
 ## State
 

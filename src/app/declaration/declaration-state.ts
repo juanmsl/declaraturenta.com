@@ -21,7 +21,8 @@ export type DeclarationState = {
   savedAt: string | null;
 };
 
-export const STATE_VERSION = 1;
+/** Bump when `DeclarationState` changes shape; older saved states fall back to the initial one. */
+export const STATE_VERSION = 2;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,

@@ -178,7 +178,7 @@ const DeductionsEstimate = () => {
   return (
     <EstimatePanel note={note}>
       <CalcRow variant='subtotal' label='Renta líquida' value={estimate.labor.netIncome} />
-      <CalcRow variant='subtract' label='Beneficios con tope' value={estimate.labor.cappedBenefits} />
+      <CalcRow variant='subtract' label='Beneficios con tope' value={estimate.totalBenefits} />
       <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
       <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />
       <CalcRow variant='subtract' label='Retenciones' value={estimate.withholdings} />

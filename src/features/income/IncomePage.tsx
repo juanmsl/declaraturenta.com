@@ -167,7 +167,7 @@ const IncomeEstimate = () => {
             ? 'Deducciones y exentas (tope 40 %)'
             : 'Renta exenta del 25 % (tope 790 UVT)'
         }
-        value={estimate.labor.cappedBenefits}
+        value={estimate.totalBenefits}
       />
       <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
       <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />

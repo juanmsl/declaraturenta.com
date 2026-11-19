@@ -6,7 +6,13 @@ import { computeTableTax } from './income-tax-table';
 import type { TableTax } from './income-tax-table';
 import { computeLaborIncome } from './labor-income';
 import type { LaborIncomeResult } from './labor-income';
-import { UVT_2025 } from './uvt';
+import { UVT_2025, uvtToPesos } from './uvt';
+
+/** Box 28 cap: 1 % of purchases with electronic invoice, up to 240 UVT (art. 336 E.T.). */
+export const ELECTRONIC_INVOICE_CAP_UVT = 240;
+/** Box 139: 72 UVT per dependent, up to 4 (art. 336 E.T.). Boxes 77–139 still to validate. */
+export const ADDITIONAL_DEPENDENT_UVT = 72;
+export const MAX_ADDITIONAL_DEPENDENTS = 4;
 
 /** Where a value comes from: the DIAN exogenous report, the user, or our calculation. */
 export type ValueOrigin = 'exogenous' | 'user';
@@ -46,7 +52,7 @@ export type DeclarationData = {
     filingCount: FilingCount;
     /** Impuesto neto de renta of last year's return. */
     previousYearNetTax: number;
-    /** 1 % of purchases with electronic invoice. Captured but not applied yet (rule to confirm). */
+    /** Box 28: 1 % of purchases backed by electronic invoices (capped at 240 UVT). */
     electronicInvoicePurchases: number;
   };
   /** Values only used by the filing obligation test, taken from the exogenous report. */
@@ -74,6 +80,8 @@ export type DeclarationData = {
     housingInterestPaid: number;
     prepaidHealthPaid: number;
     hasDependent: boolean;
+    /** Box 138: dependents for the additional 72 UVT each (box 139). Rule to validate. */
+    additionalDependents: number;
   };
   /** Withholdings of the taxable year (box 132). */
   withholdings: number;
@@ -92,6 +100,12 @@ export type DeclarationResult = {
   /** Box 32: salaries + other labor payments. */
   grossLaborIncome: number;
   labor: LaborIncomeResult;
+  /** Box 28 after its cap. */
+  electronicInvoiceDeduction: number;
+  /** Box 139: 72 UVT per additional dependent, up to 4. */
+  dependentsAddition: number;
+  /** Box 92: exempt income and deductions that reduce net income. */
+  totalBenefits: number;
   /** Renta líquida gravable (boxes 97 and 111). */
   taxableIncome: number;
   tableTax: TableTax;
@@ -148,7 +162,21 @@ export const computeDeclaration = (
     uvtValue,
   );
 
-  const taxableIncome = labor.ordinaryNetIncome;
+  const electronicInvoiceDeduction = includeDeductions
+    ? Math.min(
+        Math.max(0, data.general.electronicInvoicePurchases),
+        uvtToPesos(ELECTRONIC_INVOICE_CAP_UVT, uvtValue),
+      )
+    : 0;
+  const dependentsAddition = includeDeductions
+    ? uvtToPesos(
+        Math.min(Math.max(0, Math.floor(data.deductions.additionalDependents)), MAX_ADDITIONAL_DEPENDENTS) *
+          ADDITIONAL_DEPENDENT_UVT,
+        uvtValue,
+      )
+    : 0;
+  const totalBenefits = labor.cappedBenefits + electronicInvoiceDeduction + dependentsAddition;
+  const taxableIncome = Math.max(0, labor.netIncome - totalBenefits);
   const tableTax = computeTableTax(taxableIncome, uvtValue);
   const netIncomeTax = tableTax.tax;
   const taxDue = netIncomeTax;
@@ -170,6 +198,9 @@ export const computeDeclaration = (
     netAssets: Math.max(0, grossAssets - totalDebts),
     grossLaborIncome,
     labor,
+    electronicInvoiceDeduction,
+    dependentsAddition,
+    totalBenefits,
     taxableIncome,
     tableTax,
     netIncomeTax,

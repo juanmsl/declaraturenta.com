@@ -31,7 +31,8 @@ Figma screens 04 and 05.
 ## Consequences
 
 - Not modeled yet (all zero for the sample taxpayer): limits on voluntary AFC/FVP/AVC
-  contributions, the 1 % electronic invoice deduction, independent workers, pensions, capital,
+  contributions, independent workers, pensions, capital,
   non-labor income, dividends, occasional gains, tax discounts and penalties.
 - Boxes 77–139 of the 210 are still unverified against the official DIAN PDF.
+- Boxes 28 and 139 were added later (ADR 0019).
 - Any new rule needs a source (article) in its doc comment and tests.

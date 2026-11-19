@@ -61,8 +61,8 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
           value={labor.totalDeductions}
         />
         <CalcRow
-          label={<WithBox label='Exentas y deducciones con tope' box={41} />}
-          value={labor.cappedBenefits}
+          label={<WithBox label='Exentas y deducciones con tope' box={92} />}
+          value={estimate.totalBenefits}
         />
         <CalcRow
           variant='subtotal'

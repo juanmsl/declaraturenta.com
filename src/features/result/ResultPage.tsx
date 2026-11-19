@@ -96,7 +96,7 @@ export const ResultPage = () => {
             <CalcRow
               variant='subtract'
               label='Deducciones y exentas (tope 40 %)'
-              value={labor.cappedBenefits}
+              value={result.totalBenefits}
             />
             <CalcRow variant='subtotal' label='Renta líquida gravable' value={result.taxableIncome} />
             <CalcRow label='Impuesto sobre la renta' value={result.netIncomeTax} />
