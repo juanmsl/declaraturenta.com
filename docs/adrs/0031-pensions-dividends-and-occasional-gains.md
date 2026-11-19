@@ -30,7 +30,9 @@ Engine in `src/domain/other-schedules.ts`, pure functions with tests:
   1.625 UVT, personal effects of the deceased fully, home sale 5.000 UVT of the gain only if the
   money went to AFC or to that home's mortgage; lotteries, other asset sales and other gains have
   no exemption. 114 never exceeds 112 − 113. 127 = 20 % of lotteries + 15 % of the rest.
-- Filing test 1 adds pensions and dividends to the gross income; occasional gains are not added.
+- Filing test 1 (1.400 UVT of gross income) adds pensions, dividends and occasional gains. The
+  owner confirmed that occasional gains count in full, exempt part included (arts. 26 and 592
+  E.T.).
 - **State version 8** adds `pensions`, `dividends` and `occasionalGains` to the data. A version 7
   state or copy is migrated with the schedules empty (`migrateState`), instead of being discarded.
 
@@ -39,5 +41,4 @@ Engine in `src/domain/other-schedules.ts`, pure functions with tests:
 - Simplifications to tell the person in the screens: caps of inheritances apply once per kind for
   the person declaring (we do not split an estate between heirs), and the 2.ª subcédula uses the
   general 35 % rate (the DIAN portal allows other art. 240 rates).
-- Whether occasional gains count for the 1.400 UVT income test is to be confirmed with the owner.
 - The screens (Ingresos sections, Formulario 210, Resultado, borrador) are the next step.

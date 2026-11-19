@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeDeclaration } from './declaration';
+import { computeDeclaration, createEmptyDeclaration } from './declaration';
 import { computeDividends, computeOccasionalGains, computePensions } from './other-schedules';
 import type { DividendConcept, OccasionalGainConcept } from './other-schedules';
 import { UVT_2025 } from './uvt';
@@ -144,7 +144,18 @@ describe('other schedules in the return', () => {
     expect(result.tableBase).toBe(base.taxableIncome + 10_000_000 + 20_000_000);
     expect(result.occasionalGainsTax).toBe(1_000_000);
     expect(result.taxDue).toBe(result.netIncomeTax + 1_000_000);
-    expect(result.grossIncome).toBe(base.grossIncome + 30_000_000);
+    // Pensions, dividends and occasional gains all count for the 1.400 UVT test.
+    expect(result.grossIncome).toBe(base.grossIncome + 30_000_000 + 5_000_000);
+  });
+
+  it('makes a person file because of an inheritance alone', () => {
+    const result = computeDeclaration({
+      ...createEmptyDeclaration(),
+      occasionalGains: { concepts: [gain('inherited-home', 100_000_000)] },
+    });
+    // The whole inheritance is exempt, but it still counts as gross income for filing.
+    expect(result.occasionalGainsTax).toBe(0);
+    expect(result.obligation.tests.find(test => test.id === 'grossIncome')?.exceeds).toBe(true);
   });
 
   it('keeps the sample taxpayer unchanged', () => {

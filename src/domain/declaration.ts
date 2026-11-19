@@ -204,7 +204,10 @@ export type DeclarationResult = {
   pensions: PensionResult;
   dividends: DividendResult;
   occasionalGains: OccasionalGainsResult;
-  /** Gross income of the general, pensions and dividends schedules (filing test 1). */
+  /**
+   * Gross income of the year for filing test 1: every schedule plus occasional gains (box 112,
+   * exempt part included), as arts. 26 and 592 E.T. add ordinary and extraordinary income.
+   */
   grossIncome: number;
   /** Gross income of the general schedule: 32 + 43 + 58 + 74. */
   generalGrossIncome: number;
@@ -387,7 +390,8 @@ const computeWithFeesOption = (
     dividends.until2016 +
     dividends.firstSubcedule +
     dividends.secondSubcedule +
-    dividends.foreign;
+    dividends.foreign +
+    occasionalGains.grossIncome;
   const laborNetIncome = Math.max(0, grossLaborIncome - laborNonTaxableIncome);
   const generalNetIncome = laborNetIncome + fees.netIncome + capital.netIncome + nonLabor.netIncome;
   const benefitsCapBase = Math.max(

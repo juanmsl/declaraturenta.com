@@ -158,7 +158,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: 'Conceptos',
     question: '¿Cómo sé si debo declarar?',
     answer:
-      'Debes declarar si en 2025 superaste uno de estos topes: patrimonio bruto mayor a 4.500 UVT ($ 224.095.500), ingresos brutos de 1.400 UVT ($ 69.718.600) o más, o consumos con tarjeta, compras o consignaciones mayores a 1.400 UVT.',
+      'Debes declarar si en 2025 superaste uno de estos topes: patrimonio bruto mayor a 4.500 UVT ($ 224.095.500), ingresos brutos de 1.400 UVT ($ 69.718.600) o más (cuentan también herencias, loterías y otras ganancias ocasionales, aunque estén exentas), o consumos con tarjeta, compras o consignaciones mayores a 1.400 UVT.',
     keywords: 'topes obligado declarar patrimonio ingresos tarjeta consignaciones',
   },
   {

@@ -41,7 +41,6 @@ Ask the owner before resolving these.
   pensions, dividends and occasional gains are calculated (ADRs 0031–0033). Not calculated: exempt
   income and deductions of capital and non-labor income, loss compensations, renta presuntiva,
   donations and foreign taxes (boxes stay at 0 with a notice).
-- **To confirm**: whether occasional gains count for the 1.400 UVT income test (today they do not).
 - **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
   only in progress" rule; we follow Figma.
 - Business model (last).
@@ -49,5 +48,4 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Confirm with the owner whether occasional gains count for the 1.400 UVT income test.
-2. Exempt income and deductions of capital and non-labor income, loss compensations and donations.
+1. Exempt income and deductions of capital and non-labor income, loss compensations and donations.
