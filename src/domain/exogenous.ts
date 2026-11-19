@@ -1,4 +1,4 @@
-import type { Asset, AssetKind, DeclarationData, Debt, LaborConcept } from './declaration';
+import type { Asset, AssetKind, DeclarationData, Debt, IncomeConcept, LaborConcept } from './declaration';
 import type { ExogenousFile, ExogenousLine } from './exogenous-file';
 
 /**
@@ -223,6 +223,22 @@ const mergeConcepts = (current: LaborConcept[], reported: LaborConcept[]): Labor
 
 const ELECTRONIC_INVOICE_RATE = 0.01;
 
+const conceptsOf = (
+  items: readonly ExogenousItem[],
+  kind: ExogenousItemKind,
+  financial = false,
+): IncomeConcept[] =>
+  items
+    .filter(item => item.kind === kind)
+    .map(item => ({
+      id: item.id,
+      label: item.label,
+      entity: item.entity,
+      amount: item.amount,
+      origin: 'exogenous' as const,
+      ...(financial ? { financial: true } : {}),
+    }));
+
 /** Prefills the return with the report. Values the user entered or changed are kept. */
 export const applyExogenous = (data: DeclarationData, report: ExogenousReport): DeclarationData => {
   const { items } = report;
@@ -259,8 +275,25 @@ export const applyExogenous = (data: DeclarationData, report: ExogenousReport): 
       origin: 'exogenous',
     }));
 
+  // Independent pension contributions go to the schedule with income: capital, else non-labor
+  // (the DIAN suggests 44 / 59 / 76; fees income is not modeled yet).
+  const independentContributions = sumOf(items, 'other-non-taxable');
+  const capitalConcepts = mergeConcepts(data.capital.concepts, conceptsOf(items, 'capital-income', true));
+  const nonLaborConcepts = mergeConcepts(data.nonLabor.concepts, conceptsOf(items, 'non-labor-income'));
+  const toCapital = capitalConcepts.length > 0 || nonLaborConcepts.length === 0;
+
   return {
     ...data,
+    capital: {
+      ...data.capital,
+      concepts: capitalConcepts,
+      independentContributions: toCapital ? independentContributions : 0,
+    },
+    nonLabor: {
+      ...data.nonLabor,
+      concepts: nonLaborConcepts,
+      independentContributions: toCapital ? 0 : independentContributions,
+    },
     general: {
       ...data.general,
       electronicInvoicePurchases: Math.round(sumOf(items, 'electronic-invoice') * ELECTRONIC_INVOICE_RATE),
@@ -295,6 +328,16 @@ export const clearExogenous = (data: DeclarationData): DeclarationData => ({
   general: { ...data.general, electronicInvoicePurchases: 0 },
   obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
   labor: { ...data.labor, concepts: [], salaries: 0, nonTaxableIncome: 0, voluntaryContributions: 0 },
+  capital: {
+    ...data.capital,
+    concepts: data.capital.concepts.filter(c => c.origin === 'user'),
+    independentContributions: 0,
+  },
+  nonLabor: {
+    ...data.nonLabor,
+    concepts: data.nonLabor.concepts.filter(c => c.origin === 'user'),
+    independentContributions: 0,
+  },
   assets: data.assets.filter(asset => asset.origin === 'user'),
   debts: data.debts.filter(debt => debt.origin === 'user'),
   deductions: { ...data.deductions, housingInterestPaid: 0, prepaidHealthPaid: 0 },

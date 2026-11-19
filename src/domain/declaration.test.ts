@@ -56,3 +56,61 @@ describe('computeDeclaration', () => {
     expect(result.taxableIncome).toBe(163_800_000 - result.totalBenefits);
   });
 });
+
+describe('capital and non-labor income', () => {
+  const withOtherIncome = {
+    ...sampleDeclaration,
+    capital: {
+      concepts: [
+        {
+          id: 'cdt',
+          label: 'CDT',
+          entity: 'Banco',
+          amount: 10_000_000,
+          origin: 'exogenous' as const,
+          financial: true,
+        },
+        { id: 'rent', label: 'Otro', entity: 'X', amount: 2_000_000, origin: 'user' as const },
+      ],
+      independentContributions: 1_000,
+      costs: 0,
+    },
+    nonLabor: {
+      concepts: [
+        {
+          id: 'other',
+          label: 'Otros ingresos',
+          entity: 'Y',
+          amount: 3_000_000,
+          origin: 'exogenous' as const,
+        },
+      ],
+      returns: 0,
+      independentContributions: 0,
+      costs: 500_000,
+    },
+  };
+
+  it('removes the inflationary component (55,43 %) only from financial yields', () => {
+    const result = computeDeclaration(withOtherIncome);
+    expect(result.capital.grossIncome).toBe(12_000_000);
+    expect(result.capital.inflationComponent).toBe(5_543_000);
+    expect(result.capital.nonTaxableIncome).toBe(5_544_000);
+    expect(result.capital.netIncome).toBe(6_456_000);
+    expect(result.nonLabor.netIncome).toBe(2_500_000);
+  });
+
+  it('adds every schedule to box 91 and to the filing test', () => {
+    const result = computeDeclaration(withOtherIncome);
+    expect(result.generalNetIncome).toBe(163_800_000 + 6_456_000 + 2_500_000);
+    expect(result.grossIncome).toBe(180_000_000 + 12_000_000 + 3_000_000);
+  });
+
+  it('applies the 40 % cap to the whole general schedule', () => {
+    const result = computeDeclaration(withOtherIncome);
+    // 40 % of the whole schedule is above 1.340 UVT, so the UVT limit applies.
+    expect(Math.round(result.generalNetIncome * 0.4)).toBeGreaterThan(66_730_660);
+    expect(result.labor.benefitsCap).toBe(66_730_660);
+    expect(result.taxableIncome).toBe(result.generalNetIncome - result.totalBenefits);
+  });
+});

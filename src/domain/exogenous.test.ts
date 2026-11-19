@@ -89,3 +89,25 @@ describe('buildExogenousReport', () => {
     expect(data.previousBalanceInFavor).toBe(250_000);
   });
 });
+
+describe('capital and non-labor from the report', () => {
+  const report = buildExogenousReport(parseExogenousSheet(exogenousSheetFixture), 'exogena.xlsx');
+
+  it('fills rentas de capital as financial yields and rentas no laborales', () => {
+    const data = applyExogenous(createEmptyDeclaration(), report);
+    expect(data.capital.concepts.map(concept => [concept.amount, concept.financial])).toEqual([
+      [500_000, true],
+      [500_000, true],
+    ]);
+    expect(data.nonLabor.concepts.map(concept => concept.amount)).toEqual([500_000]);
+    const result = computeDeclaration(data);
+    expect(result.capital.inflationComponent).toBe(554_300);
+    expect(result.capital.netIncome).toBe(445_700);
+  });
+
+  it('clears reported capital and non-labor income', () => {
+    const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report));
+    expect(cleared.capital.concepts).toEqual([]);
+    expect(cleared.nonLabor.concepts).toEqual([]);
+  });
+});

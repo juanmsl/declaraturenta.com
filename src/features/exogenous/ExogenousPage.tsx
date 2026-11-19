@@ -59,13 +59,6 @@ const ICONS: Record<ExogenousItemKind, IconType> = {
   informative: LuReceipt,
 };
 
-/** Kinds read from the file that the calculation does not use yet (next delivery, ADR 0024). */
-const NOT_CALCULATED: readonly ExogenousItemKind[] = [
-  'capital-income',
-  'non-labor-income',
-  'other-non-taxable',
-];
-
 const REVIEW_TEXT = {
   duplicate:
     'Tu empleador y tu fondo reportaron el mismo aporte voluntario. Lo tomamos una sola vez; confírmalo con tus certificados.',
@@ -197,9 +190,7 @@ export const ExogenousPage = () => {
                           {item.entity}
                         </Text>
                       </div>
-                      {NOT_CALCULATED.includes(item.kind) ? (
-                        <Chip variant='cap'>Pronto</Chip>
-                      ) : isConfirmed(item) ? (
+                      {isConfirmed(item) ? (
                         <Chip variant='exogenous'>Listo</Chip>
                       ) : (
                         <Chip variant='review'>Confirma</Chip>
@@ -224,11 +215,6 @@ export const ExogenousPage = () => {
               {REVIEW_TEXT[review]}
             </Alert>
           ))}
-          {visibleItems.some(item => NOT_CALCULATED.includes(item.kind)) && (
-            <Alert variant='warning' title='Aún no calculamos rendimientos ni otros ingresos'>
-              Los guardamos y los sumaremos a tu declaración en la próxima versión.
-            </Alert>
-          )}
         </>
       )}
 

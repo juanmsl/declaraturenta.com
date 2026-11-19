@@ -17,8 +17,8 @@ export const MAX_ADDITIONAL_DEPENDENTS = 4;
 /** Where a value comes from: the DIAN exogenous report, the user, or our calculation. */
 export type ValueOrigin = 'exogenous' | 'user';
 
-/** One labor payment that adds up to box 32 (e.g. salary, bonus). */
-export type LaborConcept = {
+/** One income line that adds up to a gross income box (e.g. salary, CDT yields). */
+export type IncomeConcept = {
   id: string;
   label: string;
   entity: string;
@@ -26,7 +26,18 @@ export type LaborConcept = {
   origin: ValueOrigin;
   /** What the exogenous report said, when the user changed it. */
   exogenousAmount?: number;
+  /** Financial yields (interest, CDT, funds): part of them is not income (box 59). */
+  financial?: boolean;
 };
+
+/** One labor payment that adds up to box 32 (e.g. salary, bonus). */
+export type LaborConcept = IncomeConcept;
+
+/**
+ * Inflationary component of financial yields for taxable year 2025: 55,43 % is not income for
+ * people not required to keep books (art. 40-1 E.T., Decreto 0898 de 2026).
+ */
+export const INFLATION_COMPONENT_RATE = 0.5543;
 
 export type AssetKind = 'real-estate' | 'bank-account' | 'vehicle' | 'investment' | 'other';
 
@@ -76,6 +87,24 @@ export type DeclarationData = {
     voluntaryContributions: number;
     hasIndependentIncome: boolean | null;
   };
+  /** Rentas de capital (boxes 58–73): interest and financial yields. */
+  capital: {
+    concepts: IncomeConcept[];
+    /** Mandatory pension paid as an independent contributor, assigned to this schedule (box 59). */
+    independentContributions: number;
+    /** Box 60. */
+    costs: number;
+  };
+  /** Rentas no laborales (boxes 74–90): other income. */
+  nonLabor: {
+    concepts: IncomeConcept[];
+    /** Box 75. */
+    returns: number;
+    /** Mandatory pension paid as an independent contributor, assigned to this schedule (box 76). */
+    independentContributions: number;
+    /** Box 77. */
+    costs: number;
+  };
   assets: Asset[];
   debts: Debt[];
   deductions: {
@@ -105,6 +134,12 @@ export type DeclarationResult = {
   /** Box 32: salaries + other labor payments. */
   grossLaborIncome: number;
   labor: LaborIncomeResult;
+  capital: CapitalIncomeResult;
+  nonLabor: NonLaborIncomeResult;
+  /** Gross income of every schedule (filing test 1). */
+  grossIncome: number;
+  /** Box 91: renta líquida of the general schedule (34 + 46 + 61 + 78). */
+  generalNetIncome: number;
   /** Box 28 after its cap. */
   electronicInvoiceDeduction: number;
   /** Box 139: 72 UVT per dependent, up to 4, capped at boxes 42 + 57. */
@@ -128,6 +163,65 @@ export type DeclarationResult = {
 
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
+export type CapitalIncomeResult = {
+  /** Box 58. */
+  grossIncome: number;
+  /** Part of financial yields that is not income. */
+  inflationComponent: number;
+  /** Box 59: inflationary component + independent contributions. */
+  nonTaxableIncome: number;
+  /** Box 60. */
+  costs: number;
+  /** Box 61 (and 70 and 73: no exemptions, deductions or losses modeled yet). */
+  netIncome: number;
+};
+
+export type NonLaborIncomeResult = {
+  /** Box 74. */
+  grossIncome: number;
+  /** Box 75. */
+  returns: number;
+  /** Box 76. */
+  nonTaxableIncome: number;
+  /** Box 77. */
+  costs: number;
+  /** Box 78 (and 87 and 90). */
+  netIncome: number;
+};
+
+const conceptsTotal = (concepts: readonly IncomeConcept[]) => sum(concepts.map(concept => concept.amount));
+
+/** Rentas de capital: financial yields lose their inflationary component (box 59). */
+export const computeCapitalIncome = (capital: DeclarationData['capital']): CapitalIncomeResult => {
+  const grossIncome = conceptsTotal(capital.concepts);
+  const inflationComponent = Math.round(
+    conceptsTotal(capital.concepts.filter(concept => concept.financial)) * INFLATION_COMPONENT_RATE,
+  );
+  const nonTaxableIncome = inflationComponent + Math.max(0, capital.independentContributions);
+  const costs = Math.max(0, capital.costs);
+  return {
+    grossIncome,
+    inflationComponent,
+    nonTaxableIncome,
+    costs,
+    netIncome: Math.max(0, grossIncome - nonTaxableIncome - costs),
+  };
+};
+
+export const computeNonLaborIncome = (nonLabor: DeclarationData['nonLabor']): NonLaborIncomeResult => {
+  const grossIncome = conceptsTotal(nonLabor.concepts);
+  const returns = Math.max(0, nonLabor.returns);
+  const nonTaxableIncome = Math.max(0, nonLabor.independentContributions);
+  const costs = Math.max(0, nonLabor.costs);
+  return {
+    grossIncome,
+    returns,
+    nonTaxableIncome,
+    costs,
+    netIncome: Math.max(0, grossIncome - returns - nonTaxableIncome - costs),
+  };
+};
+
 export type ComputeOptions = {
   /** Include deductions and their exempt-income effect (false before the deductions step). */
   includeDeductions?: boolean;
@@ -142,11 +236,16 @@ export const computeDeclaration = (
   const grossAssets = sum(data.assets.map(asset => asset.amount));
   const totalDebts = sum(data.debts.map(debt => debt.amount));
   const grossLaborIncome = data.labor.salaries + data.labor.otherPayments;
+  const capital = computeCapitalIncome(data.capital);
+  const nonLabor = computeNonLaborIncome(data.nonLabor);
+  const grossIncome = grossLaborIncome + capital.grossIncome + nonLabor.grossIncome;
+  const laborNetIncome = Math.max(0, grossLaborIncome - data.labor.nonTaxableIncome);
+  const generalNetIncome = laborNetIncome + capital.netIncome + nonLabor.netIncome;
 
   const obligation = evaluateFilingObligation(
     {
       grossAssets,
-      grossIncome: grossLaborIncome,
+      grossIncome,
       creditCardPurchases: data.obligation.creditCardPurchases,
       totalPurchases: data.obligation.totalPurchases,
       deposits: data.obligation.deposits,
@@ -163,6 +262,7 @@ export const computeDeclaration = (
       prepaidHealthPaid: data.deductions.prepaidHealthPaid,
       hasDependent: data.deductions.dependents > 0,
       includeDeductions,
+      capBase: generalNetIncome,
     },
     uvtValue,
   );
@@ -185,7 +285,7 @@ export const computeDeclaration = (
       )
     : 0;
   const totalBenefits = labor.cappedBenefits + electronicInvoiceDeduction + dependentsAddition;
-  const taxableIncome = Math.max(0, labor.netIncome - totalBenefits);
+  const taxableIncome = Math.max(0, generalNetIncome - totalBenefits);
   const tableTax = computeTableTax(taxableIncome, uvtValue);
   const netIncomeTax = tableTax.tax;
   const taxDue = netIncomeTax;
@@ -207,6 +307,10 @@ export const computeDeclaration = (
     netAssets: Math.max(0, grossAssets - totalDebts),
     grossLaborIncome,
     labor,
+    capital,
+    nonLabor,
+    grossIncome,
+    generalNetIncome,
     electronicInvoiceDeduction,
     dependentsAddition,
     totalBenefits,
@@ -234,6 +338,8 @@ export const createEmptyDeclaration = (): DeclarationData => ({
     voluntaryContributions: 0,
     hasIndependentIncome: false,
   },
+  capital: { concepts: [], independentContributions: 0, costs: 0 },
+  nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
   assets: [],
   debts: [],
   deductions: { housingInterestPaid: 0, prepaidHealthPaid: 0, dependents: 0 },

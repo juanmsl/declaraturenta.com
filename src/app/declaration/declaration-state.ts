@@ -35,7 +35,7 @@ export type DeclarationState = {
 };
 
 /** Bump when `DeclarationState` changes shape; older saved states fall back to the initial one. */
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,

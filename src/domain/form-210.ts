@@ -1,4 +1,5 @@
 import type { DeclarationData, DeclarationResult } from './declaration';
+import { EDITABLE_BOXES, getBoxConcepts, isCountBox } from './box-concepts';
 import { ADDITIONAL_DEPENDENT_UVT } from './declaration';
 
 /**
@@ -83,7 +84,10 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   75: ENTERED,
   33: ENTERED,
   44: ENTERED,
-  59: ENTERED,
+  59: {
+    kind: 'calculated',
+    formula: '= 55,43 % de los rendimientos financieros + aportes como independiente',
+  },
   76: ENTERED,
   45: ENTERED,
   60: ENTERED,
@@ -264,7 +268,20 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     40: labor.totalDeductions,
     41: labor.cappedBenefits,
     42: labor.ordinaryNetIncome,
-    91: labor.netIncome,
+    58: result.capital.grossIncome,
+    59: result.capital.nonTaxableIncome,
+    60: result.capital.costs,
+    61: result.capital.netIncome,
+    70: result.capital.netIncome,
+    73: result.capital.netIncome,
+    74: result.nonLabor.grossIncome,
+    75: result.nonLabor.returns,
+    76: result.nonLabor.nonTaxableIncome,
+    77: result.nonLabor.costs,
+    78: result.nonLabor.netIncome,
+    87: result.nonLabor.netIncome,
+    90: result.nonLabor.netIncome,
+    91: result.generalNetIncome,
     92: result.totalBenefits,
     93: result.taxableIncome,
     97: result.taxableIncome,
@@ -285,20 +302,21 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
   };
 };
 
+/** "N conceptos" under each editable box: how many concepts add up to it right now. */
 const boxNotes = (data: DeclarationData, result: DeclarationResult): Partial<Record<number, string>> => {
+  const notes: Partial<Record<number, string>> = {};
+  for (const box of EDITABLE_BOXES) {
+    if (isCountBox(box)) continue;
+    const count = getBoxConcepts(box, data).length;
+    if (count > 0) notes[box] = plural(count, 'concepto');
+  }
   const otherDeductions = [result.labor.dependent, result.labor.prepaidHealth].filter(
     value => value > 0,
   ).length;
-  const laborConcepts = data.labor.concepts.length + (data.labor.otherPayments > 0 ? 1 : 0);
-  return {
-    29: plural(data.assets.length, 'concepto'),
-    30: plural(data.debts.length, 'concepto'),
-    ...(laborConcepts > 0 ? { 32: plural(laborConcepts, 'concepto') } : {}),
-    ...(result.labor.exempt25 > 0 ? { 36: '25 % laboral · 1 concepto' } : {}),
-    ...(result.labor.housingDeduction > 0 ? { 38: '1 concepto' } : {}),
-    ...(otherDeductions > 0 ? { 39: plural(otherDeductions, 'concepto') } : {}),
-    ...(result.withholdings > 0 ? { 132: '1 concepto' } : {}),
-  };
+  if (result.labor.exempt25 > 0) notes[36] = '25 % laboral · 1 concepto';
+  if (otherDeductions > 0) notes[39] = plural(otherDeductions, 'concepto');
+  if (result.capital.inflationComponent > 0) notes[59] = 'Componente inflacionario 55,43 %';
+  return notes;
 };
 
 export type Form210 = Map<number, Form210Box>;

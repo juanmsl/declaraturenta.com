@@ -1,4 +1,4 @@
-import type { Asset, DeclarationData, Debt, ValueOrigin } from './declaration';
+import type { Asset, DeclarationData, Debt, IncomeConcept, ValueOrigin } from './declaration';
 import { TAX_YEAR } from './uvt';
 
 /**
@@ -16,7 +16,7 @@ export type BoxConcept = {
 };
 
 /** Boxes whose concepts the user can add, edit and remove. */
-export const EDITABLE_BOXES = [28, 29, 30, 32, 33, 35, 38, 130, 131, 132, 138] as const;
+export const EDITABLE_BOXES = [28, 29, 30, 32, 33, 35, 38, 58, 74, 130, 131, 132, 138] as const;
 export type EditableBox = (typeof EDITABLE_BOXES)[number];
 
 export const isEditableBox = (box: number): box is EditableBox =>
@@ -35,12 +35,46 @@ const single = (
   origin: ValueOrigin,
 ): BoxConcept[] => (amount === 0 ? [] : [{ id, label, detail, amount, origin }]);
 
+const fromIncomeConcepts = (concepts: readonly IncomeConcept[]): BoxConcept[] =>
+  concepts.map(concept => ({
+    id: concept.id,
+    label: concept.label,
+    detail: concept.entity,
+    amount: concept.amount,
+    origin: concept.origin,
+    ...(concept.exogenousAmount === undefined ? {} : { exogenousAmount: concept.exogenousAmount }),
+  }));
+
+/** Writes box concepts back as income concepts, keeping each one's `financial` flag. */
+const toIncomeConcepts = (
+  concepts: readonly BoxConcept[],
+  current: readonly IncomeConcept[],
+  financialByDefault: boolean,
+): IncomeConcept[] =>
+  concepts.map(concept => {
+    const existing = current.find(item => item.id === concept.id);
+    const financial = existing ? existing.financial === true : financialByDefault;
+    return {
+      id: concept.id,
+      label: concept.label,
+      entity: concept.detail,
+      amount: concept.amount,
+      origin: concept.origin,
+      ...(concept.exogenousAmount === undefined ? {} : { exogenousAmount: concept.exogenousAmount }),
+      ...(financial ? { financial: true } : {}),
+    };
+  });
+
 /** Concepts of an editable box, from the current return. */
 export const getBoxConcepts = (box: EditableBox, data: DeclarationData): BoxConcept[] => {
   const employer = data.labor.concepts[0]?.entity ?? '';
   const imported = data.labor.concepts.some(concept => concept.origin === 'exogenous');
 
   switch (box) {
+    case 58:
+      return fromIncomeConcepts(data.capital.concepts);
+    case 74:
+      return fromIncomeConcepts(data.nonLabor.concepts);
     case 28:
       return single(
         'electronic-invoice',
@@ -159,6 +193,16 @@ export const applyBoxConcepts = (
   switch (box) {
     case 28:
       return { ...data, general: { ...data.general, electronicInvoicePurchases: total(concepts) } };
+    case 58:
+      return {
+        ...data,
+        capital: { ...data.capital, concepts: toIncomeConcepts(concepts, data.capital.concepts, true) },
+      };
+    case 74:
+      return {
+        ...data,
+        nonLabor: { ...data.nonLabor, concepts: toIncomeConcepts(concepts, data.nonLabor.concepts, false) },
+      };
     case 29:
       return {
         ...data,
@@ -244,6 +288,8 @@ export const BOX_DESCRIPTIONS: Partial<Record<number, string>> = {
   35: 'Aportes voluntarios a cuentas AFC, fondos de pensiones voluntarias (FVP) y ahorro voluntario (AVC).',
   36: 'El 25 % exento de tus pagos laborales, calculado sobre lo que queda después de aportes y deducciones, hasta 790 UVT.',
   38: 'Intereses que pagaste por el crédito de vivienda. La casilla toma hasta 1.200 UVT al año.',
+  58: 'Intereses y rendimientos financieros: cuentas, CDT y fondos de inversión. El 55,43 % de ellos no es renta (casilla 59).',
+  74: 'Otros ingresos que no vienen de tu trabajo ni de tus inversiones.',
   39: 'Dependiente económico y medicina prepagada, cada uno con su tope.',
   130: 'El anticipo que liquidaste en tu declaración del año pasado.',
   131: 'El saldo a favor de tu declaración anterior que no pediste en devolución.',

@@ -34,6 +34,11 @@ export type LaborIncomeInput = {
   hasDependent: boolean;
   /** False until the user reaches the deductions step, so the estimate excludes them. */
   includeDeductions: boolean;
+  /**
+   * Net income of the whole general schedule (box 91). The 40 % cap of art. 336 E.T. applies to
+   * it, not only to labor income. Defaults to the labor net income.
+   */
+  capBase?: number;
 };
 
 export type LaborIncomeResult = {
@@ -102,7 +107,7 @@ export const computeLaborIncome = (
 
   const benefitsBeforeCap = totalExempt + totalDeductions;
   const benefitsCap = Math.min(
-    Math.round(netIncome * BENEFITS_CAP_RATE),
+    Math.round((input.capBase ?? netIncome) * BENEFITS_CAP_RATE),
     uvtToPesos(LABOR_LIMITS_UVT.benefitsCap, uvtValue),
   );
   const cappedBenefits = Math.min(benefitsBeforeCap, benefitsCap);
