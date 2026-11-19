@@ -30,7 +30,18 @@ const [, , incomeStep] = FLOW_STEPS;
 
 /** Sections of "Esto encontramos", in order, with the kinds they show. */
 const GROUPS: readonly { title: string; kinds: readonly ExogenousItemKind[] }[] = [
-  { title: 'Ingresos', kinds: ['labor-income', 'capital-income', 'non-labor-income'] },
+  {
+    title: 'Ingresos',
+    kinds: [
+      'labor-income',
+      'fees-income',
+      'capital-income',
+      'non-labor-income',
+      'pension-income',
+      'dividend',
+      'occasional-gain',
+    ],
+  },
   {
     title: 'Aportes y retenciones',
     kinds: ['labor-non-taxable', 'other-non-taxable', 'voluntary-pension', 'withholding'],
@@ -50,6 +61,10 @@ const ICONS: Record<ExogenousItemKind, IconType> = {
   withholding: LuReceipt,
   'capital-income': LuChartLine,
   'non-labor-income': LuCoins,
+  'fees-income': LuBriefcase,
+  'pension-income': LuWallet,
+  dividend: LuChartLine,
+  'occasional-gain': LuCoins,
   asset: LuLandmark,
   debt: LuCreditCard,
   'housing-interest': LuHouse,
@@ -66,6 +81,10 @@ const REVIEW_TEXT = {
     'La DIAN reporta el avalúo del vehículo, pero en tu declaración va su costo fiscal (lo que pagaste). Lo podrás corregir en Patrimonio.',
   housing:
     'Compara los intereses de vivienda con el certificado de tu banco antes de usarlos como deducción.',
+  dividend:
+    'Los dividendos de utilidades de 2016 y antes pueden ser gravados o no. Confírmalo con el certificado de la empresa y corrígelo en Ingresos.',
+  'occasional-gain':
+    'Elige en Ingresos qué tipo de ganancia ocasional fue (herencia, venta, lotería…) para calcular la parte exenta.',
 } as const;
 
 /** Lines with the same kind, concept and entity are shown together (e.g. several CDT yields). */

@@ -67,6 +67,34 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       origin: null,
       strong: true,
     },
+    ...(result.fees.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Cédula general · Honorarios con costos' },
+          {
+            type: 'line',
+            box: 43,
+            label: 'Ingresos brutos por honorarios y servicios',
+            value: result.fees.grossIncome,
+            origin: hasExogenous(data.fees.concepts) ? 'exogenous' : 'user',
+          },
+          {
+            type: 'line',
+            box: 44,
+            label: 'Ingresos no constitutivos de renta',
+            value: result.fees.nonTaxableIncome,
+            origin: 'user',
+          },
+          { type: 'line', box: 45, label: 'Costos y deducciones', value: result.fees.costs, origin: 'user' },
+          {
+            type: 'line',
+            box: 46,
+            label: 'Renta líquida',
+            value: result.fees.netIncome,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
     ...(result.capital.grossIncome > 0
       ? ([
           { type: 'section', label: 'Cédula general · Rentas de capital' },
@@ -114,7 +142,7 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
           },
         ] satisfies DraftRow[])
       : []),
-    ...(result.capital.grossIncome > 0 || result.nonLabor.grossIncome > 0
+    ...(result.fees.grossIncome > 0 || result.capital.grossIncome > 0 || result.nonLabor.grossIncome > 0
       ? ([
           { type: 'section', label: 'Cédula general · Total' },
           {
@@ -142,14 +170,110 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       origin: null,
       strong: true,
     },
+    ...(result.pensions.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Cédula de pensiones' },
+          {
+            type: 'line',
+            box: 99,
+            label: 'Ingresos brutos por pensiones',
+            value: result.pensions.grossIncome,
+            origin: hasExogenous(data.pensions.concepts) ? 'exogenous' : 'user',
+          },
+          {
+            type: 'line',
+            box: 100,
+            label: 'Ingresos no constitutivos de renta',
+            value: result.pensions.nonTaxableIncome,
+            origin: 'user',
+          },
+          {
+            type: 'line',
+            box: 102,
+            label: 'Rentas exentas de pensiones',
+            value: result.pensions.exemptIncome,
+            origin: 'box',
+          },
+          {
+            type: 'line',
+            box: 103,
+            label: 'Renta líquida gravable de pensiones',
+            value: result.pensions.taxableIncome,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
+    ...dividendRows(data, result, hasExogenous(data.dividends.concepts) ? 'exogenous' : 'user'),
+    ...(result.occasionalGains.grossIncome > 0
+      ? ([
+          { type: 'section', label: 'Ganancias ocasionales' },
+          {
+            type: 'line',
+            box: 112,
+            label: 'Ingresos por ganancias ocasionales',
+            value: result.occasionalGains.grossIncome,
+            origin: 'user',
+          },
+          { type: 'line', box: 113, label: 'Costos', value: result.occasionalGains.costs, origin: 'user' },
+          {
+            type: 'line',
+            box: 114,
+            label: 'No gravadas y exentas',
+            value: result.occasionalGains.exempt,
+            origin: 'box',
+          },
+          {
+            type: 'line',
+            box: 115,
+            label: 'Ganancias ocasionales gravables',
+            value: result.occasionalGains.taxable,
+            origin: null,
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
     { type: 'section', label: 'Liquidación privada' },
+    ...(result.tableBase > result.taxableIncome
+      ? ([
+          {
+            type: 'line',
+            box: 111,
+            label: 'Renta líquida gravable (general, pensiones y dividendos)',
+            value: result.tableBase,
+            origin: null,
+          },
+        ] satisfies DraftRow[])
+      : []),
     {
       type: 'line',
       box: 116,
       label: 'Impuesto sobre la renta líquida gravable',
-      value: result.netIncomeTax,
+      value: result.tableTax.tax,
       origin: null,
     },
+    ...(result.netIncomeTax !== result.tableTax.tax
+      ? ([
+          {
+            type: 'line',
+            box: 126,
+            label: 'Impuesto neto de renta',
+            value: result.netIncomeTax,
+            origin: null,
+          },
+        ] satisfies DraftRow[])
+      : []),
+    ...(result.occasionalGainsTax > 0
+      ? ([
+          {
+            type: 'line',
+            box: 127,
+            label: 'Impuesto de ganancias ocasionales',
+            value: result.occasionalGainsTax,
+            origin: null,
+          },
+        ] satisfies DraftRow[])
+      : []),
     {
       type: 'line',
       box: 132,
@@ -172,4 +296,36 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       toPay,
     },
   ];
+};
+
+const dividendRows = (data: DeclarationData, result: DeclarationResult, origin: DraftOrigin): DraftRow[] => {
+  const { dividends } = result;
+  const lines: DraftRow[] = [
+    { type: 'line', box: 104, label: 'Dividendos 2016 y anteriores', value: dividends.until2016, origin },
+    {
+      type: 'line',
+      box: 105,
+      label: 'Ingresos no constitutivos de renta',
+      value: dividends.until2016NonTaxed,
+      origin,
+    },
+    {
+      type: 'line',
+      box: 107,
+      label: '1.ª subcédula, 2017 y siguientes',
+      value: dividends.firstSubcedule,
+      origin,
+    },
+    {
+      type: 'line',
+      box: 108,
+      label: '2.ª subcédula, 2017 y siguientes',
+      value: dividends.secondSubcedule,
+      origin,
+    },
+    { type: 'line', box: 109, label: 'Dividendos recibidos del exterior', value: dividends.foreign, origin },
+  ].filter(row => row.value > 0) as DraftRow[];
+  return data.dividends.concepts.length > 0 && lines.length > 0
+    ? [{ type: 'section', label: 'Cédula de dividendos y participaciones' }, ...lines]
+    : [];
 };

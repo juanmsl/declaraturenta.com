@@ -206,6 +206,8 @@ export type DeclarationResult = {
   occasionalGains: OccasionalGainsResult;
   /** Gross income of the general, pensions and dividends schedules (filing test 1). */
   grossIncome: number;
+  /** Gross income of the general schedule: 32 + 43 + 58 + 74. */
+  generalGrossIncome: number;
   /**
    * Box 91: renta líquida of the general schedule (41 + 42 + 53 + 57 + 69 + 73 + 86 + 90). Without
    * losses, compensations or ECE income it equals 34 + 46 + 61 + 78.
@@ -499,6 +501,7 @@ const computeWithFeesOption = (
     dividends,
     occasionalGains,
     grossIncome,
+    generalGrossIncome,
     generalNetIncome,
     benefitsCapBase,
     electronicInvoiceDeduction,

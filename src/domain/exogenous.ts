@@ -1,5 +1,6 @@
 import type { Asset, AssetKind, DeclarationData, Debt, IncomeConcept, LaborConcept } from './declaration';
 import type { ExogenousFile, ExogenousLine } from './exogenous-file';
+import type { DividendKind } from './other-schedules';
 
 /**
  * Exogenous information (información exógena): what third parties reported to the DIAN about
@@ -20,6 +21,14 @@ export type ExogenousItemKind =
   | 'capital-income'
   /** Box 74: other income. */
   | 'non-labor-income'
+  /** Box 43 (or 32 with the 25 % exempt): fees and services as an independent. */
+  | 'fees-income'
+  /** Box 99: pensions. */
+  | 'pension-income'
+  /** Boxes 104–109: dividends; `dividendKind` says which. */
+  | 'dividend'
+  /** Box 112: occasional gains. */
+  | 'occasional-gain'
   /** Box 29. */
   | 'asset'
   /** Box 30. */
@@ -36,7 +45,7 @@ export type ExogenousItemKind =
   | 'informative';
 
 /** Why an item must be checked by the user before it is used. */
-export type ExogenousReview = 'duplicate' | 'vehicle' | 'housing';
+export type ExogenousReview = 'duplicate' | 'vehicle' | 'housing' | 'dividend' | 'occasional-gain';
 
 export type ExogenousItem = {
   id: string;
@@ -45,6 +54,7 @@ export type ExogenousItem = {
   entity: string;
   amount: number;
   assetKind?: AssetKind;
+  dividendKind?: DividendKind;
   review?: ExogenousReview;
 };
 
@@ -110,7 +120,7 @@ const has = (value: string, ...parts: string[]) =>
 /** Decides where a reported value goes, mostly by the box the DIAN suggests ("Uso declaración"). */
 export const classifyLine = (
   line: ExogenousLine,
-): Pick<ExogenousItem, 'kind' | 'label' | 'assetKind' | 'review'> => {
+): Pick<ExogenousItem, 'kind' | 'label' | 'assetKind' | 'dividendKind' | 'review'> => {
   const { detail, suggestedUse: use, extra } = line;
   const label = cleanDetail(detail);
 
@@ -125,6 +135,15 @@ export const classifyLine = (
       : { kind: 'labor-non-taxable', label };
   }
   if (/\bR35\b/u.test(use) && has(detail, 'voluntari', 'afc')) return { kind: 'voluntary-pension', label };
+  if (/\bR43\b/u.test(use)) return { kind: 'fees-income', label };
+  if (/\bR99\b/u.test(use)) return { kind: 'pension-income', label };
+  // The DIAN suggests the subcédula; 2016-and-earlier dividends need the company's certificate.
+  if (/\bR104\b/u.test(use))
+    return { kind: 'dividend', label, dividendKind: 'until-2016-taxed', review: 'dividend' };
+  if (/\bR107\b/u.test(use)) return { kind: 'dividend', label, dividendKind: 'first-subcedule' };
+  if (/\bR108\b/u.test(use)) return { kind: 'dividend', label, dividendKind: 'second-subcedule' };
+  if (/\bR109\b/u.test(use)) return { kind: 'dividend', label, dividendKind: 'foreign' };
+  if (/\bR112\b/u.test(use)) return { kind: 'occasional-gain', label, review: 'occasional-gain' };
   if (/\bR58\b/u.test(use)) return { kind: 'capital-income', label };
   if (/\bR74\b/u.test(use)) return { kind: 'non-labor-income', label };
   if (has(detail, 'intereses') && has(detail, 'vivienda'))
@@ -275,15 +294,23 @@ export const applyExogenous = (data: DeclarationData, report: ExogenousReport): 
       origin: 'exogenous',
     }));
 
-  // Independent pension contributions go to the schedule with income: capital, else non-labor
-  // (the DIAN suggests 44 / 59 / 76; fees income is not modeled yet).
+  // Independent pension contributions go to the schedule with income, as the DIAN suggests
+  // (44 / 59 / 76): fees first, then capital, else non-labor.
   const independentContributions = sumOf(items, 'other-non-taxable');
+  const feesConcepts = mergeConcepts(data.fees.concepts, conceptsOf(items, 'fees-income'));
   const capitalConcepts = mergeConcepts(data.capital.concepts, conceptsOf(items, 'capital-income', true));
   const nonLaborConcepts = mergeConcepts(data.nonLabor.concepts, conceptsOf(items, 'non-labor-income'));
-  const toCapital = capitalConcepts.length > 0 || nonLaborConcepts.length === 0;
+  const toFees = feesConcepts.length > 0;
+  const toCapital = !toFees && (capitalConcepts.length > 0 || nonLaborConcepts.length === 0);
+  const toNonLabor = !toFees && !toCapital;
 
   return {
     ...data,
+    fees: {
+      ...data.fees,
+      concepts: feesConcepts,
+      nonTaxableIncome: toFees ? independentContributions : data.fees.nonTaxableIncome,
+    },
     capital: {
       ...data.capital,
       concepts: capitalConcepts,
@@ -292,7 +319,42 @@ export const applyExogenous = (data: DeclarationData, report: ExogenousReport): 
     nonLabor: {
       ...data.nonLabor,
       concepts: nonLaborConcepts,
-      independentContributions: toCapital ? 0 : independentContributions,
+      independentContributions: toNonLabor ? independentContributions : 0,
+    },
+    pensions: {
+      ...data.pensions,
+      concepts: mergeConcepts(data.pensions.concepts, conceptsOf(items, 'pension-income')),
+    },
+    dividends: {
+      concepts: [
+        ...data.dividends.concepts.filter(concept => concept.origin === 'user'),
+        ...items
+          .filter(item => item.kind === 'dividend')
+          .map(item => ({
+            id: item.id,
+            label: item.label,
+            entity: item.entity,
+            kind: item.dividendKind ?? 'first-subcedule',
+            amount: item.amount,
+            origin: 'exogenous' as const,
+          })),
+      ],
+    },
+    occasionalGains: {
+      concepts: [
+        ...data.occasionalGains.concepts.filter(concept => concept.origin === 'user'),
+        ...items
+          .filter(item => item.kind === 'occasional-gain')
+          .map(item => ({
+            id: item.id,
+            label: item.label,
+            entity: item.entity,
+            kind: 'other' as const,
+            amount: item.amount,
+            cost: 0,
+            origin: 'exogenous' as const,
+          })),
+      ],
     },
     general: {
       ...data.general,
@@ -306,6 +368,7 @@ export const applyExogenous = (data: DeclarationData, report: ExogenousReport): 
     labor: {
       ...data.labor,
       concepts,
+      hasIndependentIncome: toFees ? true : data.labor.hasIndependentIncome,
       salaries: concepts.reduce((total, concept) => total + concept.amount, 0),
       nonTaxableIncome: sumOf(items, 'labor-non-taxable'),
       voluntaryContributions: sumOf(items, 'voluntary-pension'),
@@ -328,6 +391,10 @@ export const clearExogenous = (data: DeclarationData): DeclarationData => ({
   general: { ...data.general, electronicInvoicePurchases: 0 },
   obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
   labor: { ...data.labor, concepts: [], salaries: 0, nonTaxableIncome: 0, voluntaryContributions: 0 },
+  fees: { ...data.fees, concepts: data.fees.concepts.filter(c => c.origin === 'user'), nonTaxableIncome: 0 },
+  pensions: { ...data.pensions, concepts: data.pensions.concepts.filter(c => c.origin === 'user') },
+  dividends: { concepts: data.dividends.concepts.filter(c => c.origin === 'user') },
+  occasionalGains: { concepts: data.occasionalGains.concepts.filter(c => c.origin === 'user') },
   capital: {
     ...data.capital,
     concepts: data.capital.concepts.filter(c => c.origin === 'user'),

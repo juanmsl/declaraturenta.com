@@ -37,8 +37,11 @@ the business model comes last, after the platform is fully functional.
 
 Ask the owner before resolving these.
 
-- **Tax rules**: boxes 28–141 are checked against the official DIAN instructions (ADR 0030). The
-  fees (43–57), pensions, dividends and occasional gains schedules are not calculated yet.
+- **Tax rules**: boxes 28–141 are checked against the official DIAN instructions (ADR 0030). Fees,
+  pensions, dividends and occasional gains are calculated (ADRs 0031–0033). Not calculated: exempt
+  income and deductions of capital and non-labor income, loss compensations, renta presuntiva,
+  donations and foreign taxes (boxes stay at 0 with a notice).
+- **To confirm**: whether occasional gains count for the 1.400 UVT income test (today they do not).
 - **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
   only in progress" rule; we follow Figma.
 - Business model (last).
@@ -46,5 +49,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Calculate the pending schedules: fees (43–57), pensions (99–103), dividends (104–110) and
-   occasional gains (112–115, 127).
+1. Figma: Ingresos sections for fees and other schedules (04d, 04e) and the boxes of each schedule
+   on screen 09.

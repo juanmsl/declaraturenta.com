@@ -28,7 +28,7 @@ export type DeclarationState = {
     /** Exogenous items the user explicitly confirmed (e.g. housing interest). */
     confirmedItems: string[];
   };
-  /** "Otras cédulas" the user turned on (not calculated yet; ADR 0020). */
+  /** "Otras cédulas" the user turned on: pensions, dividends, occasional-gains (ADR 0031). */
   activeSchedules: string[];
   /** The user closed the "¿Primera vez aquí?" card in Inicio (ADR 0028). */
   helpIntroDismissed: boolean;
@@ -83,9 +83,16 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'importExogenous': {
       // The first real report replaces the sample data; later ones keep what the user entered.
       const base = state.taxpayer.isSample ? createEmptyDeclaration() : state.data;
+      const data = applyExogenous(base, action.report);
+      const withData = [
+        data.pensions.concepts.length > 0 ? 'pensions' : null,
+        data.dividends.concepts.length > 0 ? 'dividends' : null,
+        data.occasionalGains.concepts.length > 0 ? 'occasional-gains' : null,
+      ].filter(id => id !== null);
       return {
         ...state,
-        data: applyExogenous(base, action.report),
+        activeSchedules: [...new Set([...state.activeSchedules, ...withData])],
+        data,
         taxpayer: taxpayerFromReport(action.report),
         exogenous: { fileName: action.report.fileName, confirmedItems: [], report: action.report },
         savedAt: action.at,
@@ -115,4 +122,19 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'reset':
       return createInitialState();
   }
+};
+
+/**
+ * The data that goes into the calculation: schedules the user turned off, and fees when they said
+ * they had no independent income, count as empty. Their values stay saved in case they turn them on.
+ */
+export const effectiveData = (state: DeclarationState): DeclarationData => {
+  const { data, activeSchedules } = state;
+  return {
+    ...data,
+    fees: data.labor.hasIndependentIncome ? data.fees : { ...data.fees, concepts: [] },
+    pensions: activeSchedules.includes('pensions') ? data.pensions : { ...data.pensions, concepts: [] },
+    dividends: activeSchedules.includes('dividends') ? data.dividends : { concepts: [] },
+    occasionalGains: activeSchedules.includes('occasional-gains') ? data.occasionalGains : { concepts: [] },
+  };
 };

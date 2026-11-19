@@ -8,6 +8,7 @@ import { ART_241_BRACKETS } from '@/domain/income-tax-table';
 import { TAX_YEAR } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Button, CalcRow, Icon, OptionCard, Text } from '@/shared/ui';
+import { TaxRows } from '@/features/estimate/TaxRows';
 
 const [firstStep, , , , , , draftStep] = FLOW_STEPS;
 
@@ -90,16 +91,15 @@ export const ResultPage = () => {
             Cómo llegamos aquí
           </Text>
           <div className='flex flex-col'>
-            <CalcRow label='Ingresos brutos' value={result.grossIncome} />
+            <CalcRow label='Ingresos brutos' value={result.generalGrossIncome} />
             <CalcRow
               variant='subtract'
-              label='No constitutivos de renta'
-              value={result.grossIncome - result.generalNetIncome}
+              label='No constitutivos y costos'
+              value={result.generalGrossIncome - result.generalNetIncome}
             />
             <CalcRow variant='subtotal' label='Renta líquida' value={result.generalNetIncome} />
             <CalcRow variant='subtract' label='Deducciones y exentas' value={result.totalBenefits} />
-            <CalcRow variant='subtotal' label='Renta líquida gravable' value={result.taxableIncome} />
-            <CalcRow label='Impuesto sobre la renta' value={result.netIncomeTax} />
+            <TaxRows result={result} />
             {result.advance.amount > 0 && (
               <CalcRow label='Anticipo para el año siguiente' value={result.advance.amount} />
             )}
@@ -117,7 +117,8 @@ export const ResultPage = () => {
             Tu tarifa
           </Text>
           <Text variant='body-m' className='text-fg-secondary'>
-            Tu renta líquida gravable equivale a {formatNumber(tableTax.taxableUvt, 2)} UVT.{' '}
+            {result.tableBase > result.taxableIncome ? 'La base de tu impuesto' : 'Tu renta líquida gravable'}{' '}
+            equivale a {formatNumber(tableTax.taxableUvt, 2)} UVT.{' '}
             {bracket.rate === 0
               ? `Hasta ${formatNumber(bracket.toUvt ?? 0)} UVT no pagas impuesto.`
               : `Pagas ${formatNumber(bracket.rate * 100)} % sobre lo que pasa de ${formatNumber(bracket.fromUvt)} UVT${bracket.fixedUvt > 0 ? `, más ${formatNumber(bracket.fixedUvt)} UVT fijos` : ''}.`}

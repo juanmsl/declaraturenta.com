@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { formatNumber } from '@/shared/lib/format';
 import { Button, CalcRow, Chip, Drawer, Text } from '@/shared/ui';
+import { TaxRows } from '@/features/estimate/TaxRows';
 
 type FiguresDrawerProps = {
   isOpen: boolean;
@@ -43,6 +44,12 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
           label={<WithBox label='Ingresos por tu trabajo' box={32} />}
           value={estimate.grossLaborIncome}
         />
+        {estimate.fees.grossIncome > 0 && (
+          <CalcRow
+            label={<WithBox label='Honorarios con costos' box={43} />}
+            value={estimate.fees.grossIncome}
+          />
+        )}
         {estimate.capital.grossIncome > 0 && (
           <CalcRow
             label={<WithBox label='Rendimientos financieros' box={58} />}
@@ -57,8 +64,8 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
         )}
         <CalcRow
           variant='subtract'
-          label={<WithBox label='No constitutivos de renta' box={33} />}
-          value={estimate.grossIncome - estimate.generalNetIncome}
+          label={<WithBox label='No constitutivos y costos' box={33} />}
+          value={estimate.generalGrossIncome - estimate.generalNetIncome}
         />
         <CalcRow
           variant='subtotal'
@@ -76,12 +83,11 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
           value={labor.totalDeductions}
         />
         <CalcRow label={<WithBox label='Exentas y deducciones' box={92} />} value={estimate.totalBenefits} />
-        <CalcRow
-          variant='subtotal'
-          label={<WithBox label='Renta líquida gravable' box={97} />}
-          value={estimate.taxableIncome}
+        <TaxRows
+          result={estimate}
+          taxLabel='Impuesto según tabla'
+          withBox={(label, box) => <WithBox label={label} box={box} />}
         />
-        <CalcRow label={<WithBox label='Impuesto según tabla' box={116} />} value={estimate.netIncomeTax} />
         <CalcRow
           variant='subtract'
           label={<WithBox label='Retenciones' box={132} />}
@@ -94,10 +100,10 @@ export const FiguresDrawer = ({ isOpen, onClose }: FiguresDrawerProps) => {
         />
       </div>
       <Text variant='note' className='text-fg-muted'>
-        El tope de exentas y deducciones es el menor entre el 40 % de tu renta líquida y 1.340 UVT. Tu renta
-        gravable equivale a {formatNumber(tableTax.taxableUvt, 2)} UVT; la tabla del artículo 241 del Estatuto
-        Tributario cobra {formatNumber(tableTax.bracket.rate * 100)} % sobre lo que pasa de{' '}
-        {formatNumber(tableTax.bracket.fromUvt)} UVT
+        El tope de exentas y deducciones es el menor entre el 40 % de tus ingresos menos los no constitutivos
+        y 1.340 UVT. La base de tu impuesto equivale a {formatNumber(tableTax.taxableUvt, 2)} UVT; la tabla
+        del artículo 241 del Estatuto Tributario cobra {formatNumber(tableTax.bracket.rate * 100)} % sobre lo
+        que pasa de {formatNumber(tableTax.bracket.fromUvt)} UVT
         {tableTax.bracket.fixedUvt > 0 ? `, más ${formatNumber(tableTax.bracket.fixedUvt)} UVT fijos` : ''}.
       </Text>
     </Drawer>

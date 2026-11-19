@@ -70,8 +70,24 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: 'La plataforma',
     question: '¿Qué no calculamos todavía?',
     answer:
-      'Ingresos por honorarios y servicios, pensiones, dividendos, ganancias ocasionales, rentas exentas y deducciones de los rendimientos y otros ingresos, compensaciones por pérdidas y renta presuntiva. Esas casillas quedan en $ 0 con un aviso.',
-    keywords: 'honorarios independiente pensiones dividendos ganancias ocasionales herencia',
+      'Rentas exentas y deducciones propias de los honorarios, los rendimientos y otros ingresos, compensaciones por pérdidas, renta presuntiva, donaciones e impuestos pagados en el exterior. Esas casillas quedan en $ 0 con un aviso.',
+    keywords: 'compensaciones pérdidas renta presuntiva donaciones exterior',
+  },
+  {
+    id: 'fees-option',
+    category: 'Conceptos',
+    question: '¿Resto costos o tomo el 25 % exento en mis honorarios?',
+    answer:
+      'La ley te deja una de las dos, no ambas. Calculamos tu declaración con cada una y te sugerimos la que deja menos impuesto; tú confirmas en Ingresos. Si tus costos pasan del 60 % de tus honorarios debes marcar la casilla 140.',
+    keywords: 'honorarios independiente costos gastos 25 % exenta casilla 43 casilla 140',
+  },
+  {
+    id: 'other-schedules',
+    category: 'Conceptos',
+    question: '¿Cómo declaro pensiones, dividendos y ganancias ocasionales?',
+    answer:
+      'Actívalos en Ingresos. De la pensión no pagan impuesto hasta 1.000 UVT por mes. Los dividendos se separan según el certificado de la empresa. En las ganancias ocasionales eliges el tipo (herencia, venta, lotería…) y calculamos la parte exenta y la tarifa de 15 % o 20 %.',
+    keywords: 'pensión jubilación dividendos acciones herencia lotería venta casa ganancia ocasional',
   },
   {
     id: 'deadline',

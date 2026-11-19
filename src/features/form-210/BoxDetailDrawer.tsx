@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import {
@@ -18,6 +19,23 @@ import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared
 
 import { ConceptsEditor } from './ConceptsEditor';
 import { sectionOf } from './sections';
+
+/** Boxes filled from a section of the Ingresos screen (ADRs 0031 and 0032). */
+const INCOME_SCREEN_BOXES: Partial<Record<number, string>> = {
+  43: 'Honorarios y servicios',
+  44: 'Honorarios y servicios',
+  45: 'Honorarios y servicios',
+  99: 'Recibí una pensión',
+  100: 'Recibí una pensión',
+  104: 'Recibí dividendos o participaciones',
+  105: 'Recibí dividendos o participaciones',
+  107: 'Recibí dividendos o participaciones',
+  108: 'Recibí dividendos o participaciones',
+  109: 'Recibí dividendos o participaciones',
+  112: 'Tuve ganancias ocasionales',
+  113: 'Tuve ganancias ocasionales',
+  114: 'Tuve ganancias ocasionales',
+};
 
 type BoxDetailDrawerProps = {
   form: Form210;
@@ -106,6 +124,10 @@ const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onC
   }
   if (box.number === 39) return <OtherDeductionsDetail form={form} box={box} onClose={onClose} />;
   if (box.number === 36) return <ExemptDetail form={form} box={box} onClose={onClose} />;
+  const incomeSection = INCOME_SCREEN_BOXES[box.number];
+  if (incomeSection) {
+    return <IncomeScreenDetail form={form} box={box} section={incomeSection} onClose={onClose} />;
+  }
 
   return (
     <>
@@ -113,6 +135,40 @@ const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onC
       <Alert variant='info' title='Por ahora no calculamos esta casilla'>
         Queda en $ 0. Si tuviste este tipo de ingresos o valores, pronto podrás registrarlos aquí.
       </Alert>
+      <Footer onClose={onClose} />
+    </>
+  );
+};
+
+const IncomeScreenDetail = ({
+  form,
+  box,
+  section,
+  onClose,
+}: {
+  form: Form210;
+  box: Form210Box;
+  section: string;
+  onClose: () => void;
+}) => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <TotalCard form={form} box={box} total={box.value} />
+      <Alert variant='info' title='Sale de lo que escribiste en Ingresos'>
+        La llenas en la sección «{section}» de Ingresos. Allí calculamos también lo que está exento.
+      </Alert>
+      <div>
+        <Button
+          variant='secondary'
+          onClick={() => {
+            onClose();
+            void navigate(`/ingresos#${box.number >= 99 ? 'other-schedules-title' : 'fees-title'}`);
+          }}
+        >
+          Ir a Ingresos
+        </Button>
+      </div>
       <Footer onClose={onClose} />
     </>
   );

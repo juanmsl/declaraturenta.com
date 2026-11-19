@@ -38,3 +38,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0030](./0030-form-210-validated-against-dian-instructions.md)  | Form 210 validated against the DIAN instructions                 | Accepted |
 | [0031](./0031-pensions-dividends-and-occasional-gains.md)       | Pensions, dividends and occasional gains                         | Accepted |
 | [0032](./0032-fees-with-both-options.md)                        | Fees (honorarios) with both options                              | Accepted |
+| [0033](./0033-other-schedules-in-the-income-screen.md)          | Fees and other schedules in the income screen                    | Accepted |

@@ -4,60 +4,22 @@ import { LuArrowRight } from 'react-icons/lu';
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FLOW_STEPS } from '@/app/flow';
 import { INFLATION_COMPONENT_RATE } from '@/domain/declaration';
-import type { DeclarationData, IncomeConcept } from '@/domain/declaration';
+import type { DeclarationData } from '@/domain/declaration';
 import { TAX_YEAR } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { detectZeroSlip } from '@/shared/lib/zero-slip';
-import {
-  Alert,
-  Button,
-  CalcRow,
-  Chip,
-  MoneyField,
-  OptionCard,
-  StepHeader,
-  StepLayout,
-  Text,
-} from '@/shared/ui';
+import { Button, CalcRow, Chip, MoneyField, OptionCard, StepHeader, StepLayout, Text } from '@/shared/ui';
+
+import { TaxRows } from '@/features/estimate/TaxRows';
+
+import { FeesSection } from './FeesSection';
+import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } from './income-concepts';
+import { OtherSchedulesSection } from './OtherSchedulesSection';
 
 const [, exogenousStep, , assetsStep] = FLOW_STEPS;
-const EXOGENOUS_ORIGIN = { variant: 'exogenous', label: 'Desde exógena' } as const;
-
-const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
-
-const ADJUSTMENT_ID = 'income-adjustment';
 const INFLATION_PERCENT = formatNumber(INFLATION_COMPONENT_RATE * 100);
-
-/**
- * Sets the total of an income schedule. Reported concepts are kept; the difference with what the
- * user writes becomes one adjustment concept, so the 210 detail still shows where each peso comes from.
- */
-const withTotal = (
-  concepts: readonly IncomeConcept[],
-  total: number,
-  financial: boolean,
-): IncomeConcept[] => {
-  const kept = concepts.filter(concept => concept.id !== ADJUSTMENT_ID);
-  const difference = total - sum(kept.map(concept => concept.amount));
-  return difference === 0
-    ? kept
-    : [
-        ...kept,
-        {
-          id: ADJUSTMENT_ID,
-          label: 'Ajuste que escribiste en Ingresos',
-          entity: 'Lo ingresaste tú',
-          amount: difference,
-          origin: 'user',
-          ...(financial ? { financial: true } : {}),
-        },
-      ];
-};
-
-const isFromExogenous = (concepts: readonly IncomeConcept[]) =>
-  concepts.length > 0 && concepts.every(concept => concept.origin === 'exogenous');
 
 /** Screen 04 · Ingresos (Figma node 9:783). */
 export const IncomePage = () => {
@@ -65,10 +27,10 @@ export const IncomePage = () => {
   const { state, dispatch, result } = useDeclaration();
   const { labor, capital, nonLabor } = state.data;
   const { capital: capitalResult } = result;
-  const capitalTotal = sum(capital.concepts.map(concept => concept.amount));
-  const nonLaborTotal = sum(nonLabor.concepts.map(concept => concept.amount));
+  const capitalTotal = totalOf(capital.concepts);
+  const nonLaborTotal = totalOf(nonLabor.concepts);
 
-  const reportedSalaries = sum(labor.concepts.map(concept => concept.amount));
+  const reportedSalaries = totalOf(labor.concepts);
   const employer = labor.concepts[0]?.entity;
   const salariesFromExogenous = labor.concepts.length > 0 && labor.salaries === reportedSalaries;
   const contributionsFromExogenous =
@@ -154,7 +116,10 @@ export const IncomePage = () => {
             type: 'updateData',
             update: data => ({
               ...data,
-              capital: { ...data.capital, concepts: withTotal(data.capital.concepts, total, true) },
+              capital: {
+                ...data.capital,
+                concepts: withTotal(data.capital.concepts, total, { ...ADJUSTMENT, financial: true }),
+              },
             }),
           });
         }}
@@ -174,7 +139,7 @@ export const IncomePage = () => {
             type: 'updateData',
             update: data => ({
               ...data,
-              nonLabor: { ...data.nonLabor, concepts: withTotal(data.nonLabor.concepts, total, false) },
+              nonLabor: { ...data.nonLabor, concepts: withTotal(data.nonLabor.concepts, total, ADJUSTMENT) },
             }),
           });
         }}
@@ -194,7 +159,7 @@ export const IncomePage = () => {
             updateLabor({ hasIndependentIncome: false });
           }}
           title='No, solo tuve empleo'
-          description='Seguimos con tu patrimonio.'
+          description='No te preguntamos por honorarios.'
         />
         <OptionCard
           name='hasIndependentIncome'
@@ -208,12 +173,9 @@ export const IncomePage = () => {
         />
       </div>
 
-      {labor.hasIndependentIncome && (
-        <Alert variant='info' title='Aún no calculamos honorarios'>
-          Pronto podrás declarar aquí tus ingresos como independiente. Por ahora tu cálculo incluye tus rentas
-          de trabajo como persona empleada, tus rendimientos financieros y tus otros ingresos.
-        </Alert>
-      )}
+      {labor.hasIndependentIncome && <FeesSection />}
+
+      <OtherSchedulesSection />
 
       <div className='flex items-start justify-between'>
         <Button variant='ghost' onClick={() => void navigate(exogenousStep.path)}>
@@ -240,11 +202,11 @@ const IncomeEstimate = () => {
           : 'Aún faltan tus deducciones. Este valor suele bajar.'
       }
     >
-      <CalcRow label='Ingresos brutos' value={estimate.grossIncome} />
+      <CalcRow label='Ingresos brutos' value={estimate.generalGrossIncome} />
       <CalcRow
         variant='subtract'
-        label='No constitutivos de renta'
-        value={estimate.grossIncome - estimate.generalNetIncome}
+        label='No constitutivos y costos'
+        value={estimate.generalGrossIncome - estimate.generalNetIncome}
       />
       <CalcRow variant='subtotal' label='Renta líquida' value={estimate.generalNetIncome} />
       <CalcRow
@@ -252,8 +214,7 @@ const IncomeEstimate = () => {
         label={estimateIncludesDeductions ? 'Deducciones y exentas' : 'Renta exenta del 25 % (tope 790 UVT)'}
         value={estimate.totalBenefits}
       />
-      <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
-      <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />
+      <TaxRows result={estimate} taxLabel='Impuesto según tabla' />
       <CalcRow variant='subtract' label='Retenciones que ya te hicieron' value={estimate.withholdings} />
       <CalcRow
         variant='total'

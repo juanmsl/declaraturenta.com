@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { computeDeclaration } from '@/domain/declaration';
 
 import { DeclarationContext } from './declaration-context';
-import { declarationReducer } from './declaration-state';
+import { declarationReducer, effectiveData } from './declaration-state';
 import type { DeclarationAction, DeclarationState } from './declaration-state';
 import { loadState, saveState } from './storage';
 
@@ -28,11 +28,12 @@ export const DeclarationProvider = ({ children, initialState }: DeclarationProvi
 
   const value = useMemo(() => {
     const includeDeductions = state.visitedSteps.includes('deductions');
+    const data = effectiveData(state);
     return {
       state,
       dispatch,
-      result: computeDeclaration(state.data),
-      estimate: computeDeclaration(state.data, { includeDeductions }),
+      result: computeDeclaration(data),
+      estimate: computeDeclaration(data, { includeDeductions }),
       estimateIncludesDeductions: includeDeductions,
     };
   }, [state, dispatch]);

@@ -4,6 +4,7 @@ import { LuArrowRight } from 'react-icons/lu';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { effectiveData } from '@/app/declaration/declaration-state';
 import { FLOW_STEPS } from '@/app/flow';
 import { computeDeclaration } from '@/domain/declaration';
 import { BENEFITS_CAP_RATE, LABOR_LIMITS_UVT } from '@/domain/labor-income';
@@ -12,6 +13,7 @@ import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, StepHeader, StepLayout, Text } from '@/shared/ui';
+import { TaxRows } from '@/features/estimate/TaxRows';
 
 import { CapMeter } from './CapMeter';
 import type { CapSegment } from './CapMeter';
@@ -165,7 +167,7 @@ export const DeductionsPage = () => {
 
 const DeductionsEstimate = () => {
   const { state, estimate } = useDeclaration();
-  const before = computeDeclaration(state.data, { includeDeductions: false });
+  const before = computeDeclaration(effectiveData(state), { includeDeductions: false });
   const toPay = estimate.balance > 0;
 
   let note: string;
@@ -181,8 +183,7 @@ const DeductionsEstimate = () => {
     <EstimatePanel note={note}>
       <CalcRow variant='subtotal' label='Renta líquida' value={estimate.generalNetIncome} />
       <CalcRow variant='subtract' label='Exentas y deducciones' value={estimate.totalBenefits} />
-      <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
-      <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />
+      <TaxRows result={estimate} taxLabel='Impuesto según tabla' />
       <CalcRow variant='subtract' label='Retenciones' value={estimate.withholdings} />
       <CalcRow
         variant='total'

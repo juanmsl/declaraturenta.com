@@ -11,7 +11,7 @@ import type { FilingCount } from '@/domain/advance-payment';
 import { buildForm210, OTHER_SCHEDULES, SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
 import type { Form210, Form210Box } from '@/domain/form-210';
 import { TAX_YEAR } from '@/domain/uvt';
-import { Alert, BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
+import { BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
 
 import { BoxDetailDrawer } from './BoxDetailDrawer';
 
@@ -207,9 +207,11 @@ export const Form210Page = () => {
                     </button>
                   </div>
                   {isActive && (
-                    <Alert variant='info' title='Aún no calculamos esta cédula'>
-                      Sus casillas quedan en $ 0. Pronto podrás declararla aquí.
-                    </Alert>
+                    <BoxGrid
+                      form={form}
+                      rows={chunk(range(schedule.fromBox, schedule.toBox), 4)}
+                      render={box}
+                    />
                   )}
                 </div>
               );
@@ -249,7 +251,7 @@ export const Form210Page = () => {
             form={form}
             rows={[
               [134, 135, 136, 137],
-              [138, 139],
+              [138, 139, 140, 141],
             ]}
             render={box}
           />
@@ -344,3 +346,10 @@ const ScheduleMatrix = ({ render }: { render: (number: number, showLabel?: boole
     </div>
   );
 };
+
+const range = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, index) => from + index);
+
+const chunk = (values: number[], size: number) =>
+  Array.from({ length: Math.ceil(values.length / size) }, (_, index) =>
+    values.slice(index * size, index * size + size),
+  );

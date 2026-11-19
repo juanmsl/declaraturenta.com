@@ -6,6 +6,7 @@ import { computeDeclaration, createEmptyDeclaration } from './declaration';
 import {
   applyExogenous,
   buildExogenousReport,
+  classifyLine,
   clearExogenous,
   countReportingEntities,
   reportedTotal,
@@ -109,5 +110,56 @@ describe('capital and non-labor from the report', () => {
     const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report));
     expect(cleared.capital.concepts).toEqual([]);
     expect(cleared.nonLabor.concepts).toEqual([]);
+  });
+});
+
+describe('fees, pensions, dividends and occasional gains from the report', () => {
+  const line = (suggestedUse: string, detail = 'Pago reportado') => ({
+    id: suggestedUse,
+    reporterNit: '900000001',
+    reporterName: 'Entidad Ficticia S.A.S.',
+    detail,
+    amount: 1_000_000,
+    suggestedUse,
+    extra: '',
+  });
+
+  it('classifies them by the box the DIAN suggests', () => {
+    expect(classifyLine(line('R43 Ingresos brutos por honorarios')).kind).toBe('fees-income');
+    expect(classifyLine(line('R99 Ingresos brutos por pensiones')).kind).toBe('pension-income');
+    expect(classifyLine(line('R107 Dividendos 1a subcédula'))).toMatchObject({
+      kind: 'dividend',
+      dividendKind: 'first-subcedule',
+    });
+    expect(classifyLine(line('R104 Dividendos 2016 y anteriores'))).toMatchObject({
+      dividendKind: 'until-2016-taxed',
+      review: 'dividend',
+    });
+    expect(classifyLine(line('R112 Ganancias ocasionales'))).toMatchObject({
+      kind: 'occasional-gain',
+      review: 'occasional-gain',
+    });
+  });
+
+  it('sends independent contributions to fees when there are fees', () => {
+    const base = buildExogenousReport(parseExogenousSheet(exogenousSheetFixture), 'exogena.xlsx');
+    const report = {
+      ...base,
+      items: [
+        ...base.items,
+        {
+          id: 'fees',
+          kind: 'fees-income' as const,
+          label: 'Honorarios',
+          entity: 'Cliente',
+          amount: 9_000_000,
+        },
+      ],
+    };
+    const data = applyExogenous(createEmptyDeclaration(), report);
+    expect(data.fees.concepts.map(concept => concept.amount)).toEqual([9_000_000]);
+    expect(data.labor.hasIndependentIncome).toBe(true);
+    expect(data.fees.nonTaxableIncome).toBe(reportedTotal(report, 'other-non-taxable'));
+    expect(data.capital.independentContributions).toBe(0);
   });
 });
