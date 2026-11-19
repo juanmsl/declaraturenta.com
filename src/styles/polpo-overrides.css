@@ -57,6 +57,28 @@
     }
   }
 
+  /* Compact fields (Figma screen 09): 13 px medium label, 44 px box, strong border */
+  :is(.money-field, .text-field).is-compact .form-field {
+    gap: 0.375rem;
+
+    .field-label {
+      font-size: var(--text-caption);
+      line-height: var(--text-caption--line-height);
+      font-weight: 500;
+      color: var(--color-fg-secondary);
+    }
+
+    .field-content {
+      height: 2.75rem;
+      padding: 0 0.75rem 0 0.875rem;
+      border-color: var(--color-line-strong);
+    }
+
+    &.focus .field-content {
+      padding: 0 calc(0.75rem - 1px) 0 calc(0.875rem - 1px);
+    }
+  }
+
   .money-field .form-field input {
     font-weight: 600;
     font-variant-numeric: tabular-nums;

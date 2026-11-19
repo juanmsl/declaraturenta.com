@@ -17,12 +17,14 @@ export type DeclarationState = {
     /** Exogenous items the user explicitly confirmed (e.g. housing interest). */
     confirmedItems: string[];
   };
+  /** "Otras cédulas" the user turned on (not calculated yet; ADR 0020). */
+  activeSchedules: string[];
   /** ISO timestamp of the user's last change (shown as "Guardado hace…"). */
   savedAt: string | null;
 };
 
 /** Bump when `DeclarationState` changes shape; older saved states fall back to the initial one. */
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,
@@ -30,6 +32,7 @@ export const createInitialState = (): DeclarationState => ({
   completedSteps: [],
   visitedSteps: [],
   exogenous: { fileName: null, confirmedItems: [] },
+  activeSchedules: [],
   savedAt: null,
 });
 
@@ -39,6 +42,7 @@ export type DeclarationAction =
   | { type: 'updateData'; update: (data: DeclarationData) => DeclarationData }
   | { type: 'importExogenous'; fileName: string }
   | { type: 'confirmExogenousItem'; itemId: string }
+  | { type: 'toggleSchedule'; scheduleId: string }
   | { type: 'reset' };
 
 /** An action stamped with the time it was dispatched, so the reducer stays pure. */
@@ -65,6 +69,14 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
           ...state.exogenous,
           confirmedItems: addOnce(state.exogenous.confirmedItems, action.itemId),
         },
+        savedAt: action.at,
+      };
+    case 'toggleSchedule':
+      return {
+        ...state,
+        activeSchedules: state.activeSchedules.includes(action.scheduleId)
+          ? state.activeSchedules.filter(id => id !== action.scheduleId)
+          : [...state.activeSchedules, action.scheduleId],
         savedAt: action.at,
       };
     case 'reset':

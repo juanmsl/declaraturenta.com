@@ -25,3 +25,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0017](./0017-assets-and-debts-editing.md)       | Adding, editing and deleting assets and debts                  | Accepted |
 | [0018](./0018-deductions-screen.md)              | Deductions screen: editable rows and cap meter                 | Accepted |
 | [0019](./0019-draft-pdf-and-filing-guide.md)     | Draft screen: PDF, filing guide and the 210 model              | Accepted |
+| [0020](./0020-form-210-screen-and-box-detail.md) | Formulario 210 screen and box detail with editable concepts    | Accepted |

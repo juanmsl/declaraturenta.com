@@ -11,19 +11,19 @@ rail and the isotype. No flags or stereotypes.
 
 ## Screens
 
-| Screen                         | Figma node | Route            | Status      |
-| ------------------------------ | ---------- | ---------------- | ----------- |
-| 01 · Inicio                    | `7:2`      | `/`              | Built       |
-| 02 · ¿Debo declarar?           | `7:350`    | `/debo-declarar` | Placeholder |
-| 03 · Importar exógena          | `9:448`    | `/exogena`       | Placeholder |
-| 04 · Ingresos                  | `9:783`    | `/ingresos`      | Placeholder |
-| 05 · Patrimonio                | `14:1386`  | `/patrimonio`    | Placeholder |
-| 06 · Deducciones y exentas     | `10:871`   | `/deducciones`   | Placeholder |
-| 07 · Resultado                 | `10:1188`  | `/resultado`     | Placeholder |
-| 08 · Borrador 210              | `11:1213`  | `/borrador-210`  | Placeholder |
-| 09 · Formulario 210            | `18:1572`  | —                | Not started |
-| 09b · Detalle casilla 32       | `19:2267`  | —                | Not started |
-| 10 · Móvil · Usa un computador | `23:3012`  | —                | Not started |
+| Screen                         | Figma node | Route             | Status      |
+| ------------------------------ | ---------- | ----------------- | ----------- |
+| 01 · Inicio                    | `7:2`      | `/`               | Built       |
+| 02 · ¿Debo declarar?           | `7:350`    | `/debo-declarar`  | Built       |
+| 03 · Importar exógena          | `9:448`    | `/exogena`        | Built       |
+| 04 · Ingresos                  | `9:783`    | `/ingresos`       | Built       |
+| 05 · Patrimonio                | `14:1386`  | `/patrimonio`     | Built       |
+| 06 · Deducciones y exentas     | `10:871`   | `/deducciones`    | Built       |
+| 07 · Resultado                 | `10:1188`  | `/resultado`      | Built       |
+| 08 · Borrador 210              | `11:1213`  | `/borrador-210`   | Built       |
+| 09 · Formulario 210            | `18:1572`  | `/formulario-210` | Built       |
+| 09b · Detalle casilla 32       | `19:2267`  | `?casilla=N`      | Built       |
+| 10 · Móvil · Usa un computador | `23:3012`  | —                 | Not started |
 
 ## Tokens
 

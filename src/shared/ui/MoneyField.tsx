@@ -29,6 +29,10 @@ type MoneyFieldProps = {
   /** Origin chip shown inside the field, e.g. "Desde exógena". */
   origin?: { variant: ChipVariant; label: string };
   disabled?: boolean;
+  /** `compact`: 13 px label and 44 px box (Figma screen 09). */
+  size?: 'regular' | 'compact';
+  /** False for counts (no `$` sign). */
+  currency?: boolean;
 };
 
 /**
@@ -44,6 +48,8 @@ export const MoneyField = ({
   error,
   origin,
   disabled,
+  size = 'regular',
+  currency = true,
 }: MoneyFieldProps) => {
   const originVariant = origin?.variant;
   const originLabel = origin?.label;
@@ -59,7 +65,14 @@ export const MoneyField = ({
   }, [originVariant, originLabel]);
 
   return (
-    <div className={cn('money-field flex flex-col gap-2', value === 0 && 'is-empty', error && 'has-error')}>
+    <div
+      className={cn(
+        'money-field flex flex-col gap-2',
+        value === 0 && 'is-empty',
+        error && 'has-error',
+        size === 'compact' && 'is-compact',
+      )}
+    >
       <InputNumber
         name={name}
         label={label}
@@ -69,7 +82,7 @@ export const MoneyField = ({
         }}
         format={PESO_FORMAT}
         decimalSeparator=','
-        leftIcon={PesoSign}
+        leftIcon={currency ? PesoSign : undefined}
         rightIcon={OriginChip}
         disabled={disabled}
       />

@@ -1,7 +1,7 @@
 import { sampleDeclaration } from '@/mocks/sample-declaration';
 
 import { computeDeclaration } from './declaration';
-import { buildForm210, findDependentBoxes, getBoxConcepts } from './form-210';
+import { buildForm210, findDependentBoxes, scheduleColumnOf } from './form-210';
 
 const result = computeDeclaration(sampleDeclaration);
 const form = buildForm210(sampleDeclaration, result);
@@ -38,7 +38,9 @@ describe('buildForm210', () => {
   });
 
   it('labels matrix boxes with row and column', () => {
-    expect(form.get(43)?.label).toBe('Ingresos brutos · Honorarios y servicios');
+    expect(form.get(43)?.label).toBe('Ingresos brutos por honorarios y servicios');
+    expect(scheduleColumnOf(43)).toBe('Honorarios y servicios');
+    expect(scheduleColumnOf(29)).toBeUndefined();
     expect(form.get(32)?.note).toBe('6 conceptos');
   });
 
@@ -47,9 +49,8 @@ describe('buildForm210', () => {
     expect(findDependentBoxes(form, 34).map(box => box.number)).toEqual([42, 91]);
   });
 
-  it('lists the six concepts of box 32', () => {
-    const concepts = getBoxConcepts(32, sampleDeclaration, result);
-    expect(concepts).toHaveLength(6);
-    expect(concepts.reduce((sum, concept) => sum + concept.amount, 0)).toBe(180_000_000);
+  it('highlights the balance in favor', () => {
+    expect(form.get(137)?.kind).toBe('highlighted');
+    expect(form.get(136)?.kind).toBe('calculated');
   });
 });

@@ -1,4 +1,4 @@
-import type { DeclarationData, DeclarationResult, ValueOrigin } from './declaration';
+import type { DeclarationData, DeclarationResult } from './declaration';
 import { ADDITIONAL_DEPENDENT_UVT } from './declaration';
 
 /**
@@ -230,12 +230,19 @@ export const OTHER_SCHEDULES = [
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-const matrixLabel = (box: number): string | undefined => {
+/** Income column of a general-schedule box ("Rentas de trabajo"…), if it sits in the matrix. */
+export const scheduleColumnOf = (box: number): string | undefined => {
   for (const row of SCHEDULE_ROWS) {
     const column = row.boxes.indexOf(box);
-    if (column >= 0) return `${row.label} · ${SCHEDULE_COLUMNS[column] ?? ''}`;
+    if (column >= 0) return SCHEDULE_COLUMNS[column];
   }
   return undefined;
+};
+
+const matrixLabel = (box: number): string | undefined => {
+  const row = SCHEDULE_ROWS.find(item => item.boxes.includes(box));
+  const column = scheduleColumnOf(box);
+  return row && column ? `${row.label} por ${column.toLowerCase()}` : undefined;
 };
 
 /** Values of every box from the computed return. Boxes the engine does not model are 0. */
@@ -302,13 +309,17 @@ export const buildForm210 = (data: DeclarationData, result: DeclarationResult): 
   const notes = boxNotes(data, result);
   const form: Form210 = new Map();
 
+  // The final result is highlighted: balance in favor (137) or amount to pay (136).
+  const resultBox = result.amountToPay > 0 ? 136 : 137;
+
   for (const [key, spec] of Object.entries(BOX_SPECS)) {
     const number = Number(key);
+    const isResult = number === 136 || number === 137;
     form.set(number, {
       number,
-      label: spec.label ?? matrixLabel(number) ?? `Casilla ${number}`,
+      label: spec.label ?? matrixLabel(number) ?? `Casilla ${String(number)}`,
       value: values[number] ?? 0,
-      kind: spec.kind,
+      kind: isResult ? (number === resultBox ? 'highlighted' : 'calculated') : spec.kind,
       formula: spec.formula,
       note: notes[number] ?? spec.note,
       verified: number <= LAST_VERIFIED_BOX,
@@ -325,129 +336,3 @@ export const findDependentBoxes = (form: Form210, box: number): Form210Box[] =>
       ? (candidate.formula.match(/\d+(?=[^\d.,%]|$)/gu) ?? []).map(Number).includes(box)
       : false,
   );
-
-/** One concept that adds up to an entered box (Figma screen 09b). */
-export type BoxConcept = {
-  id: string;
-  label: string;
-  detail: string;
-  amount: number;
-  origin: ValueOrigin;
-  /** What the exogenous report said, when the user changed it. */
-  exogenousAmount?: number;
-};
-
-/** Concepts behind an entered box, when the app knows them. */
-export const getBoxConcepts = (
-  box: number,
-  data: DeclarationData,
-  result: DeclarationResult,
-): BoxConcept[] => {
-  switch (box) {
-    case 29:
-      return data.assets.map(({ id, label, detail, amount, origin }) => ({
-        id,
-        label,
-        detail,
-        amount,
-        origin,
-      }));
-    case 30:
-      return data.debts.map(({ id, label, detail, amount, origin }) => ({
-        id,
-        label,
-        detail,
-        amount,
-        origin,
-      }));
-    case 32: {
-      const concepts: BoxConcept[] = data.labor.concepts.map(concept => ({
-        id: concept.id,
-        label: concept.label,
-        detail: concept.entity,
-        amount: concept.amount,
-        origin: concept.origin,
-        exogenousAmount: concept.exogenousAmount,
-      }));
-      const conceptsTotal = concepts.reduce((sum, concept) => sum + concept.amount, 0);
-      if (data.labor.salaries !== conceptsTotal) {
-        concepts.push({
-          id: 'adjustment',
-          label: 'Ajuste a salarios y pagos laborales',
-          detail: 'Diferencia con lo que escribiste en Ingresos',
-          amount: data.labor.salaries - conceptsTotal,
-          origin: 'user',
-        });
-      }
-      if (data.labor.otherPayments > 0) {
-        concepts.push({
-          id: 'other-payments',
-          label: 'Otros pagos laborales',
-          detail: 'No incluidos en el certificado',
-          amount: data.labor.otherPayments,
-          origin: 'user',
-        });
-      }
-      return concepts;
-    }
-    case 33:
-      return [
-        {
-          id: 'mandatory-contributions',
-          label: 'Aportes obligatorios a pensión, salud y fondo de solidaridad',
-          detail: data.labor.concepts[0]?.entity ?? '',
-          amount: data.labor.nonTaxableIncome,
-          origin: 'exogenous',
-        },
-      ];
-    case 36:
-      return [
-        {
-          id: 'exempt-25',
-          label: 'Renta exenta del 25 %',
-          detail: 'Calculada sobre tus pagos laborales',
-          amount: result.labor.exempt25,
-          origin: 'user',
-        },
-      ];
-    case 38:
-      return [
-        {
-          id: 'housing',
-          label: 'Intereses del crédito de vivienda',
-          detail: data.debts[0]?.detail.split(' · ')[0] ?? '',
-          amount: result.labor.housingDeduction,
-          origin: 'exogenous',
-        },
-      ];
-    case 39:
-      return [
-        {
-          id: 'dependent',
-          label: 'Dependiente económico',
-          detail: '10 % de tus ingresos',
-          amount: result.labor.dependent,
-          origin: 'user' as const,
-        },
-        {
-          id: 'prepaid-health',
-          label: 'Medicina prepagada',
-          detail: '',
-          amount: result.labor.prepaidHealth,
-          origin: 'exogenous' as const,
-        },
-      ].filter(concept => concept.amount > 0);
-    case 132:
-      return [
-        {
-          id: 'withholdings',
-          label: 'Retención en la fuente',
-          detail: data.labor.concepts[0]?.entity ?? '',
-          amount: result.withholdings,
-          origin: 'exogenous',
-        },
-      ];
-    default:
-      return [];
-  }
-};

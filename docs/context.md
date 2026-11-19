@@ -4,8 +4,8 @@ _Last updated: 2026-11-19._
 
 ## Phase
 
-The design is done in Figma. Development started with the project base, the design tokens on top
-of Polpo's theme, the app shell (side rail and top bar) and screen **01 · Inicio**.
+The design is done in Figma. Screens 01–09b are built on the app shell, the tax engine in
+`src/domain` and the declaration state persisted in localStorage. Screen 10 (mobile) is next.
 
 ## Built
 
@@ -14,8 +14,10 @@ of Polpo's theme, the app shell (side rail and top bar) and screen **01 · Inici
 - Theme: Figma colors, radius and the 12 text styles (`src/styles/index.css`).
 - Shared UI: `Text`, `Button`, `Icon`, `Diamond`, `BraidSegment`, `Braid`, `Logo`.
 - Layout: `SideRail`, `SideRailItem`, `TopBar`, `AppLayout`.
-- Screen 01 · Inicio, matched against Figma at 1440 px.
-- Routes for the seven flow sections, rendering a placeholder.
+- Screens 01–08 of the flow and 09 · Formulario 210 with 09b · box detail, matched against Figma
+  at 1440 px (ADRs 0012–0020).
+- Domain: filing tests, labor income caps, art. 241 table, advance payment, the 210 box model
+  (`form-210.ts`) and editable box concepts (`box-concepts.ts`), all with tests.
 
 ## Behavior decided per screen
 
@@ -34,6 +36,10 @@ Ask the owner before resolving these.
 - **"Ayuda" button** has no behavior defined.
 - **404 page** and an error boundary are not designed.
 - **Mobile view** (screen 10) is not built; the app sets a minimum width of 1280 px.
+- **Figma vs sample data on screen 09**: Figma shows "3 conceptos" under boxes 29 and 33; our data
+  has 2 assets and box 33 is a single total. The section diamond on screen 09 is outside the
+  "rombo only in progress" rule; we follow Figma.
+- **Box 138** stays at 0 although box 39 counts a dependent (same open question as above).
 - **Favicon** uses the color isotype SVG; the 16/32 px versions are still pending in Figma.
 - **Tax rules**: boxes 77–139 of the 210 must be validated against the official DIAN PDF; the rate
   of box 127 and whether one dependent can count in boxes 39 and 139 are unconfirmed.
@@ -43,6 +49,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Screen 02 · ¿Debo declarar? and the components it needs (Opción, Alerta, Campo monetario).
-2. A flow state store (progress, answers) and how it persists.
-3. The mobile "use a computer" screen.
+1. Screen 10 · the mobile "use a computer" view below 1280 px.
+2. Validate boxes 77–139 against the official DIAN PDF.
