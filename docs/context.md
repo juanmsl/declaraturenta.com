@@ -29,17 +29,14 @@ the business model comes last, after the platform is fully functional.
 
 - The declaration is transcribed by hand in the DIAN portal; no direct filing.
 - Data stays in the browser, with a downloadable/uploadable local copy (.json).
+- Brand: compact braid with one diamond per step, violet plate favicon and the diamond as
+  section marker (ADR 0029).
 - Domain: declaraturenta.com. Screens between 480 and 1280 px keep the 480 px column.
 
 ## Known gaps and open questions
 
 Ask the owner before resolving these.
 
-- **Waiting for a choice** in the Figma board "Opciones por decidir" (`78:9346`):
-  - Favicon at 16/32 px (today the full isotype, illegible at 16 px).
-  - Compact braid: the current one (584 px) is clipped at 1280 px.
-  - Section marker for the side rail and "Tu camino" (diamond, numbered diamond, mini isotype or
-    number and check).
 - **Tax rules**: boxes 77–139 still need a pass against the official DIAN PDF; the occasional
   gains, pensions and dividends schedules are not calculated.
 - **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
@@ -49,6 +46,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Apply the owner's choices from "Opciones por decidir" in Figma components and in code.
-2. Validate boxes 77–139 against the official DIAN PDF (box 127 and 138/139 rules included).
-3. Calculate the pending schedules (pensions, dividends, occasional gains).
+1. Validate boxes 77–139 against the official DIAN PDF (box 127 and 138/139 rules included).
+2. Calculate the pending schedules (pensions, dividends, occasional gains).
