@@ -9,11 +9,13 @@ describe('migrateState', () => {
     delete oldData.pensions;
     delete oldData.dividends;
     delete oldData.occasionalGains;
+    delete oldData.fees;
     const migrated = migrateState({ ...createInitialState(), version: 7, data: oldData });
     expect(migrated?.version).toBe(STATE_VERSION);
     expect(migrated?.data.pensions).toEqual({ concepts: [], nonTaxableIncome: 0, months: 12 });
     expect(migrated?.data.dividends.concepts).toEqual([]);
     expect(migrated?.data.occasionalGains.concepts).toEqual([]);
+    expect(migrated?.data.fees.option).toBeNull();
     expect(migrated?.data.labor.salaries).toBe(180_000_000);
   });
 

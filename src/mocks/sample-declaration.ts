@@ -67,6 +67,7 @@ export const sampleDeclaration: DeclarationData = {
     voluntaryContributions: 0,
     hasIndependentIncome: false,
   },
+  fees: { concepts: [], nonTaxableIncome: 0, costs: 0, option: null },
   capital: { concepts: [], independentContributions: 0, costs: 0 },
   nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
   pensions: { concepts: [], nonTaxableIncome: 0, months: 12 },

@@ -39,6 +39,12 @@ export type IncomeConcept = {
   financial?: boolean;
 };
 
+/** How fees are declared: subtracting costs (43–57) or with the 25 % exempt income (32). */
+export type FeesOption = 'costs' | 'exempt';
+
+/** Indicative cap of costs for fees (art. 336-1 E.T.): above 60 % of 43 box 140 must be marked. */
+export const FEES_INDICATIVE_COSTS_RATE = 0.6;
+
 /** One labor payment that adds up to box 32 (e.g. salary, bonus). */
 export type LaborConcept = IncomeConcept;
 
@@ -96,6 +102,19 @@ export type DeclarationData = {
     voluntaryContributions: number;
     hasIndependentIncome: boolean | null;
   };
+  /**
+   * Fees and services as an independent (honorarios). Either their costs are subtracted (boxes
+   * 43–57) or they join labor income with the 25 % exempt (box 32), never both (art. 206 par. 5).
+   */
+  fees: {
+    concepts: IncomeConcept[];
+    /** Mandatory pension and solidarity contributions paid as an independent (44, or 33). */
+    nonTaxableIncome: number;
+    /** Box 45: costs and expenses backed by electronic invoices. */
+    costs: number;
+    /** Option the person confirmed; null while they have not chosen (we use the suggested one). */
+    option: FeesOption | null;
+  };
   /** Rentas de capital (boxes 58–73): interest and financial yields. */
   capital: {
     concepts: IncomeConcept[];
@@ -141,6 +160,33 @@ export type DeclarationData = {
   refundPreference: 'refund' | 'next-year';
 };
 
+export type FeesIncomeResult = {
+  /** Option applied in this result. */
+  option: FeesOption;
+  /** Box 43 (0 with the exempt option: fees go to box 32). */
+  grossIncome: number;
+  /** Box 44. */
+  nonTaxableIncome: number;
+  /** Box 45. */
+  costs: number;
+  /** Box 46. */
+  netIncome: number;
+  /** Box 55. */
+  loss: number;
+  /** Box 140: costs above 60 % of 43. */
+  exceedsIndicativeCap: boolean;
+};
+
+/** Tax due with each fees option, to suggest the one that leaves less tax. */
+export type FeesComparison = {
+  costs: number;
+  exempt: number;
+  suggested: FeesOption;
+};
+
+/** Boxes 41, 53, 69 and 86: the capped benefits distributed in the DIAN order. */
+export type LimitedBenefits = { labor: number; fees: number; capital: number; nonLabor: number };
+
 export type DeclarationResult = {
   obligation: FilingObligation;
   grossAssets: number;
@@ -149,6 +195,10 @@ export type DeclarationResult = {
   /** Box 32: salaries + other labor payments. */
   grossLaborIncome: number;
   labor: LaborIncomeResult;
+  fees: FeesIncomeResult;
+  /** Present when there are fees: tax due with each option. */
+  feesComparison: FeesComparison | null;
+  limitedBenefits: LimitedBenefits;
   capital: CapitalIncomeResult;
   nonLabor: NonLaborIncomeResult;
   pensions: PensionResult;
@@ -257,26 +307,78 @@ export const computeNonLaborIncome = (nonLabor: DeclarationData['nonLabor']): No
   };
 };
 
+export const computeFeesIncome = (fees: DeclarationData['fees'], option: FeesOption): FeesIncomeResult => {
+  if (option === 'exempt') {
+    return {
+      option,
+      grossIncome: 0,
+      nonTaxableIncome: 0,
+      costs: 0,
+      netIncome: 0,
+      loss: 0,
+      exceedsIndicativeCap: false,
+    };
+  }
+  const grossIncome = conceptsTotal(fees.concepts);
+  const nonTaxableIncome = Math.max(0, fees.nonTaxableIncome);
+  const costs = Math.max(0, fees.costs);
+  return {
+    option,
+    grossIncome,
+    nonTaxableIncome,
+    costs,
+    netIncome: Math.max(0, grossIncome - nonTaxableIncome - costs),
+    loss: Math.max(0, nonTaxableIncome + costs - grossIncome),
+    exceedsIndicativeCap: grossIncome > 0 && costs / grossIncome > FEES_INDICATIVE_COSTS_RATE,
+  };
+};
+
 export type ComputeOptions = {
   /** Include deductions and their exempt-income effect (false before the deductions step). */
   includeDeductions?: boolean;
   uvtValue?: number;
 };
 
-/** Computes every figure of the return from the user's data. Pure function. */
+/**
+ * Computes every figure of the return from the user's data. Pure function. With fees and no option
+ * confirmed, it computes both options and applies the one that leaves less tax.
+ */
 export const computeDeclaration = (
   data: DeclarationData,
-  { includeDeductions = true, uvtValue = UVT_2025 }: ComputeOptions = {},
+  options: ComputeOptions = {},
+): DeclarationResult => {
+  if (data.fees.concepts.length === 0) return computeWithFeesOption(data, 'exempt', options, null);
+  const withCosts = computeWithFeesOption(data, 'costs', options, null);
+  const withExempt = computeWithFeesOption(data, 'exempt', options, null);
+  const comparison: FeesComparison = {
+    costs: withCosts.taxDue,
+    exempt: withExempt.taxDue,
+    suggested: withCosts.taxDue < withExempt.taxDue ? 'costs' : 'exempt',
+  };
+  const applied = data.fees.option ?? comparison.suggested;
+  return { ...(applied === 'costs' ? withCosts : withExempt), feesComparison: comparison };
+};
+
+const computeWithFeesOption = (
+  data: DeclarationData,
+  feesOption: FeesOption,
+  { includeDeductions = true, uvtValue = UVT_2025 }: ComputeOptions,
+  feesComparison: FeesComparison | null,
 ): DeclarationResult => {
   const grossAssets = sum(data.assets.map(asset => asset.amount));
   const totalDebts = sum(data.debts.map(debt => debt.amount));
-  const grossLaborIncome = data.labor.salaries + data.labor.otherPayments;
+  const fees = computeFeesIncome(data.fees, feesOption);
+  // With the exempt option, fees and their contributions join labor income (boxes 32 and 33).
+  const feesInLabor = feesOption === 'exempt' ? conceptsTotal(data.fees.concepts) : 0;
+  const feesNonTaxableInLabor = feesOption === 'exempt' ? Math.max(0, data.fees.nonTaxableIncome) : 0;
+  const grossLaborIncome = data.labor.salaries + data.labor.otherPayments + feesInLabor;
+  const laborNonTaxableIncome = data.labor.nonTaxableIncome + feesNonTaxableInLabor;
   const capital = computeCapitalIncome(data.capital);
   const nonLabor = computeNonLaborIncome(data.nonLabor);
   const pensions = computePensions(data.pensions, uvtValue);
   const dividends = computeDividends(data.dividends.concepts, uvtValue);
   const occasionalGains = computeOccasionalGains(data.occasionalGains.concepts, uvtValue);
-  const generalGrossIncome = grossLaborIncome + capital.grossIncome + nonLabor.grossIncome;
+  const generalGrossIncome = grossLaborIncome + fees.grossIncome + capital.grossIncome + nonLabor.grossIncome;
   const grossIncome =
     generalGrossIncome +
     pensions.grossIncome +
@@ -284,11 +386,15 @@ export const computeDeclaration = (
     dividends.firstSubcedule +
     dividends.secondSubcedule +
     dividends.foreign;
-  const laborNetIncome = Math.max(0, grossLaborIncome - data.labor.nonTaxableIncome);
-  const generalNetIncome = laborNetIncome + capital.netIncome + nonLabor.netIncome;
+  const laborNetIncome = Math.max(0, grossLaborIncome - laborNonTaxableIncome);
+  const generalNetIncome = laborNetIncome + fees.netIncome + capital.netIncome + nonLabor.netIncome;
   const benefitsCapBase = Math.max(
     0,
-    generalGrossIncome - data.labor.nonTaxableIncome - capital.nonTaxableIncome - nonLabor.nonTaxableIncome,
+    generalGrossIncome -
+      laborNonTaxableIncome -
+      fees.nonTaxableIncome -
+      capital.nonTaxableIncome -
+      nonLabor.nonTaxableIncome,
   );
 
   const obligation = evaluateFilingObligation(
@@ -305,7 +411,7 @@ export const computeDeclaration = (
   const labor = computeLaborIncome(
     {
       grossIncome: grossLaborIncome,
-      nonTaxableIncome: data.labor.nonTaxableIncome,
+      nonTaxableIncome: laborNonTaxableIncome,
       voluntaryContributions: data.labor.voluntaryContributions,
       housingInterestPaid: data.deductions.housingInterestPaid,
       prepaidHealthPaid: data.deductions.prepaidHealthPaid,
@@ -322,6 +428,23 @@ export const computeDeclaration = (
         uvtToPesos(ELECTRONIC_INVOICE_CAP_UVT, uvtValue),
       )
     : 0;
+  // Boxes 41, 53, 69 and 86: the capped benefits go first to labor, then fees, capital and
+  // non-labor income, never above each column's net income (DIAN instructions).
+  let remaining = labor.cappedBenefits;
+  const take = (limit: number) => {
+    const taken = Math.min(remaining, Math.max(0, limit));
+    remaining -= taken;
+    return taken;
+  };
+  const limitedBenefits: LimitedBenefits = {
+    labor: take(labor.netIncome),
+    fees: take(fees.netIncome),
+    capital: take(capital.netIncome),
+    nonLabor: take(nonLabor.netIncome),
+  };
+  const laborOrdinaryIncome = labor.netIncome - limitedBenefits.labor;
+  const feesOrdinaryIncome = fees.netIncome - limitedBenefits.fees;
+
   // Box 139: outside the 40 % / 1.340 UVT cap, but never above boxes 42 + 57 (labor ordinary income).
   const dependentsAddition = includeDeductions
     ? Math.min(
@@ -330,10 +453,16 @@ export const computeDeclaration = (
             ADDITIONAL_DEPENDENT_UVT,
           uvtValue,
         ),
-        Math.max(0, labor.netIncome - labor.cappedBenefits),
+        laborOrdinaryIncome + feesOrdinaryIncome,
       )
     : 0;
-  const totalBenefits = labor.cappedBenefits + electronicInvoiceDeduction + dependentsAddition;
+  const totalBenefits =
+    limitedBenefits.labor +
+    limitedBenefits.fees +
+    limitedBenefits.capital +
+    limitedBenefits.nonLabor +
+    electronicInvoiceDeduction +
+    dependentsAddition;
   const taxableIncome = Math.max(0, generalNetIncome - totalBenefits);
   const tableBase = taxableIncome + pensions.taxableIncome + dividends.baseForTable;
   const tableTax = computeTableTax(tableBase, uvtValue);
@@ -361,6 +490,9 @@ export const computeDeclaration = (
     netAssets: Math.max(0, grossAssets - totalDebts),
     grossLaborIncome,
     labor,
+    fees,
+    feesComparison,
+    limitedBenefits,
     capital,
     nonLabor,
     pensions,
@@ -400,6 +532,7 @@ export const createEmptyDeclaration = (): DeclarationData => ({
     voluntaryContributions: 0,
     hasIndependentIncome: false,
   },
+  fees: { concepts: [], nonTaxableIncome: 0, costs: 0, option: null },
   capital: { concepts: [], independentContributions: 0, costs: 0 },
   nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
   pensions: { concepts: [], nonTaxableIncome: 0, months: 12 },

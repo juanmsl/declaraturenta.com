@@ -291,7 +291,7 @@ const matrixLabel = (box: number): string | undefined => {
 
 /** Values of every box from the computed return. Boxes the engine does not model are 0. */
 const boxValues = (data: DeclarationData, result: DeclarationResult): Record<number, number> => {
-  const { labor } = result;
+  const { labor, fees, limitedBenefits } = result;
   return {
     28: result.electronicInvoiceDeduction,
     29: result.grossAssets,
@@ -306,21 +306,31 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     38: labor.housingDeduction,
     39: labor.otherDeductions,
     40: labor.totalDeductions,
-    41: labor.cappedBenefits,
-    42: labor.ordinaryNetIncome,
+    41: limitedBenefits.labor,
+    42: labor.netIncome - limitedBenefits.labor,
+    43: fees.grossIncome,
+    44: fees.nonTaxableIncome,
+    45: fees.costs,
+    46: fees.netIncome,
+    53: limitedBenefits.fees,
+    54: fees.netIncome - limitedBenefits.fees,
+    55: fees.loss,
+    57: fees.netIncome - limitedBenefits.fees,
     58: result.capital.grossIncome,
     59: result.capital.nonTaxableIncome,
     60: result.capital.costs,
     61: result.capital.netIncome,
-    70: result.capital.netIncome,
-    73: result.capital.netIncome,
+    69: limitedBenefits.capital,
+    70: result.capital.netIncome - limitedBenefits.capital,
+    73: result.capital.netIncome - limitedBenefits.capital,
     74: result.nonLabor.grossIncome,
     75: result.nonLabor.returns,
     76: result.nonLabor.nonTaxableIncome,
     77: result.nonLabor.costs,
     78: result.nonLabor.netIncome,
-    87: result.nonLabor.netIncome,
-    90: result.nonLabor.netIncome,
+    86: limitedBenefits.nonLabor,
+    87: result.nonLabor.netIncome - limitedBenefits.nonLabor,
+    90: result.nonLabor.netIncome - limitedBenefits.nonLabor,
     91: result.generalNetIncome,
     92: result.totalBenefits,
     93: result.taxableIncome,
@@ -378,6 +388,7 @@ const boxNotes = (data: DeclarationData, result: DeclarationResult): Partial<Rec
   if (result.labor.exempt25 > 0) notes[36] = '25 % laboral · 1 concepto';
   if (otherDeductions > 0) notes[39] = plural(otherDeductions, 'concepto');
   if (result.capital.inflationComponent > 0) notes[59] = 'Componente inflacionario 55,43 %';
+  if (result.fees.exceedsIndicativeCap) notes[140] = 'Marca X: tus costos superan el 60 % de 43';
   return notes;
 };
 

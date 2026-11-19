@@ -40,7 +40,7 @@ export type DeclarationState = {
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,
