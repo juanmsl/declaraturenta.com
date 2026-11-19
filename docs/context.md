@@ -4,8 +4,8 @@ _Last updated: 2026-11-19._
 
 ## Phase
 
-The design is done in Figma. Screens 01–09b are built on the app shell, the tax engine in
-`src/domain` and the declaration state persisted in localStorage. Screen 10 (mobile) is next.
+The design is done in Figma. Every Figma screen (01–10) is built on the app shell, the tax engine
+in `src/domain` and the declaration state persisted in localStorage.
 
 ## Built
 
@@ -15,7 +15,7 @@ The design is done in Figma. Screens 01–09b are built on the app shell, the ta
 - Shared UI: `Text`, `Button`, `Icon`, `Diamond`, `BraidSegment`, `Braid`, `Logo`.
 - Layout: `SideRail`, `SideRailItem`, `TopBar`, `AppLayout`.
 - Screens 01–08 of the flow and 09 · Formulario 210 with 09b · box detail, matched against Figma
-  at 1440 px (ADRs 0012–0020).
+  at 1440 px (ADRs 0012–0020), and 10 · the small-screen view below 1280 px (ADR 0021).
 - Domain: filing tests, labor income caps, art. 241 table, advance payment, the 210 box model
   (`form-210.ts`) and editable box concepts (`box-concepts.ts`), all with tests.
 
@@ -35,10 +35,11 @@ Ask the owner before resolving these.
   so the braid is clipped on the right. Figma only has the 1440 px layout.
 - **"Ayuda" button** has no behavior defined.
 - **404 page** and an error boundary are not designed.
-- **Mobile view** (screen 10) is not built; the app sets a minimum width of 1280 px.
 - **Figma vs sample data on screen 09**: Figma shows "3 conceptos" under boxes 29 and 33; our data
   has 2 assets and box 33 is a single total. The section diamond on screen 09 is outside the
   "rombo only in progress" rule; we follow Figma.
+- **Screen 10**: the header uses the system logo instead of Figma's three-diamond mark (owner's
+  choice); "Compartir a mi computador" is hidden where the Web Share API is missing.
 - **Box 138** stays at 0 although box 39 counts a dependent (same open question as above).
 - **Favicon** uses the color isotype SVG; the 16/32 px versions are still pending in Figma.
 - **Tax rules**: boxes 77–139 of the 210 must be validated against the official DIAN PDF; the rate
@@ -49,5 +50,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Screen 10 · the mobile "use a computer" view below 1280 px.
-2. Validate boxes 77–139 against the official DIAN PDF.
+1. Validate boxes 77–139 against the official DIAN PDF.
+2. Resolve the open questions above (progress state, box 138, 404 page, "Ayuda").

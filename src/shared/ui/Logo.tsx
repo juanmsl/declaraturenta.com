@@ -5,6 +5,7 @@ import isotypeInk from '@/assets/brand/isotype-ink.svg';
 import isotypeInverted from '@/assets/brand/isotype-inverted.svg';
 
 import { Text } from './Text';
+import type { TextVariant } from './Text';
 
 type LogoColor = 'color' | 'ink' | 'inverted';
 
@@ -23,6 +24,8 @@ type LogoProps = {
   color?: LogoColor;
   /** Isotype size in px (minimum 16). */
   size?: number;
+  /** Text style of the wordmark; small headers (screen 10) use `title-s`. */
+  wordmarkVariant?: Extract<TextVariant, 'title-l' | 'title-s'>;
   className?: string;
 };
 
@@ -32,6 +35,7 @@ export const Logo = ({
   color = 'color',
   size = 48,
   decorative = false,
+  wordmarkVariant = 'title-l',
   className,
 }: LogoProps) => {
   const isotype = (
@@ -47,9 +51,9 @@ export const Logo = ({
   if (version === 'isotype') return isotype;
 
   return (
-    <div className={cn('flex items-center gap-3.5', className)}>
+    <div className={cn('flex items-center', wordmarkVariant === 'title-s' ? 'gap-2' : 'gap-3.5', className)}>
       {isotype}
-      <Text variant='title-l' as='span' className={color === 'inverted' ? 'text-white' : 'text-fg'}>
+      <Text variant={wordmarkVariant} as='span' className={color === 'inverted' ? 'text-white' : 'text-fg'}>
         Declara tu renta
       </Text>
     </div>
