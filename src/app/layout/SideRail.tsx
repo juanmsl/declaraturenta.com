@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { LuCalendar } from 'react-icons/lu';
 
-import { TAX_YEAR } from '@/domain/tax-year';
+import { TAX_YEAR } from '@/domain/uvt';
 import { getInitials } from '@/domain/taxpayer';
 import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { formatLongDate } from '@/shared/lib/format';

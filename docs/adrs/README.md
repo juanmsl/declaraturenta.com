@@ -17,3 +17,5 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0009](./0009-code-quality-tooling.md)           | Code quality: ESLint 9, Prettier, Vitest, husky, commitlint    | Accepted |
 | [0010](./0010-self-hosted-fonts.md)              | Self-hosted fonts with Fontsource                              | Accepted |
 | [0011](./0011-brand-assets-from-figma.md)        | Logo as SVG exported from Figma; local progress components     | Accepted |
+| [0012](./0012-tax-engine-in-domain.md)           | Tax calculation engine in `src/domain`                         | Accepted |
+| [0013](./0013-declaration-state.md)              | Declaration state: Context persisted in localStorage           | Accepted |

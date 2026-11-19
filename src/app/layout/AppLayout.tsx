@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router';
+
+import { useDeclaration } from '../declaration/declaration-context';
 
 import { FLOW_STEPS } from '../flow';
 import { SideRail } from './SideRail';
@@ -8,6 +11,12 @@ import { useFlowProgress } from './useFlowProgress';
 /** Desktop shell: side rail on the left, top bar and the current screen on the right. */
 export const AppLayout = () => {
   const { steps, currentStep } = useFlowProgress();
+  const { dispatch } = useDeclaration();
+  const currentStepId = currentStep?.id;
+
+  useEffect(() => {
+    if (currentStepId) dispatch({ type: 'visitStep', step: currentStepId });
+  }, [currentStepId, dispatch]);
 
   const location = currentStep
     ? `Paso ${currentStep.index + 1} de ${FLOW_STEPS.length} · ${currentStep.title}`

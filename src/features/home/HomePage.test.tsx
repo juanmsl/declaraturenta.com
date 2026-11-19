@@ -2,6 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
+import { DeclarationProvider } from '@/app/declaration/DeclarationProvider';
+import { createInitialState } from '@/app/declaration/declaration-state';
+
 import { HomePage } from './HomePage';
 
 const renderHome = () => {
@@ -10,7 +13,11 @@ const renderHome = () => {
     { path: '/debo-declarar', element: <p>Debo declarar</p> },
     { path: '/exogena', element: <p>Exógena</p> },
   ]);
-  render(<RouterProvider router={router} />);
+  render(
+    <DeclarationProvider initialState={createInitialState()}>
+      <RouterProvider router={router} />
+    </DeclarationProvider>,
+  );
   return router;
 };
 

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router';
 import { LuArrowRight } from 'react-icons/lu';
 
 import { FLOW_STEPS } from '@/app/flow';
-import { TAX_YEAR } from '@/domain/tax-year';
+import { TAX_YEAR } from '@/domain/uvt';
 import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
 import { Button, Text } from '@/shared/ui';
 
