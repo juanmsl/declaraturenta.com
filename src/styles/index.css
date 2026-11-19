@@ -1,0 +1,268 @@
+/*
+ * Global stylesheet. Import order matters (see docs/adrs/0004-design-tokens-on-polpo-theme.md):
+ * 1. Tailwind, 2. Polpo theme, 3. Polpo component styles, 4. fonts, 5. project tokens.
+ */
+@import 'tailwindcss';
+@import 'polpo-tailwind-config/styles';
+@import 'polpo/components.css';
+@import '@fontsource-variable/bricolage-grotesque/standard.css';
+@import '@fontsource-variable/figtree/index.css';
+
+@theme {
+  /* ------------------------------------------------------------------
+   * Primitives — Figma collection "Primitivos"
+   * Tailwind ships a default `violet` scale; reset it so only ours exists.
+   * ------------------------------------------------------------------ */
+  --color-violet-*: initial;
+
+  --color-ink-900: #17162b;
+  --color-ink-700: #3b3a55;
+  --color-ink-500: #62617c;
+  --color-ink-300: #b9b8cc;
+  --color-ink-150: #e4e3ee;
+  --color-ink-80: #efeef6;
+  --color-ink-40: #f7f7fb;
+
+  --color-violet-700: #4230d1;
+  --color-violet-600: #5b47f0;
+  --color-violet-100: #ece9ff;
+  --color-violet-50: #f5f3ff;
+
+  --color-sun-800: #6e4e00;
+  --color-sun-400: #ffc83d;
+  --color-sun-100: #fff3cc;
+
+  --color-coral-800: #a11e2a;
+  --color-coral-500: #f0525c;
+  --color-coral-100: #ffe6e7;
+
+  --color-mint-800: #0a6a51;
+  --color-mint-500: #22c69a;
+  --color-mint-100: #ddf8ef;
+
+  /* ------------------------------------------------------------------
+   * Semantic tokens — Figma collection "Color" (mode "Claro")
+   * Backgrounds: bg-*, text: text-fg-*, borders: border-line-*
+   * ------------------------------------------------------------------ */
+  --color-canvas: var(--color-ink-40); /* bg/lienzo */
+  --color-surface: var(--color-white); /* bg/superficie */
+  --color-subtle: var(--color-ink-80); /* bg/sutil */
+  --color-rail: var(--color-violet-50); /* bg/riel */
+  --color-action: var(--color-violet-600); /* bg/acento */
+  --color-action-hover: var(--color-violet-700); /* bg/acento-hover */
+  --color-action-soft: var(--color-violet-100); /* bg/acento-suave */
+  --color-sun: var(--color-sun-400); /* bg/sol */
+  --color-sun-soft: var(--color-sun-100); /* bg/sol-suave */
+  --color-coral: var(--color-coral-500); /* bg/coral */
+  --color-coral-soft: var(--color-coral-100); /* bg/coral-suave */
+  --color-mint: var(--color-mint-500); /* bg/menta */
+  --color-mint-soft: var(--color-mint-100); /* bg/menta-suave */
+  --color-ink: var(--color-ink-900); /* bg/tinta */
+
+  --color-fg: var(--color-ink-900); /* texto/primario */
+  --color-fg-secondary: var(--color-ink-700); /* texto/secundario */
+  --color-fg-muted: var(--color-ink-500); /* texto/tenue */
+  --color-fg-on-action: var(--color-white); /* texto/sobre-acento */
+  --color-fg-action: var(--color-violet-700); /* texto/acento */
+  --color-fg-success: var(--color-mint-800); /* texto/exito */
+  --color-fg-warning: var(--color-sun-800); /* texto/aviso */
+  --color-fg-error: var(--color-coral-800); /* texto/error */
+
+  --color-line: var(--color-ink-150); /* borde/base */
+  --color-line-strong: var(--color-ink-300); /* borde/fuerte */
+  --color-line-action: var(--color-violet-600); /* borde/acento */
+  --color-line-error: var(--color-coral-500); /* borde/error */
+  --color-line-success: var(--color-mint-500); /* borde/exito */
+
+  /* ------------------------------------------------------------------
+   * Polpo theme overrides — every Polpo component picks these up.
+   * ------------------------------------------------------------------ */
+  --color-primary: #5b47f0; /* violet-600: action */
+  --color-primary-foreground: #ffffff;
+  --color-alert: #f0525c; /* coral-500: amount due, errors */
+  --color-warning: #ffc83d; /* sun-400: completed, warnings */
+  --color-active: #22c69a; /* mint-500: success, exogenous data, refund */
+  --color-background: var(--color-canvas);
+  --color-background-paper: var(--color-surface);
+  --color-foreground: var(--color-fg);
+  --color-border: var(--color-line);
+
+  --font-main: 'Figtree Variable', 'Segoe UI', sans-serif;
+  --font-title: 'Bricolage Grotesque Variable', var(--font-main);
+  --font-brand: var(--font-title);
+
+  /* ------------------------------------------------------------------
+   * Radius — Figma collection "Espacio y radio" (spacing uses Tailwind's 4px scale)
+   * ------------------------------------------------------------------ */
+  --radius-sm: 0.5rem; /* radio/sm 8px */
+  --radius-md: 0.75rem; /* radio/md 12px */
+  --radius-lg: 1.25rem; /* radio/lg 20px */
+
+  --shadow-raised: 0 2px 8px 0 rgb(23 22 43 / 0.08);
+
+  /* ------------------------------------------------------------------
+   * Text styles — the 12 Figma text styles. Apply them with the `type-*` utilities below
+   * (or the <Text> component), not with `text-*`.
+   * Bricolage Grotesque uses automatic optical sizing (opsz = font size), which is what
+   * Figma renders even though its inspector reports "opsz 14".
+   * ------------------------------------------------------------------ */
+  --text-display: 2.75rem; /* Display 44/48 */
+  --text-display--line-height: 3rem;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 600;
+
+  --text-title-l: 1.875rem; /* Titulo/L 30/36 */
+  --text-title-l--line-height: 2.25rem;
+  --text-title-l--letter-spacing: -0.015em;
+  --text-title-l--font-weight: 600;
+
+  --text-title-m: 1.3125rem; /* Titulo/M 21/28 */
+  --text-title-m--line-height: 1.75rem;
+  --text-title-m--letter-spacing: -0.01em;
+  --text-title-m--font-weight: 600;
+
+  --text-title-s: 1rem; /* Titulo/S 16/22 */
+  --text-title-s--line-height: 1.375rem;
+  --text-title-s--font-weight: 700;
+
+  --text-body-l: 1.0625rem; /* Cuerpo/L 17/26 */
+  --text-body-l--line-height: 1.625rem;
+  --text-body-l--font-weight: 400;
+
+  --text-body-m: 0.9375rem; /* Cuerpo/M 15/22 */
+  --text-body-m--line-height: 1.375rem;
+  --text-body-m--font-weight: 400;
+
+  --text-caption: 0.8125rem; /* Etiqueta 13/18 */
+  --text-caption--line-height: 1.125rem;
+  --text-caption--font-weight: 500;
+
+  --text-note: 0.75rem; /* Nota 12/16 */
+  --text-note--line-height: 1rem;
+  --text-note--font-weight: 400;
+
+  --text-figure-xl: 2.5rem; /* Cifra/XL 40/44 */
+  --text-figure-xl--line-height: 2.75rem;
+  --text-figure-xl--letter-spacing: -0.02em;
+  --text-figure-xl--font-weight: 700;
+
+  --text-figure-l: 1.5rem; /* Cifra/L 24/30 */
+  --text-figure-l--line-height: 1.875rem;
+  --text-figure-l--letter-spacing: -0.01em;
+  --text-figure-l--font-weight: 600;
+
+  --text-figure-m: 0.9375rem; /* Cifra/M 15/22 */
+  --text-figure-m--line-height: 1.375rem;
+  --text-figure-m--font-weight: 600;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /* Polpo's base styles color the scrollbar with the primary scale; keep it neutral. */
+  ::-webkit-scrollbar-track {
+    background: var(--color-canvas);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+  }
+}
+
+@utility font-numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Text style utilities, one per Figma text style. They use the `type-*` prefix instead of
+ * `text-*` because tailwind-merge (used by Polpo and `cn`) reads unknown `text-*` classes as
+ * colors and drops them when a `text-fg-*` color is also present. See ADR 0005.
+ */
+@utility type-display {
+  font-family: var(--font-title);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+  font-weight: var(--text-display--font-weight);
+}
+@utility type-title-l {
+  font-family: var(--font-title);
+  font-size: var(--text-title-l);
+  line-height: var(--text-title-l--line-height);
+  letter-spacing: var(--text-title-l--letter-spacing);
+  font-weight: var(--text-title-l--font-weight);
+}
+@utility type-title-m {
+  font-family: var(--font-title);
+  font-size: var(--text-title-m);
+  line-height: var(--text-title-m--line-height);
+  letter-spacing: var(--text-title-m--letter-spacing);
+  font-weight: var(--text-title-m--font-weight);
+}
+@utility type-title-s {
+  font-family: var(--font-main);
+  font-size: var(--text-title-s);
+  line-height: var(--text-title-s--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-title-s--font-weight);
+}
+@utility type-body-l {
+  font-family: var(--font-main);
+  font-size: var(--text-body-l);
+  line-height: var(--text-body-l--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-body-l--font-weight);
+}
+@utility type-body-m {
+  font-family: var(--font-main);
+  font-size: var(--text-body-m);
+  line-height: var(--text-body-m--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-body-m--font-weight);
+}
+@utility type-body-m-strong {
+  font-family: var(--font-main);
+  font-size: var(--text-body-m);
+  line-height: var(--text-body-m--line-height);
+  letter-spacing: 0;
+  font-weight: 600;
+}
+@utility type-caption {
+  font-family: var(--font-main);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-caption--font-weight);
+}
+@utility type-note {
+  font-family: var(--font-main);
+  font-size: var(--text-note);
+  line-height: var(--text-note--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-note--font-weight);
+}
+@utility type-figure-xl {
+  font-family: var(--font-main);
+  font-size: var(--text-figure-xl);
+  line-height: var(--text-figure-xl--line-height);
+  letter-spacing: var(--text-figure-xl--letter-spacing);
+  font-weight: var(--text-figure-xl--font-weight);
+  font-variant-numeric: tabular-nums;
+}
+@utility type-figure-l {
+  font-family: var(--font-main);
+  font-size: var(--text-figure-l);
+  line-height: var(--text-figure-l--line-height);
+  letter-spacing: var(--text-figure-l--letter-spacing);
+  font-weight: var(--text-figure-l--font-weight);
+  font-variant-numeric: tabular-nums;
+}
+@utility type-figure-m {
+  font-family: var(--font-main);
+  font-size: var(--text-figure-m);
+  line-height: var(--text-figure-m--line-height);
+  letter-spacing: 0;
+  font-weight: var(--text-figure-m--font-weight);
+  font-variant-numeric: tabular-nums;
+}
