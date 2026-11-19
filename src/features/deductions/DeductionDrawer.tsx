@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { ADDITIONAL_DEPENDENT_UVT, MAX_ADDITIONAL_DEPENDENTS } from '@/domain/declaration';
 import { LABOR_LIMITS_UVT } from '@/domain/labor-income';
 import { TAX_YEAR, uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Button, CalcRow, Drawer, MoneyField, Text, ToggleField } from '@/shared/ui';
+import { Button, CalcRow, Drawer, MoneyField, Text } from '@/shared/ui';
 
 export type DeductionId = 'housing' | 'dependent' | 'prepaid-health' | 'exempt-25';
 
@@ -92,19 +93,22 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
   if (deduction === 'dependent') {
     return (
       <>
-        <ToggleField
-          name='hasDependent'
-          label='Tengo un dependiente económico'
-          description='Por ejemplo, hijos menores de edad o hijos de 18 a 23 años que estudian y dependen de ti. Revisa las condiciones del artículo 387 del Estatuto Tributario.'
-          checked={values.hasDependent}
-          onChange={hasDependent => {
-            setValues(current => ({ ...current, hasDependent }));
+        <MoneyField
+          name='dependents'
+          label='¿Cuántos dependientes económicos tienes?'
+          currency={false}
+          value={values.dependents}
+          onChange={dependents => {
+            setValues(current => ({ ...current, dependents: Math.max(0, Math.floor(dependents)) }));
           }}
+          hint='Por ejemplo, hijos menores de edad o hijos de 18 a 23 años que estudian y dependen de ti. Revisa las condiciones del artículo 387 del Estatuto Tributario.'
         />
         <Text variant='body-m' className='text-fg-secondary'>
-          La deducción es el 10 % de tus ingresos brutos laborales, hasta{' '}
+          Con uno o más restas el 10 % de tus ingresos brutos laborales, hasta{' '}
           {formatNumber(LABOR_LIMITS_UVT.dependent)} UVT (
-          {formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.dependent))}) al año. La calculamos por ti.
+          {formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.dependent))}) al año. Además sumamos{' '}
+          {ADDITIONAL_DEPENDENT_UVT} UVT ({formatCurrency(uvtToPesos(ADDITIONAL_DEPENDENT_UVT))}) por cada
+          dependiente, hasta {MAX_ADDITIONAL_DEPENDENTS}, por fuera del tope del 40 %. Lo calculamos por ti.
         </Text>
         {actions}
       </>

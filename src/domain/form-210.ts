@@ -179,7 +179,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   127: {
     label: 'Impuesto de ganancias ocasionales',
     kind: 'calculated',
-    formula: 'Tarifa de ganancias ocasionales sobre 115',
+    formula: '15 % de 115; 20 % para loterías, rifas y apuestas',
   },
   128: { label: 'Descuento por impuestos pagados en el exterior por ganancias ocasionales', kind: 'entered' },
   129: { label: 'Total impuesto a cargo', kind: 'calculated', formula: '= 126 + 127 − 128' },
@@ -199,7 +199,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   139: {
     label: 'Adición por dependientes a la casilla 92',
     kind: 'calculated',
-    formula: `= 138 × ${ADDITIONAL_DEPENDENT_UVT} UVT`,
+    formula: `= 138 × ${ADDITIONAL_DEPENDENT_UVT} UVT, hasta 4 y sin pasar de 42 + 57`,
   },
 };
 
@@ -280,7 +280,7 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     134: result.amountToPay,
     136: result.amountToPay,
     137: result.amountInFavor,
-    138: data.deductions.additionalDependents,
+    138: data.deductions.dependents,
     139: result.dependentsAddition,
   };
 };

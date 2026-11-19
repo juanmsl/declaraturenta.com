@@ -52,9 +52,10 @@ export const DeductionsPage = () => {
     {
       id: 'dependent',
       label: 'Dependiente económico',
-      note: deductions.hasDependent
-        ? `10 % de tus ingresos, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT`
-        : 'No registraste dependientes',
+      note:
+        deductions.dependents > 0
+          ? `${formatNumber(deductions.dependents)} ${deductions.dependents === 1 ? 'dependiente' : 'dependientes'} · 10 % de tus ingresos, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT`
+          : 'No registraste dependientes',
       amount: labor.dependent,
       colorClass: 'bg-sun',
       origin: 'calculated',
@@ -178,7 +179,7 @@ const DeductionsEstimate = () => {
   return (
     <EstimatePanel note={note}>
       <CalcRow variant='subtotal' label='Renta líquida' value={estimate.labor.netIncome} />
-      <CalcRow variant='subtract' label='Beneficios con tope' value={estimate.totalBenefits} />
+      <CalcRow variant='subtract' label='Exentas y deducciones' value={estimate.totalBenefits} />
       <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />
       <CalcRow label='Impuesto según tabla' value={estimate.netIncomeTax} />
       <CalcRow variant='subtract' label='Retenciones' value={estimate.withholdings} />

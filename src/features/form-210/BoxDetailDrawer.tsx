@@ -14,7 +14,7 @@ import { findDependentBoxes, scheduleColumnOf } from '@/domain/form-210';
 import { LABOR_LIMITS_UVT } from '@/domain/labor-income';
 import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text, ToggleField } from '@/shared/ui';
+import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared/ui';
 
 import { ConceptsEditor } from './ConceptsEditor';
 import { sectionOf } from './sections';
@@ -191,14 +191,15 @@ const OtherDeductionsDetail = ({
       <Text variant='body-m' className='text-fg-secondary'>
         {BOX_DESCRIPTIONS[39]}
       </Text>
-      <ToggleField
-        name='hasDependent'
-        label='Tengo un dependiente económico'
-        description={`10 % de tus ingresos brutos laborales, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT. Hoy suma ${formatCurrency(result.labor.dependent)}.`}
-        checked={values.hasDependent}
-        onChange={hasDependent => {
-          setValues(current => ({ ...current, hasDependent }));
+      <MoneyField
+        name='dependents'
+        label='Dependientes económicos'
+        currency={false}
+        value={values.dependents}
+        onChange={dependents => {
+          setValues(current => ({ ...current, dependents: Math.max(0, Math.floor(dependents)) }));
         }}
+        hint={`Con uno o más: 10 % de tus ingresos brutos laborales, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT. Hoy suma ${formatCurrency(result.labor.dependent)}. También alimenta las casillas 138 y 139.`}
       />
       <MoneyField
         name='prepaidHealthPaid'

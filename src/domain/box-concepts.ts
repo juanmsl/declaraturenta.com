@@ -144,13 +144,7 @@ export const getBoxConcepts = (box: EditableBox, data: DeclarationData): BoxConc
         imported ? 'exogenous' : 'user',
       );
     case 138:
-      return single(
-        'additional-dependents',
-        'Dependientes económicos',
-        '',
-        data.deductions.additionalDependents,
-        'user',
-      );
+      return single('dependents', 'Dependientes económicos', '', data.deductions.dependents, 'user');
   }
 };
 
@@ -225,7 +219,7 @@ export const applyBoxConcepts = (
     case 138:
       return {
         ...data,
-        deductions: { ...data.deductions, additionalDependents: Math.round(total(concepts)) },
+        deductions: { ...data.deductions, dependents: Math.max(0, Math.round(total(concepts))) },
       };
   }
 };

@@ -93,11 +93,7 @@ export const ResultPage = () => {
             <CalcRow label='Ingresos brutos' value={result.grossLaborIncome} />
             <CalcRow variant='subtract' label='No constitutivos de renta' value={labor.nonTaxableIncome} />
             <CalcRow variant='subtotal' label='Renta líquida' value={labor.netIncome} />
-            <CalcRow
-              variant='subtract'
-              label='Deducciones y exentas (tope 40 %)'
-              value={result.totalBenefits}
-            />
+            <CalcRow variant='subtract' label='Deducciones y exentas' value={result.totalBenefits} />
             <CalcRow variant='subtotal' label='Renta líquida gravable' value={result.taxableIncome} />
             <CalcRow label='Impuesto sobre la renta' value={result.netIncomeTax} />
             {result.advance.amount > 0 && (

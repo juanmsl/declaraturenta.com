@@ -12,11 +12,22 @@ describe('computeDeclaration', () => {
     expect(result.grossLaborIncome).toBe(180_000_000);
     expect(result.labor.netIncome).toBe(163_800_000);
     expect(result.labor.cappedBenefits).toBe(65_520_000);
-    expect(result.taxableIncome).toBe(98_280_000);
-    expect(result.netIncomeTax).toBe(9_591_000);
+    expect(result.dependentsAddition).toBe(3_585_528);
+    expect(result.taxableIncome).toBe(94_694_472);
+    expect(result.netIncomeTax).toBe(8_587_000);
     expect(result.advance.amount).toBe(0);
     expect(result.amountToPay).toBe(0);
-    expect(result.amountInFavor).toBe(1_649_000);
+    expect(result.amountInFavor).toBe(2_653_000);
+  });
+
+  it('caps box 139 at the labor ordinary income (boxes 42 + 57)', () => {
+    const result = computeDeclaration({
+      ...sampleDeclaration,
+      labor: { ...sampleDeclaration.labor, salaries: 6_000_000, concepts: [], nonTaxableIncome: 0 },
+      deductions: { ...sampleDeclaration.deductions, dependents: 4 },
+    });
+    expect(result.dependentsAddition).toBe(result.labor.netIncome - result.labor.cappedBenefits);
+    expect(result.dependentsAddition).toBeLessThan(14_342_112);
   });
 
   it('estimates an amount to pay before the deductions step', () => {
@@ -37,7 +48,7 @@ describe('computeDeclaration', () => {
     const result = computeDeclaration({
       ...sampleDeclaration,
       general: { ...sampleDeclaration.general, electronicInvoicePurchases: 20_000_000 },
-      deductions: { ...sampleDeclaration.deductions, additionalDependents: 6 },
+      deductions: { ...sampleDeclaration.deductions, dependents: 6 },
     });
     expect(result.electronicInvoiceDeduction).toBe(11_951_760);
     expect(result.dependentsAddition).toBe(14_342_112);

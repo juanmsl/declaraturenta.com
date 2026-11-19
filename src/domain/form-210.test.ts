@@ -17,11 +17,13 @@ describe('buildForm210', () => {
     expect(value(40)).toBe(37_200_000);
     expect(value(41)).toBe(65_520_000);
     expect(value(42)).toBe(98_280_000);
-    expect(value(92)).toBe(65_520_000);
-    expect(value(97)).toBe(98_280_000);
-    expect(value(116)).toBe(9_591_000);
+    expect(value(92)).toBe(69_105_528);
+    expect(value(97)).toBe(94_694_472);
+    expect(value(116)).toBe(8_587_000);
     expect(value(132)).toBe(11_240_000);
-    expect(value(137)).toBe(1_649_000);
+    expect(value(137)).toBe(2_653_000);
+    expect(value(138)).toBe(1);
+    expect(value(139)).toBe(3_585_528);
     expect(value(136)).toBe(0);
   });
 

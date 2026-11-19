@@ -97,8 +97,7 @@ export const sampleDeclaration: DeclarationData = {
   deductions: {
     housingInterestPaid: 14_400_000,
     prepaidHealthPaid: 4_800_000,
-    hasDependent: true,
-    additionalDependents: 0,
+    dependents: 1,
   },
   withholdings: 11_240_000,
   previousYearAdvance: 0,

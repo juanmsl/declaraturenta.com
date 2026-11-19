@@ -162,11 +162,7 @@ const IncomeEstimate = () => {
       <CalcRow variant='subtotal' label='Renta líquida' value={estimate.labor.netIncome} />
       <CalcRow
         variant='subtract'
-        label={
-          estimateIncludesDeductions
-            ? 'Deducciones y exentas (tope 40 %)'
-            : 'Renta exenta del 25 % (tope 790 UVT)'
-        }
+        label={estimateIncludesDeductions ? 'Deducciones y exentas' : 'Renta exenta del 25 % (tope 790 UVT)'}
         value={estimate.totalBenefits}
       />
       <CalcRow variant='subtotal' label='Renta líquida gravable' value={estimate.taxableIncome} />

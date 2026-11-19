@@ -79,9 +79,12 @@ export type DeclarationData = {
   deductions: {
     housingInterestPaid: number;
     prepaidHealthPaid: number;
-    hasDependent: boolean;
-    /** Box 138: dependents for the additional 72 UVT each (box 139). Rule to validate. */
-    additionalDependents: number;
+    /**
+     * Box 138: number of economic dependents. With one or more, box 39 includes the 10 % deduction
+     * (art. 387 E.T.) and box 139 adds 72 UVT per dependent, up to 4 (art. 336 num. 3 E.T.). For
+     * employees the same dependent counts in both (DIAN instructions, form 210 of 2026).
+     */
+    dependents: number;
   };
   /** Withholdings of the taxable year (box 132). */
   withholdings: number;
@@ -102,7 +105,7 @@ export type DeclarationResult = {
   labor: LaborIncomeResult;
   /** Box 28 after its cap. */
   electronicInvoiceDeduction: number;
-  /** Box 139: 72 UVT per additional dependent, up to 4. */
+  /** Box 139: 72 UVT per dependent, up to 4, capped at boxes 42 + 57. */
   dependentsAddition: number;
   /** Box 92: exempt income and deductions that reduce net income. */
   totalBenefits: number;
@@ -156,7 +159,7 @@ export const computeDeclaration = (
       voluntaryContributions: data.labor.voluntaryContributions,
       housingInterestPaid: data.deductions.housingInterestPaid,
       prepaidHealthPaid: data.deductions.prepaidHealthPaid,
-      hasDependent: data.deductions.hasDependent,
+      hasDependent: data.deductions.dependents > 0,
       includeDeductions,
     },
     uvtValue,
@@ -168,11 +171,15 @@ export const computeDeclaration = (
         uvtToPesos(ELECTRONIC_INVOICE_CAP_UVT, uvtValue),
       )
     : 0;
+  // Box 139: outside the 40 % / 1.340 UVT cap, but never above boxes 42 + 57 (labor ordinary income).
   const dependentsAddition = includeDeductions
-    ? uvtToPesos(
-        Math.min(Math.max(0, Math.floor(data.deductions.additionalDependents)), MAX_ADDITIONAL_DEPENDENTS) *
-          ADDITIONAL_DEPENDENT_UVT,
-        uvtValue,
+    ? Math.min(
+        uvtToPesos(
+          Math.min(Math.max(0, Math.floor(data.deductions.dependents)), MAX_ADDITIONAL_DEPENDENTS) *
+            ADDITIONAL_DEPENDENT_UVT,
+          uvtValue,
+        ),
+        Math.max(0, labor.netIncome - labor.cappedBenefits),
       )
     : 0;
   const totalBenefits = labor.cappedBenefits + electronicInvoiceDeduction + dependentsAddition;

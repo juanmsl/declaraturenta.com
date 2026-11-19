@@ -29,8 +29,6 @@ in `src/domain` and the declaration state persisted in localStorage.
 
 Ask the owner before resolving these.
 
-- **Progress state**: there is no persistence; only the current route is marked as `current`.
-  The "Guardado hace 1 min" label in the top bar is static.
 - **Top bar at 1280 px**: the seven braid segments (584 px) do not fit with the rest of the bar,
   so the braid is clipped on the right. Figma only has the 1440 px layout.
 - **"Ayuda" button** has no behavior defined.
@@ -40,10 +38,9 @@ Ask the owner before resolving these.
   "rombo only in progress" rule; we follow Figma.
 - **Screen 10**: the header uses the system logo instead of Figma's three-diamond mark (owner's
   choice); "Compartir a mi computador" is hidden where the Web Share API is missing.
-- **Box 138** stays at 0 although box 39 counts a dependent (same open question as above).
 - **Favicon** uses the color isotype SVG; the 16/32 px versions are still pending in Figma.
-- **Tax rules**: boxes 77–139 of the 210 must be validated against the official DIAN PDF; the rate
-  of box 127 and whether one dependent can count in boxes 39 and 139 are unconfirmed.
+- **Tax rules**: boxes 77–141 were reviewed against the DIAN instructions (ADR 0023); the
+  occasional gains, pensions and dividends schedules are still not calculated.
 - Product decisions still open: real exogenous import, direct filing vs. transcription,
   authentication, business model, "Compartir a mi computador".
 - ESLint 9 is deprecated upstream (the owner chose v9 on purpose).
