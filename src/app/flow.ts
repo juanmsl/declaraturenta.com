@@ -83,3 +83,7 @@ export const findStepByPath = (pathname: string): FlowStep | undefined =>
 
 /** Full Formulario 210 view (screen 09). `?casilla=N` opens the detail of box N (screen 09b). */
 export const FORM_210_PATH = '/formulario-210';
+
+/** Step to resume the declaration from: the first one not completed, or the draft when all are done. */
+export const findResumeStep = (completed: readonly FlowStepId[]): FlowStep =>
+  FLOW_STEPS.find(step => !completed.includes(step.id)) ?? FLOW_STEPS[6];

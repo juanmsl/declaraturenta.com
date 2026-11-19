@@ -9,6 +9,8 @@ import { HomePage } from '@/features/home/HomePage';
 import { IncomePage } from '@/features/income/IncomePage';
 import { ResultPage } from '@/features/result/ResultPage';
 import { ShouldFilePage } from '@/features/should-file/ShouldFilePage';
+import { ErrorPage } from '@/features/status/ErrorPage';
+import { NotFoundPage } from '@/features/status/NotFoundPage';
 
 import { FORM_210_PATH } from './flow';
 import { AppLayout } from './layout/AppLayout';
@@ -17,6 +19,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
       { path: 'debo-declarar', element: <ShouldFilePage /> },
@@ -29,5 +32,7 @@ export const router = createBrowserRouter([
     ],
   },
   // Screen 09 has its own layout (no side rail).
-  { path: FORM_210_PATH, element: <Form210Page /> },
+  { path: FORM_210_PATH, element: <Form210Page />, errorElement: <ErrorPage /> },
+  // Screens 11 and 12 (ADR 0022): unknown paths and unexpected errors.
+  { path: '*', element: <NotFoundPage />, errorElement: <ErrorPage /> },
 ]);
