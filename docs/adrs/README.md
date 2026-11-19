@@ -22,3 +22,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0014](./0014-neutral-copy.md)                   | Gender-neutral copy                                            | Accepted |
 | [0015](./0015-simulated-exogenous-import.md)     | Simulated exogenous import with a local dropzone               | Accepted |
 | [0016](./0016-form-components-on-polpo.md)       | Form and panel components on Polpo; income behavior            | Accepted |
+| [0017](./0017-assets-and-debts-editing.md)       | Adding, editing and deleting assets and debts                  | Accepted |

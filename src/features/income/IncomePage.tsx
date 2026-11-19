@@ -150,6 +150,7 @@ const IncomeEstimate = () => {
 
   return (
     <EstimatePanel
+      showFiguresLink
       note={
         estimateIncludesDeductions
           ? 'Ya incluye tus deducciones.'

@@ -3,8 +3,8 @@
  * untouched elsewhere. Same cascade layer as Polpo (`components`), imported after it.
  */
 @layer components {
-  /* MoneyField: Polpo InputNumber + Field (Figma "Campo monetario") */
-  .money-field .form-field {
+  /* MoneyField, TextField and SelectField: Polpo inputs + Field (Figma "Campo monetario") */
+  :is(.money-field, .text-field) .form-field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -38,12 +38,11 @@
       font-size: inherit;
     }
 
-    input {
+    input,
+    .polpo-typography {
       font-family: var(--font-main);
       font-size: var(--text-body-m);
       line-height: var(--text-body-m--line-height);
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
       color: var(--color-fg);
     }
 
@@ -58,11 +57,16 @@
     }
   }
 
+  .money-field .form-field input {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
   .money-field.is-empty .form-field:not(.focus) input {
     color: var(--color-fg-muted);
   }
 
-  .money-field.has-error .form-field .field-content {
+  :is(.money-field, .text-field).has-error .form-field .field-content {
     border: 2px solid var(--color-line-error);
     padding: 0 calc(0.75rem - 1px) 0 calc(1rem - 1px);
   }

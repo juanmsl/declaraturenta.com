@@ -16,10 +16,12 @@ type EstimatePanelProps = {
   children: ReactNode;
   /** Extra content under the breakdown, e.g. a "Bueno saber" box. */
   footer?: ReactNode;
+  /** Shows the "¿De dónde sale cada cifra?" link (Figma screen 04). */
+  showFiguresLink?: boolean;
 };
 
 /** Right panel "Así va tu declaración" with the live estimate (Figma screens 04–06). */
-export const EstimatePanel = ({ note, children, footer }: EstimatePanelProps) => {
+export const EstimatePanel = ({ note, children, footer, showFiguresLink = false }: EstimatePanelProps) => {
   const { estimate } = useDeclaration();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const toPay = estimate.balance > 0;
@@ -45,24 +47,28 @@ export const EstimatePanel = ({ note, children, footer }: EstimatePanelProps) =>
       </section>
       <div className='flex flex-col'>{children}</div>
       {footer}
-      <button
-        type='button'
-        onClick={() => {
-          setIsDrawerOpen(true);
-        }}
-        className='flex w-fit cursor-pointer items-center gap-1.5 rounded-sm text-fg-action hover:underline focus-visible:ring-2 focus-visible:ring-line-action focus-visible:outline-none'
-      >
-        <Text as='span' variant='caption' className='text-current'>
-          ¿De dónde sale cada cifra?
-        </Text>
-        <Icon icon={LuChevronRight} size={16} />
-      </button>
-      <FiguresDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-        }}
-      />
+      {showFiguresLink && (
+        <>
+          <button
+            type='button'
+            onClick={() => {
+              setIsDrawerOpen(true);
+            }}
+            className='flex w-fit cursor-pointer items-center gap-1.5 rounded-sm text-fg-action hover:underline focus-visible:ring-2 focus-visible:ring-line-action focus-visible:outline-none'
+          >
+            <Text as='span' variant='caption' className='text-current'>
+              ¿De dónde sale cada cifra?
+            </Text>
+            <Icon icon={LuChevronRight} size={16} />
+          </button>
+          <FiguresDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => {
+              setIsDrawerOpen(false);
+            }}
+          />
+        </>
+      )}
     </>
   );
 };

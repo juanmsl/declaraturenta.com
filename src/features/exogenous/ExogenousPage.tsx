@@ -16,7 +16,7 @@ import { applyExogenous, clearExogenous, countReportingEntities } from '@/domain
 import { TAX_YEAR } from '@/domain/uvt';
 import { sampleExogenous } from '@/mocks/sample-exogenous';
 import { formatCurrency } from '@/shared/lib/format';
-import { Alert, Button, Chip, FileDropzone, Icon, StepHeader, StepLayout, Text } from '@/shared/ui';
+import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const HOUSING_ITEM_ID = 'housing-interest';
@@ -216,14 +216,9 @@ const DownloadHelpPanel = () => (
         </li>
       ))}
     </ol>
-    <div className='flex flex-col gap-1 rounded-md bg-subtle p-4'>
-      <Text variant='caption' className='text-fg-secondary'>
-        Bueno saber
-      </Text>
-      <Text variant='body-m' className='text-fg-secondary'>
-        La exógena es lo que otros reportaron sobre ti. Puede tener errores o vacíos; por eso nada se usa sin
-        tu confirmación.
-      </Text>
-    </div>
+    <NoteBox>
+      La exógena es lo que otros reportaron sobre ti. Puede tener errores o vacíos; por eso nada se usa sin tu
+      confirmación.
+    </NoteBox>
   </>
 );
