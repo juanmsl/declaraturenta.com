@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet } from 'react-router';
 
 import { useDeclaration } from '../declaration/declaration-context';
+import { HelpProvider } from '../help/HelpProvider';
 
 import { FLOW_STEPS } from '../flow';
 import { SideRail } from './SideRail';
@@ -23,14 +24,16 @@ export const AppLayout = () => {
     : 'Inicio · Antes de empezar';
 
   return (
-    <div className='flex min-h-dvh min-w-7xl bg-canvas'>
-      <SideRail steps={steps} />
-      <div className='flex min-w-0 flex-1 flex-col'>
-        <TopBar location={location} steps={steps} />
-        <main className='flex flex-1 flex-col'>
-          <Outlet />
-        </main>
+    <HelpProvider>
+      <div className='flex min-h-dvh min-w-7xl bg-canvas'>
+        <SideRail steps={steps} />
+        <div className='flex min-w-0 flex-1 flex-col'>
+          <TopBar location={location} steps={steps} />
+          <main className='flex flex-1 flex-col'>
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </HelpProvider>
   );
 };

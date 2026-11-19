@@ -4,12 +4,20 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { DeclarationProvider } from '@/app/declaration/DeclarationProvider';
 import { createInitialState } from '@/app/declaration/declaration-state';
+import { HelpProvider } from '@/app/help/HelpProvider';
 
 import { HomePage } from './HomePage';
 
 const renderHome = () => {
   const router = createMemoryRouter([
-    { path: '/', element: <HomePage /> },
+    {
+      path: '/',
+      element: (
+        <HelpProvider>
+          <HomePage />
+        </HelpProvider>
+      ),
+    },
     { path: '/debo-declarar', element: <p>Debo declarar</p> },
     { path: '/exogena', element: <p>Exógena</p> },
   ]);

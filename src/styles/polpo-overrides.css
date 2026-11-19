@@ -186,3 +186,41 @@
     }
   }
 }
+
+@layer components {
+  /* Help panel (ADR 0028): tabs and frequent questions in the project style. */
+  .help-tabs .polpo-tabs-selector {
+    display: none;
+  }
+
+  .help-tabs .polpo-tab {
+    border-bottom: 2px solid transparent;
+    color: var(--color-fg-secondary);
+    font-size: var(--text-body-m);
+    font-weight: 500;
+  }
+
+  .help-tabs .polpo-tab.is-open {
+    border-bottom-color: var(--color-action);
+    color: var(--color-fg-action);
+    font-weight: 600;
+  }
+
+  .faq .polpo-custom-line {
+    color: var(--color-line);
+  }
+
+  .faq .polpo-accordion-header {
+    padding-block: 0.875rem;
+  }
+
+  .faq .polpo-accordion-header-content .polpo-typography {
+    font-size: var(--text-body-m);
+    font-weight: 600;
+    line-height: var(--text-body-m--line-height);
+  }
+
+  .faq .polpo-accordion-toggle-icon {
+    color: var(--color-fg-muted);
+  }
+}

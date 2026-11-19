@@ -3,6 +3,7 @@ import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { FLOW_STEPS } from '@/app/flow';
+import { useHelp } from '@/app/help/help-context';
 import { TAX_YEAR } from '@/domain/uvt';
 import { Button, Text } from '@/shared/ui';
 
@@ -15,7 +16,12 @@ const [firstStep, exogenousStep] = FLOW_STEPS;
 /** Screen 01 · Inicio (Figma node 7:2). */
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { taxpayer } = useDeclaration().state;
+  const { state, dispatch } = useDeclaration();
+  const { taxpayer } = state;
+  const { openHelp } = useHelp();
+  const dismissIntro = () => {
+    dispatch({ type: 'dismissHelpIntro' });
+  };
 
   return (
     <div className='flex flex-col gap-8 px-14 py-12'>
@@ -32,6 +38,34 @@ export const HomePage = () => {
       <div className='flex items-start gap-12'>
         <JourneyList />
         <div className='flex w-100 shrink-0 flex-col gap-5'>
+          {!state.helpIntroDismissed && (
+            <section
+              className='flex flex-col gap-3 rounded-lg bg-rail p-5'
+              aria-labelledby='help-intro-title'
+            >
+              <Text id='help-intro-title' variant='title-s' as='h2'>
+                ¿Primera vez aquí?
+              </Text>
+              <Text variant='body-m' className='text-fg-secondary'>
+                Mira en dos minutos cómo funciona la plataforma. La guía y las preguntas frecuentes siempre
+                están en «Ayuda», arriba a la derecha.
+              </Text>
+              <div className='flex items-center gap-2'>
+                <Button
+                  variant='secondary'
+                  onClick={() => {
+                    dismissIntro();
+                    openHelp('guide');
+                  }}
+                >
+                  Ver la guía
+                </Button>
+                <Button variant='ghost' onClick={dismissIntro}>
+                  Ahora no
+                </Button>
+              </div>
+            </section>
+          )}
           <DeadlineCard taxpayer={taxpayer} />
           <ChecklistCard />
         </div>

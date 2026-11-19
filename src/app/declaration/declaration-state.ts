@@ -30,12 +30,14 @@ export type DeclarationState = {
   };
   /** "Otras cédulas" the user turned on (not calculated yet; ADR 0020). */
   activeSchedules: string[];
+  /** The user closed the "¿Primera vez aquí?" card in Inicio (ADR 0028). */
+  helpIntroDismissed: boolean;
   /** ISO timestamp of the user's last change (shown as "Guardado hace…"). */
   savedAt: string | null;
 };
 
 /** Bump when `DeclarationState` changes shape; older saved states fall back to the initial one. */
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 
 export const createInitialState = (): DeclarationState => ({
   version: STATE_VERSION,
@@ -45,6 +47,7 @@ export const createInitialState = (): DeclarationState => ({
   visitedSteps: [],
   exogenous: { fileName: null, confirmedItems: [], report: structuredClone(sampleExogenous) },
   activeSchedules: [],
+  helpIntroDismissed: false,
   savedAt: null,
 });
 
@@ -55,6 +58,7 @@ export type DeclarationAction =
   | { type: 'importExogenous'; report: ExogenousReport }
   | { type: 'confirmExogenousItem'; itemId: string }
   | { type: 'toggleSchedule'; scheduleId: string }
+  | { type: 'dismissHelpIntro' }
   | { type: 'restore'; state: DeclarationState }
   | { type: 'reset' };
 
@@ -101,6 +105,8 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
           : [...state.activeSchedules, action.scheduleId],
         savedAt: action.at,
       };
+    case 'dismissHelpIntro':
+      return { ...state, helpIntroDismissed: true };
     case 'restore':
       return { ...action.state, savedAt: action.at };
     case 'reset':

@@ -31,8 +31,6 @@ Ask the owner before resolving these.
 
 - **Top bar at 1280 px**: the seven braid segments (584 px) do not fit with the rest of the bar,
   so the braid is clipped on the right. Figma only has the 1440 px layout.
-- **"Ayuda" button** has no behavior defined.
-- **404 page** and an error boundary are not designed.
 - **Figma vs sample data on screen 09**: Figma shows "3 conceptos" under boxes 29 and 33; our data
   has 2 assets and box 33 is a single total. The section diamond on screen 09 is outside the
   "rombo only in progress" rule; we follow Figma.

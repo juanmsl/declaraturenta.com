@@ -33,3 +33,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0025](./0025-capital-and-non-labor-income.md)                  | Capital and non-labor income in the general schedule             | Accepted |
 | [0026](./0026-income-screen-other-income-and-vehicle-review.md) | Income screen with other income, and review of imported vehicles | Accepted |
 | [0027](./0027-local-copy.md)                                    | Local copy of the declaration (.json)                            | Accepted |
+| [0028](./0028-help-guide-and-faq.md)                            | Help: guide and searchable frequent questions                    | Accepted |
