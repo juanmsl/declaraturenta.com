@@ -30,6 +30,11 @@ rail and the isotype. No flags or stereotypes.
 | 13 · Copia local · Menú               | `73:8236`  | top bar           | Built  |
 | 13b · Copia local · Reemplazar datos  | `73:8370`  | dialog            | Built  |
 | 13c · Copia local · Archivo no válido | `73:8506`  | dialog            | Built  |
+| 14 · Ayuda · Guía                     | `77:8942`  | help panel        | Built  |
+| 14b · Ayuda · Preguntas frecuentes    | `77:9282`  | help panel        | Built  |
+
+The board "Opciones por decidir" (`78:9346`) holds the favicon, compact braid and section
+marker options waiting for the owner's choice.
 
 ## Tokens
 

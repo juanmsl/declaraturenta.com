@@ -4,20 +4,20 @@ _Last updated: 2026-11-19._
 
 ## Phase
 
-The design is done in Figma. Every Figma screen (01–10) is built on the app shell, the tax engine
-in `src/domain` and the declaration state persisted in localStorage.
+Every Figma screen (01–14b) is built on the app shell, the tax engine in `src/domain` and the
+declaration state persisted in localStorage. Product work continues on the pending list below;
+the business model comes last, after the platform is fully functional.
 
 ## Built
 
 - Tooling: pnpm 11.10.0, Vite 8, React 19, TypeScript 6, Tailwind 4, ESLint 9, Prettier, Vitest,
   husky + lint-staged + commitlint.
 - Theme: Figma colors, radius and the 12 text styles (`src/styles/index.css`).
-- Shared UI: `Text`, `Button`, `Icon`, `Diamond`, `BraidSegment`, `Braid`, `Logo`.
-- Layout: `SideRail`, `SideRailItem`, `TopBar`, `AppLayout`.
-- Screens 01–08 of the flow and 09 · Formulario 210 with 09b · box detail, matched against Figma
-  at 1440 px (ADRs 0012–0020), and 10 · the small-screen view below 1280 px (ADR 0021).
-- Domain: filing tests, labor income caps, art. 241 table, advance payment, the 210 box model
-  (`form-210.ts`) and editable box concepts (`box-concepts.ts`), all with tests.
+- Screens 01–10 of the flow, 11 · 404 and 12 · error (ADR 0022), local copy 13–13c (ADR 0027) and
+  the help panel 14–14b with the "¿Primera vez aquí?" card on Inicio (ADR 0028).
+- Domain: filing tests, labor, capital and non-labor income (ADR 0025), DIAN dependents rule
+  (ADR 0023), art. 241 table, advance payment, the 210 box model and the 2026 filing calendar.
+- Exogenous import from the DIAN .xlsx, read in the browser (ADR 0024, 0026).
 
 ## Behavior decided per screen
 
@@ -25,25 +25,30 @@ in `src/domain` and the declaration state persisted in localStorage.
   in favor; the refund options only appear with a balance in favor and are saved in
   `refundPreference`. "Revisar mis respuestas" goes back to the first step.
 
+## Decided by the owner
+
+- The declaration is transcribed by hand in the DIAN portal; no direct filing.
+- Data stays in the browser, with a downloadable/uploadable local copy (.json).
+- Domain: declaraturenta.com. Screens between 480 and 1280 px keep the 480 px column.
+
 ## Known gaps and open questions
 
 Ask the owner before resolving these.
 
-- **Top bar at 1280 px**: the seven braid segments (584 px) do not fit with the rest of the bar,
-  so the braid is clipped on the right. Figma only has the 1440 px layout.
-- **Figma vs sample data on screen 09**: Figma shows "3 conceptos" under boxes 29 and 33; our data
-  has 2 assets and box 33 is a single total. The section diamond on screen 09 is outside the
-  "rombo only in progress" rule; we follow Figma.
-- **Screen 10**: the header uses the system logo instead of Figma's three-diamond mark (owner's
-  choice); "Compartir a mi computador" is hidden where the Web Share API is missing.
-- **Favicon** uses the color isotype SVG; the 16/32 px versions are still pending in Figma.
-- **Tax rules**: boxes 77–141 were reviewed against the DIAN instructions (ADR 0023); the
-  occasional gains, pensions and dividends schedules are still not calculated.
-- Product decisions still open: real exogenous import, direct filing vs. transcription,
-  authentication, business model, "Compartir a mi computador".
+- **Waiting for a choice** in the Figma board "Opciones por decidir" (`78:9346`):
+  - Favicon at 16/32 px (today the full isotype, illegible at 16 px).
+  - Compact braid: the current one (584 px) is clipped at 1280 px.
+  - Section marker for the side rail and "Tu camino" (diamond, numbered diamond, mini isotype or
+    number and check).
+- **Tax rules**: boxes 77–139 still need a pass against the official DIAN PDF; the occasional
+  gains, pensions and dividends schedules are not calculated.
+- **Figma vs sample data on screen 09**: the section diamond on screen 09 is outside the "rombo
+  only in progress" rule; we follow Figma.
+- Business model (last).
 - ESLint 9 is deprecated upstream (the owner chose v9 on purpose).
 
 ## Next steps (proposed)
 
-1. Validate boxes 77–139 against the official DIAN PDF.
-2. Resolve the open questions above (progress state, box 138, 404 page, "Ayuda").
+1. Apply the owner's choices from "Opciones por decidir" in Figma components and in code.
+2. Validate boxes 77–139 against the official DIAN PDF (box 127 and 138/139 rules included).
+3. Calculate the pending schedules (pensions, dividends, occasional gains).
