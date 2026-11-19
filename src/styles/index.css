@@ -152,6 +152,12 @@
   --text-figure-l--letter-spacing: -0.01em;
   --text-figure-l--font-weight: 600;
 
+  /* One-off size of the result amount in screen 07 (not a Figma text style). */
+  --text-figure-hero: 4.5rem; /* 72/76 */
+  --text-figure-hero--line-height: 4.75rem;
+  --text-figure-hero--letter-spacing: -0.02em;
+  --text-figure-hero--font-weight: 700;
+
   --text-figure-m: 0.9375rem; /* Cifra/M 15/22 */
   --text-figure-m--line-height: 1.375rem;
   --text-figure-m--font-weight: 600;
@@ -242,6 +248,14 @@
   line-height: var(--text-note--line-height);
   letter-spacing: 0;
   font-weight: var(--text-note--font-weight);
+}
+@utility type-figure-hero {
+  font-family: var(--font-main);
+  font-size: var(--text-figure-hero);
+  line-height: var(--text-figure-hero--line-height);
+  letter-spacing: var(--text-figure-hero--letter-spacing);
+  font-weight: var(--text-figure-hero--font-weight);
+  font-variant-numeric: tabular-nums;
 }
 @utility type-figure-xl {
   font-family: var(--font-main);

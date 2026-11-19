@@ -17,6 +17,12 @@ of Polpo's theme, the app shell (side rail and top bar) and screen **01 · Inici
 - Screen 01 · Inicio, matched against Figma at 1440 px.
 - Routes for the seven flow sections, rendering a placeholder.
 
+## Behavior decided per screen
+
+- 07 · Resultado: the hero is coral when there is an amount to pay, mint when there is a balance
+  in favor; the refund options only appear with a balance in favor and are saved in
+  `refundPreference`. "Revisar mis respuestas" goes back to the first step.
+
 ## Known gaps and open questions
 
 Ask the owner before resolving these.

@@ -17,6 +17,7 @@ export type TextVariant =
   | 'body-m-strong'
   | 'caption'
   | 'note'
+  | 'figure-hero'
   | 'figure-xl'
   | 'figure-l'
   | 'figure-m';
@@ -37,6 +38,7 @@ const VARIANTS: Record<TextVariant, { polpo: PolpoVariant; className: string }> 
   'body-m-strong': { polpo: 'body', className: 'type-body-m-strong' },
   caption: { polpo: 'label', className: 'type-caption' },
   note: { polpo: 'small', className: 'type-note' },
+  'figure-hero': { polpo: 'label', className: 'type-figure-hero' },
   'figure-xl': { polpo: 'label', className: 'type-figure-xl' },
   'figure-l': { polpo: 'label', className: 'type-figure-l' },
   'figure-m': { polpo: 'label', className: 'type-figure-m' },
