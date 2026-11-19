@@ -11,7 +11,7 @@ type StepHeaderProps = {
 
 /** Question and explanation at the top of a flow screen. */
 export const StepHeader = ({ title, description, badge }: StepHeaderProps) => (
-  <header className='flex max-w-160 flex-col gap-3'>
+  <header className='flex flex-col gap-3'>
     <div className='flex items-center gap-3'>
       <Text variant='title-l' as='h1'>
         {title}
@@ -19,7 +19,7 @@ export const StepHeader = ({ title, description, badge }: StepHeaderProps) => (
       {badge}
     </div>
     {description && (
-      <Text variant='body-l' className='text-fg-secondary'>
+      <Text variant='body-l' className='max-w-160 text-fg-secondary'>
         {description}
       </Text>
     )}

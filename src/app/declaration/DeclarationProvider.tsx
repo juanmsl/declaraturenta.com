@@ -33,6 +33,7 @@ export const DeclarationProvider = ({ children, initialState }: DeclarationProvi
       dispatch,
       result: computeDeclaration(state.data),
       estimate: computeDeclaration(state.data, { includeDeductions }),
+      estimateIncludesDeductions: includeDeductions,
     };
   }, [state, dispatch]);
 

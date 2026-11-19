@@ -12,6 +12,8 @@ export type DeclarationContextValue = {
   result: DeclarationResult;
   /** Live estimate: excludes deductions until the user reaches that step. */
   estimate: DeclarationResult;
+  /** Whether `estimate` already includes deductions. */
+  estimateIncludesDeductions: boolean;
 };
 
 export const DeclarationContext = createContext<DeclarationContextValue | null>(null);

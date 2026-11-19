@@ -101,7 +101,7 @@ export const FileDropzone = ({ accept, maxSize, hint, onFileSelected, selected }
           }}
           onDrop={handleDrop}
           className={cn(
-            'flex cursor-pointer items-center gap-4 rounded-lg border-[1.5px] border-dashed bg-surface p-5 transition-colors duration-150',
+            'm-0 flex cursor-pointer items-center gap-4 rounded-lg border-[1.5px] border-dashed bg-surface p-5 transition-colors duration-150',
             'has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-line-action',
             isDragging ? 'border-line-action bg-rail' : 'border-line-strong hover:border-line-action',
           )}
