@@ -32,6 +32,8 @@ rail and the isotype. No flags or stereotypes.
 | 13c · Copia local · Archivo no válido | `73:8506`  | dialog            | Built  |
 | 14 · Ayuda · Guía                     | `77:8942`  | help panel        | Built  |
 | 14b · Ayuda · Preguntas frecuentes    | `77:9282`  | help panel        | Built  |
+| 04b · Ingresos · Honorarios           | `53:3433`  | `/ingresos`       | Built  |
+| 04e · Ingresos · Otras cédulas        | `86:8801`  | `/ingresos`       | Built  |
 
 The board "Opciones por decidir" (`78:9346`) holds the favicon, compact braid and section
 marker options waiting for the owner's choice.
@@ -96,7 +98,7 @@ Use `<Text variant>` (`src/shared/ui/Text.tsx`) or the `type-*` utility
 | Riel lateral                                                                     | `6:68`                                                            | `app/layout/SideRail.tsx`                                    |
 | Barra superior                                                                   | `6:130`                                                           | `app/layout/TopBar.tsx`                                      |
 | Logo (Horizontal/Isotipo × Color/Tinta/Invertido)                                | `33:3139`                                                         | `shared/ui/Logo.tsx`, SVGs in `src/assets/brand/`            |
-| Iconos (Lucide style)                                                            | `3:2`                                                             | `react-icons/lu` through `shared/ui/Icon.tsx`                |
+| Iconos (Lucide style; `Icono/basura` `86:9275` for removing a list item)         | `3:2`                                                             | `react-icons/lu` through `shared/ui/Icon.tsx`                |
 | Chip, Alerta, Campo monetario, Opción, Fila de cálculo, Casilla 210, Interruptor | `3:187`, `3:223`, `4:113`, `4:125`, `4:138`, `17:1658`, `17:1663` | Not built yet                                                |
 
 When a Figma component has a Polpo equivalent, wrap or style the Polpo component. Otherwise build

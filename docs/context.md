@@ -49,5 +49,5 @@ Ask the owner before resolving these.
 
 ## Next steps (proposed)
 
-1. Figma: Ingresos sections for fees and other schedules (04d, 04e) and the boxes of each schedule
-   on screen 09.
+1. Confirm with the owner whether occasional gains count for the 1.400 UVT income test.
+2. Exempt income and deductions of capital and non-labor income, loss compensations and donations.
