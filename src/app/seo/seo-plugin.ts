@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -22,6 +23,19 @@ export const seoPages = (): Plugin => {
     name: 'declaraturenta-seo',
     configResolved(resolved) {
       config = resolved;
+    },
+    // `vite preview` (and the e2e tests) route like Vercel: /terminos → terminos.html, unknown
+    // paths → app.html.
+    configurePreviewServer(server) {
+      const outDir = server.config.build.outDir;
+      server.middlewares.use((req, _res, next) => {
+        const [path = '/', query] = (req.url ?? '/').split('?');
+        if (path !== '/' && !path.includes('.')) {
+          const file = existsSync(join(outDir, `${path}.html`)) ? `${path}.html` : `/${APP_PAGE.file}`;
+          req.url = query ? `${file}?${query}` : file;
+        }
+        next();
+      });
     },
     transformIndexHtml(html) {
       return html.replace(PLACEHOLDER, block(PUBLIC_PAGES.landing));

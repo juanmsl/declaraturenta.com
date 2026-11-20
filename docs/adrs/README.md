@@ -47,3 +47,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0039](./0039-vercel-configuration.md)                          | Vercel configuration                                             | Accepted |
 | [0040](./0040-delete-my-data.md)                                | «Borrar mis datos»                                               | Accepted |
 | [0041](./0041-seo-and-link-previews.md)                         | SEO and link previews                                            | Accepted |
+| [0042](./0042-ci-and-end-to-end-tests.md)                       | Continuous integration and end-to-end tests                      | Accepted |
