@@ -8,3 +8,5 @@ coverage
 .pnpm-store
 .idea
 snapshot.tgz
+playwright-report
+test-results
