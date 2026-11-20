@@ -3,6 +3,7 @@ import { Outlet } from 'react-router';
 
 import { useDeclaration } from '../declaration/declaration-context';
 import { HelpProvider } from '../help/HelpProvider';
+import { useAppPageMeta } from '../seo/use-page-meta';
 import { TermsDialog } from '../terms/TermsDialog';
 
 import { FLOW_STEPS } from '../flow';
@@ -23,6 +24,7 @@ export const AppLayout = () => {
   const location = currentStep
     ? `Paso ${currentStep.index + 1} de ${FLOW_STEPS.length} · ${currentStep.title}`
     : 'Inicio · Antes de empezar';
+  useAppPageMeta(currentStep?.title ?? 'Inicio');
 
   return (
     <HelpProvider>

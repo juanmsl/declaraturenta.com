@@ -30,6 +30,8 @@ cap and simplification that affects a figure is explained on the screen where it
 - Hosting: **Vercel**, at **app.declaraturenta.com** (the owner owns declaraturenta.com). The
   landing page is the first route of the app. Security headers and a Content Security Policy are
   set in `vercel.json` (ADR 0039). The root domain does not redirect to the app yet.
+- SEO (ADR 0041): only the landing, Términos and Privacidad are indexed; each has its own HTML with
+  Open Graph and X tags and an image designed in Figma.
 - Data stays in the browser (localStorage), with a downloadable/uploadable local copy (.json) and
   «Borrar mis datos» for the open year. No accounts for now.
 
@@ -108,6 +110,9 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-20 | Vercel serves app.declaraturenta.com with security headers and a CSP (ADR 0039).           |
 | 2026-11-20 | No redirect from declaraturenta.com for now.                                               |
 | 2026-11-20 | «Borrar mis datos» in «Copia» empties only the open taxable year (ADR 0040).               |
+| 2026-11-20 | Only the landing and the legal pages are indexed; the app has noindex (ADR 0041).          |
+| 2026-11-20 | One OG image per public page plus one for the app, designed in Figma (ADR 0041).           |
+| 2026-11-20 | Per-route HTML at build time; robots, sitemap, JSON-LD, manifest and X card (ADR 0041).    |
 
 ## Not defined yet
 

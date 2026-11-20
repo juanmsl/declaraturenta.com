@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { PUBLIC_PAGES } from '@/app/seo/pages';
+import { usePageMeta } from '@/app/seo/use-page-meta';
 import { SiteFooter } from '@/features/landing/SiteFooter';
 import { SiteHeader } from '@/features/landing/SiteHeader';
 import { formatLongDate } from '@/shared/lib/format';
@@ -17,8 +19,9 @@ const PAGES = {
 export const LegalPage = ({ page }: { page: keyof typeof PAGES }) => {
   const { title, sections } = PAGES[page];
 
+  usePageMeta(PUBLIC_PAGES[page]);
+
   useEffect(() => {
-    document.title = `${title} · Declara tu renta`;
     window.scrollTo(0, 0);
   }, [title]);
 

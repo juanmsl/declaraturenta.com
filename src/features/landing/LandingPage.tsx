@@ -3,6 +3,8 @@ import { LuArrowRight, LuChevronLeft } from 'react-icons/lu';
 import { Accordion, AccordionItem } from 'polpo/components';
 
 import { HOME_PATH } from '@/app/flow';
+import { PUBLIC_PAGES } from '@/app/seo/pages';
+import { usePageMeta } from '@/app/seo/use-page-meta';
 import { DEFAULT_TAX_YEAR } from '@/domain/tax-years';
 import { Button, CalcRow, Chip, Icon, Text } from '@/shared/ui';
 
@@ -17,6 +19,7 @@ const INNER = 'mx-auto flex max-w-290 flex-col';
 
 /** Screen 18 · Landing (Figma 93:9426, mobile 109:11753): the first route of the app (ADR 0036). */
 export const LandingPage = () => {
+  usePageMeta(PUBLIC_PAGES.landing);
   const navigate = useNavigate();
   const start = () => void navigate(HOME_PATH);
 

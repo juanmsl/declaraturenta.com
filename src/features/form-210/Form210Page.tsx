@@ -7,6 +7,7 @@ import { cn } from 'polpo/helpers';
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { getStep } from '@/app/flow';
+import { useAppPageMeta } from '@/app/seo/use-page-meta';
 import { isCountBox } from '@/domain/box-concepts';
 import type { FilingCount } from '@/domain/advance-payment';
 import { buildForm210, OTHER_SCHEDULES, SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
@@ -32,6 +33,7 @@ const LEGEND = [
 
 /** Screen 09 · Formulario 210 (Figma node 18:1572) with the box detail of 09b (19:2267). */
 export const Form210Page = () => {
+  useAppPageMeta('Formulario 210');
   const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

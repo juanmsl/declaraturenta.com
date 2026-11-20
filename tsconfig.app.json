@@ -20,5 +20,6 @@
     "erasableSyntaxOnly": true,
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/app/seo/seo-plugin.ts"]
 }
