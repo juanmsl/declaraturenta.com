@@ -15,6 +15,8 @@ type DialogProps = {
   onConfirm: () => void;
   /** Secondary action that only closes; omit for a single-action dialog. */
   cancelLabel?: string;
+  /** Disables the primary action until a condition is met (e.g. accepting the terms). */
+  confirmDisabled?: boolean;
 };
 
 /**
@@ -29,6 +31,7 @@ export const Dialog = ({
   confirmLabel,
   onConfirm,
   cancelLabel,
+  confirmDisabled = false,
 }: DialogProps) => {
   const titleId = useId();
 
@@ -50,7 +53,7 @@ export const Dialog = ({
               {cancelLabel}
             </Button>
           )}
-          <Button type='button' onClick={onConfirm}>
+          <Button type='button' onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </Button>
         </div>

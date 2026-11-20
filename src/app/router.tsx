@@ -8,17 +8,20 @@ import { ExogenousPage } from '@/features/exogenous/ExogenousPage';
 import { HomePage } from '@/features/home/HomePage';
 import { IncomePage } from '@/features/income/IncomePage';
 import { LandingPage } from '@/features/landing/LandingPage';
+import { LegalPage } from '@/features/legal/LegalPage';
 import { ResultPage } from '@/features/result/ResultPage';
 import { ErrorPage } from '@/features/status/ErrorPage';
 import { NotFoundPage } from '@/features/status/NotFoundPage';
 
-import { FORM_210_PATH, LANDING_PATH } from './flow';
+import { FORM_210_PATH, LANDING_PATH, PRIVACY_PATH, TERMS_PATH } from './flow';
 import { AppLayout } from './layout/AppLayout';
 import { DesktopOnly } from './layout/DesktopOnly';
 
 export const router = createBrowserRouter([
   // The landing page works on any screen (ADR 0036).
   { path: LANDING_PATH, element: <LandingPage />, errorElement: <ErrorPage /> },
+  { path: TERMS_PATH, element: <LegalPage page='terms' />, errorElement: <ErrorPage /> },
+  { path: PRIVACY_PATH, element: <LegalPage page='privacy' />, errorElement: <ErrorPage /> },
   {
     element: (
       <DesktopOnly>

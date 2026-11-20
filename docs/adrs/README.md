@@ -42,3 +42,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0034](./0034-configurable-tax-year.md)                         | Configurable taxable year                                        | Accepted |
 | [0035](./0035-empty-start-and-filing-test-on-the-landing.md)    | Empty start, and «¿Debo declarar?» on the landing                | Accepted |
 | [0036](./0036-landing-page-and-routes.md)                       | Landing page and routes                                          | Accepted |
+| [0037](./0037-legal-pages-and-terms-acceptance.md)              | Legal pages and acceptance of the terms                          | Accepted |

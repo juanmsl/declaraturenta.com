@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 
-import { HOME_PATH } from '../flow';
+import { HOME_PATH, PRIVACY_PATH, TERMS_PATH } from '../flow';
 import { LuCalendar } from 'react-icons/lu';
 
 import { useDeclaration } from '../declaration/declaration-context';
@@ -73,6 +73,17 @@ export const SideRail = ({ steps }: SideRailProps) => {
           </div>
         </div>
       )}
+      <nav aria-label='Legal' className='flex items-center gap-2'>
+        <Link to={TERMS_PATH} className='rounded-sm type-note text-fg-muted hover:text-fg-action'>
+          Términos de uso
+        </Link>
+        <Text as='span' variant='note' className='text-fg-muted' aria-hidden>
+          ·
+        </Text>
+        <Link to={PRIVACY_PATH} className='rounded-sm type-note text-fg-muted hover:text-fg-action'>
+          Privacidad
+        </Link>
+      </nav>
     </aside>
   );
 };

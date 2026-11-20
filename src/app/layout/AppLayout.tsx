@@ -3,6 +3,7 @@ import { Outlet } from 'react-router';
 
 import { useDeclaration } from '../declaration/declaration-context';
 import { HelpProvider } from '../help/HelpProvider';
+import { TermsDialog } from '../terms/TermsDialog';
 
 import { FLOW_STEPS } from '../flow';
 import { SideRail } from './SideRail';
@@ -34,6 +35,7 @@ export const AppLayout = () => {
           </main>
         </div>
       </div>
+      <TermsDialog />
     </HelpProvider>
   );
 };
