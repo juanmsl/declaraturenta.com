@@ -107,6 +107,11 @@
    * Bricolage Grotesque uses automatic optical sizing (opsz = font size), which is what
    * Figma renders even though its inspector reports "opsz 14".
    * ------------------------------------------------------------------ */
+  --text-display-xl: 3.75rem; /* Display/XL 60/64, landing hero */
+  --text-display-xl--line-height: 4rem;
+  --text-display-xl--letter-spacing: -0.02em;
+  --text-display-xl--font-weight: 600;
+
   --text-display: 2.75rem; /* Display 44/48 */
   --text-display--line-height: 3rem;
   --text-display--letter-spacing: -0.02em;
@@ -186,6 +191,13 @@
  * `text-*` because tailwind-merge (used by Polpo and `cn`) reads unknown `text-*` classes as
  * colors and drops them when a `text-fg-*` color is also present. See ADR 0005.
  */
+@utility type-display-xl {
+  font-family: var(--font-title);
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: var(--text-display-xl--letter-spacing);
+  font-weight: var(--text-display-xl--font-weight);
+}
 @utility type-display {
   font-family: var(--font-title);
   font-size: var(--text-display);

@@ -56,3 +56,48 @@ export const evaluateFilingObligation = (
 
   return { tests, exceededCount, vatResponsible, mustFile: exceededCount > 0 || vatResponsible };
 };
+
+/** Answers of the landing's quick check (ADR 0035): a monthly salary and yes/no questions. */
+export type QuickFilingAnswers = {
+  monthlySalary: number;
+  assetsAbove: boolean;
+  creditCardAbove: boolean;
+  purchasesAbove: boolean;
+  depositsAbove: boolean;
+  vatResponsible: boolean;
+};
+
+export type QuickFilingCheck = {
+  /** Monthly salary × 12. */
+  annualIncome: number;
+  /** Income test limit in pesos (1.400 UVT for AG 2025). */
+  incomeLimit: number;
+  incomeExceeds: boolean;
+  /** Yes answers to the other tests. */
+  otherReasons: number;
+  mustFile: boolean;
+};
+
+/**
+ * Rough filing check for the landing page: the salary of a year against the income test, plus the
+ * person's own answers for the other tests. Inside the app every test uses the real data.
+ */
+export const quickFilingCheck = (answers: QuickFilingAnswers, year: TaxYearConfig): QuickFilingCheck => {
+  const annualIncome = Math.max(0, answers.monthlySalary) * 12;
+  const incomeLimit = uvtToPesos(year.filingTestsUvt.grossIncome, year);
+  const incomeExceeds = annualIncome >= incomeLimit;
+  const otherReasons = [
+    answers.assetsAbove,
+    answers.creditCardAbove,
+    answers.purchasesAbove,
+    answers.depositsAbove,
+    answers.vatResponsible,
+  ].filter(Boolean).length;
+  return {
+    annualIncome,
+    incomeLimit,
+    incomeExceeds,
+    otherReasons,
+    mustFile: incomeExceeds || otherReasons > 0,
+  };
+};

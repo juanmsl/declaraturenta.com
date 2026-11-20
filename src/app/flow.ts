@@ -81,6 +81,16 @@ export const getStep = (id: FlowStepId): FlowStep => {
 export const findStepByPath = (pathname: string): FlowStep | undefined =>
   FLOW_STEPS.find(step => pathname === step.path || pathname.startsWith(`${step.path}/`));
 
+/** Landing page: the first route of app.declaraturenta.com (ADR 0036). */
+export const LANDING_PATH = '/';
+
+/** Inicio, the summary before the flow (screen 01). */
+export const HOME_PATH = '/inicio';
+
+/** Legal pages (screens 16b and 16c). */
+export const TERMS_PATH = '/terminos';
+export const PRIVACY_PATH = '/privacidad';
+
 /** Full Formulario 210 view (screen 09). `?casilla=N` opens the detail of box N (screen 09b). */
 export const FORM_210_PATH = '/formulario-210';
 

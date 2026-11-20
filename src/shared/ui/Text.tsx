@@ -8,6 +8,7 @@ import { Typography } from 'polpo/components';
  * Each variant maps to a `type-<variant>` utility defined in src/styles/index.css.
  */
 export type TextVariant =
+  | 'display-xl'
   | 'display'
   | 'title-l'
   | 'title-m'
@@ -29,6 +30,7 @@ type PolpoVariant = NonNullable<ComponentProps<typeof Typography>['variant']>;
  * Figma style. Class names must stay literal so Tailwind can detect them.
  */
 const VARIANTS: Record<TextVariant, { polpo: PolpoVariant; className: string }> = {
+  'display-xl': { polpo: 'header1', className: 'type-display-xl' },
   display: { polpo: 'header1', className: 'type-display' },
   'title-l': { polpo: 'header2', className: 'type-title-l' },
   'title-m': { polpo: 'header3', className: 'type-title-m' },

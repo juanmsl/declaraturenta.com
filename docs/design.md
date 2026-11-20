@@ -75,6 +75,7 @@ Use `<Text variant>` (`src/shared/ui/Text.tsx`) or the `type-*` utility
 
 | Figma style     | Variant         | Font                    | Size / line height |
 | --------------- | --------------- | ----------------------- | ------------------ |
+| Display/XL      | `display-xl`    | Bricolage Grotesque 600 | 60 / 64, −2 %      |
 | Display         | `display`       | Bricolage Grotesque 600 | 44 / 48, −2 %      |
 | Titulo/L        | `title-l`       | Bricolage Grotesque 600 | 30 / 36, −1.5 %    |
 | Titulo/M        | `title-m`       | Bricolage Grotesque 600 | 21 / 28, −1 %      |

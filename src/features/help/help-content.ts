@@ -5,10 +5,6 @@
 
 export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
   {
-    title: '¿Debo declarar?',
-    text: 'Revisamos los cinco topes de la DIAN con tus datos. Con superar uno ya debes declarar.',
-  },
-  {
     title: 'Importar exógena',
     text: 'Sube el Excel de información exógena que descargas del portal de la DIAN. Lo leemos en tu navegador y llevamos cada dato a su casilla; tú confirmas lo marcado.',
   },
@@ -18,13 +14,16 @@ export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
   },
   {
     title: 'Patrimonio',
-    text: 'Lo que tenías y lo que debías al 31 de diciembre. Agrega, edita o quita bienes y deudas.',
+    text: 'Lo que tenías y lo que debías al 31 de diciembre, y tus movimientos del año. Agrega, edita o quita bienes y deudas.',
   },
   {
     title: 'Deducciones',
     text: 'Intereses de vivienda, dependientes, medicina prepagada y la renta exenta del 25 %. Te mostramos cuándo llegas al tope del 40 %.',
   },
-  { title: 'Resultado', text: 'Ves si tienes saldo a pagar o a favor y cómo llegamos a esa cifra.' },
+  {
+    title: 'Resultado',
+    text: 'Ves si tienes saldo a pagar o a favor, cómo llegamos a esa cifra y si tenías que declarar.',
+  },
   {
     title: 'Borrador 210',
     text: 'Tu formulario con cada casilla. Descárgalo en PDF y transcríbelo en el portal de la DIAN, donde lo firmas y presentas.',

@@ -2,7 +2,7 @@ import { LuArrowRight, LuInfo } from 'react-icons/lu';
 import { useNavigate } from 'react-router';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
-import { findResumeStep } from '@/app/flow';
+import { findResumeStep, HOME_PATH } from '@/app/flow';
 import { Button, Chip } from '@/shared/ui';
 
 import { StatusPage } from './StatusPage';
@@ -27,7 +27,7 @@ export const NotFoundPage = () => {
           <Button icon={LuArrowRight} onClick={() => void navigate(resumeStep.path)}>
             Seguir mi declaración
           </Button>
-          <Button variant='ghost' onClick={() => void navigate('/')}>
+          <Button variant='ghost' onClick={() => void navigate(HOME_PATH)}>
             Ir al inicio
           </Button>
         </>

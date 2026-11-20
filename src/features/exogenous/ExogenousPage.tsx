@@ -17,7 +17,7 @@ import {
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { getStep } from '@/app/flow';
+import { getStep, HOME_PATH } from '@/app/flow';
 import { buildExogenousReport, clearExogenous, countReportingEntities } from '@/domain/exogenous';
 import type { ExogenousItem, ExogenousItemKind } from '@/domain/exogenous';
 import { parseExogenousSheet } from '@/domain/exogenous-file';
@@ -239,7 +239,7 @@ export const ExogenousPage = () => {
       )}
 
       <div className='flex items-center gap-3'>
-        <Button variant='ghost' onClick={() => void navigate('/')}>
+        <Button variant='ghost' onClick={() => void navigate(HOME_PATH)}>
           Atrás
         </Button>
         <div className='flex-1' />

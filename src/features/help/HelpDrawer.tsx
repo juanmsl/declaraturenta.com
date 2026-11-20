@@ -49,7 +49,7 @@ export const HelpDrawer = ({ tab, onClose }: HelpDrawerProps) => (
 const Guide = () => (
   <div className='flex flex-col gap-5'>
     <Text variant='body-m' className='text-fg-secondary'>
-      Son siete pasos. Puedes ir y volver cuando quieras; lo que respondes se guarda solo.
+      Son {GUIDE_STEPS.length} pasos. Puedes ir y volver cuando quieras; lo que respondes se guarda solo.
     </Text>
     <ol className='flex flex-col gap-3.5'>
       {GUIDE_STEPS.map((step, index) => (
