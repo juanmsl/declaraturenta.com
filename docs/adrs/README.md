@@ -44,3 +44,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0036](./0036-landing-page-and-routes.md)                       | Landing page and routes                                          | Accepted |
 | [0037](./0037-legal-pages-and-terms-acceptance.md)              | Legal pages and acceptance of the terms                          | Accepted |
 | [0038](./0038-every-box-of-the-210.md)                          | Every box of the Formulario 210                                  | Accepted |
+| [0039](./0039-vercel-configuration.md)                          | Vercel configuration                                             | Accepted |

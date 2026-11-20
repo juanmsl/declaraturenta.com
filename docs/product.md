@@ -28,7 +28,8 @@ cap and simplification that affects a figure is explained on the screen where it
 - Desktop web, designed at 1440 px, minimum 1280 px. Below 1280 px there is a single screen asking
   to switch to a computer, as a 480 px column (screen 10).
 - Hosting: **Vercel**, at **app.declaraturenta.com** (the owner owns declaraturenta.com). The
-  landing page is the first route of the app; the root domain redirects to it.
+  landing page is the first route of the app. Security headers and a Content Security Policy are
+  set in `vercel.json` (ADR 0039). The root domain does not redirect to the app yet.
 - Data stays in the browser (localStorage), with a downloadable/uploadable local copy (.json). No
   accounts for now.
 
@@ -104,6 +105,8 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-20 | Without an exogenous report, the last two NIT digits are typed in Inicio.                  |
 | 2026-11-20 | Inicio has a single action, «Subir mi exógena».                                            |
 | 2026-11-20 | The landing page has a mobile version (390 px); the app stays desktop only.                |
+| 2026-11-20 | Vercel serves app.declaraturenta.com with security headers and a CSP (ADR 0039).           |
+| 2026-11-20 | No redirect from declaraturenta.com for now.                                               |
 
 ## Not defined yet
 
