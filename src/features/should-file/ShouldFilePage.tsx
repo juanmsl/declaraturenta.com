@@ -2,9 +2,10 @@ import { useNavigate } from 'react-router';
 import { LuArrowRight, LuCircleHelp } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
 import type { FilingTestId } from '@/domain/filing-obligation';
-import { TAX_YEAR, UVT_2025, uvtToPesos } from '@/domain/uvt';
+import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, Icon, StepHeader, StepLayout, Text } from '@/shared/ui';
 
@@ -20,6 +21,7 @@ const nextStep = FLOW_STEPS[1];
 
 /** Screen 02 · ¿Debo declarar? (Figma node 7:350). */
 export const ShouldFilePage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { dispatch, result } = useDeclaration();
   const { tests, exceededCount, mustFile } = result.obligation;
@@ -33,7 +35,7 @@ export const ShouldFilePage = () => {
     <StepLayout aside={<UvtPanel />}>
       <StepHeader
         title='¿Debes declarar renta?'
-        description={`Si en ${TAX_YEAR} superaste cualquiera de estos cinco topes, debes declarar. Los valores vienen de tu exógena; corrige lo que no cuadre.`}
+        description={`Si en ${taxYear.year} superaste cualquiera de estos cinco topes, debes declarar. Los valores vienen de tu exógena; corrige lo que no cuadre.`}
       />
 
       <ul className='flex flex-col rounded-lg border border-line bg-surface px-6'>
@@ -79,30 +81,33 @@ export const ShouldFilePage = () => {
   );
 };
 
-const UvtPanel = () => (
-  <>
-    <div className='flex items-center gap-2'>
-      <Icon icon={LuCircleHelp} size={18} className='text-fg-action' />
-      <Text variant='title-s' as='h2'>
-        ¿Qué es la UVT?
+const UvtPanel = () => {
+  const { taxYear } = useTaxYear();
+  return (
+    <>
+      <div className='flex items-center gap-2'>
+        <Icon icon={LuCircleHelp} size={18} className='text-fg-action' />
+        <Text variant='title-s' as='h2'>
+          ¿Qué es la UVT?
+        </Text>
+      </div>
+      <Text variant='body-m' className='text-fg-secondary'>
+        La Unidad de Valor Tributario convierte los topes de la ley en pesos y se actualiza cada año.
       </Text>
-    </div>
-    <Text variant='body-m' className='text-fg-secondary'>
-      La Unidad de Valor Tributario convierte los topes de la ley en pesos y se actualiza cada año.
-    </Text>
-    <div className='flex flex-col gap-1 rounded-md bg-rail p-5'>
-      <Text variant='caption' className='text-fg-action'>
-        1 UVT en {TAX_YEAR}
+      <div className='flex flex-col gap-1 rounded-md bg-rail p-5'>
+        <Text variant='caption' className='text-fg-action'>
+          1 UVT en {taxYear.year}
+        </Text>
+        <Text variant='figure-l'>{formatCurrency(taxYear.uvt)}</Text>
+      </div>
+      <div className='flex flex-col'>
+        {[1400, 4500].map(uvt => (
+          <CalcRow key={uvt} label={`${formatNumber(uvt)} UVT`} value={uvtToPesos(uvt, taxYear)} />
+        ))}
+      </div>
+      <Text variant='note' className='text-fg-muted'>
+        Valor fijado por la DIAN para el año gravable {taxYear.year}.
       </Text>
-      <Text variant='figure-l'>{formatCurrency(UVT_2025)}</Text>
-    </div>
-    <div className='flex flex-col'>
-      {[1400, 4500].map(uvt => (
-        <CalcRow key={uvt} label={`${formatNumber(uvt)} UVT`} value={uvtToPesos(uvt)} />
-      ))}
-    </div>
-    <Text variant='note' className='text-fg-muted'>
-      Valor fijado por la DIAN para el año gravable {TAX_YEAR}.
-    </Text>
-  </>
-);
+    </>
+  );
+};

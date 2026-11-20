@@ -16,11 +16,11 @@ import {
 } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
 import { buildExogenousReport, clearExogenous, countReportingEntities } from '@/domain/exogenous';
 import type { ExogenousItem, ExogenousItemKind } from '@/domain/exogenous';
 import { parseExogenousSheet } from '@/domain/exogenous-file';
-import { TAX_YEAR } from '@/domain/uvt';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
@@ -100,6 +100,7 @@ const groupItems = (items: readonly ExogenousItem[]): ExogenousItem[] => {
 
 /** Screen 03 · Importar exógena (Figma node 9:448). Reads the DIAN .xlsx in the browser (ADR 0024). */
 export const ExogenousPage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch } = useDeclaration();
   const { exogenous } = state;
@@ -118,9 +119,9 @@ export const ExogenousPage = () => {
     try {
       const { readSheet } = await import('read-excel-file/browser');
       const parsed = parseExogenousSheet(await readSheet(file));
-      if (parsed.year !== null && parsed.year !== TAX_YEAR) {
+      if (parsed.year !== null && parsed.year !== taxYear.year) {
         setError(
-          `Este reporte es del año ${String(parsed.year)}. Descarga el del año gravable ${String(TAX_YEAR)}.`,
+          `Este reporte es del año ${String(parsed.year)}. Descarga el del año gravable ${String(taxYear.year)}.`,
         );
         return;
       }
@@ -253,39 +254,42 @@ export const ExogenousPage = () => {
   );
 };
 
-const DOWNLOAD_STEPS = [
+const downloadSteps = (year: number) => [
   'Entra al portal de la DIAN con tu usuario.',
   'Busca la consulta de información exógena.',
-  `Elige el año gravable ${TAX_YEAR} y descarga el archivo.`,
+  `Elige el año gravable ${String(year)} y descarga el archivo.`,
 ];
 
-const DownloadHelpPanel = () => (
-  <>
-    <div className='flex items-center gap-2'>
-      <Icon icon={LuCircleHelp} size={18} className='text-fg-action' />
-      <Text variant='title-s' as='h2'>
-        ¿Dónde la descargo?
-      </Text>
-    </div>
-    <ol className='flex flex-col gap-3.5'>
-      {DOWNLOAD_STEPS.map((step, index) => (
-        <li key={step} className='flex items-start gap-3'>
-          <Text
-            as='span'
-            variant='caption'
-            className='flex size-6 shrink-0 items-center justify-center rounded-md bg-action-soft text-fg-action'
-          >
-            {index + 1}
-          </Text>
-          <Text variant='body-m' className='flex-1 text-fg-secondary'>
-            {step}
-          </Text>
-        </li>
-      ))}
-    </ol>
-    <NoteBox>
-      La exógena es lo que otros reportaron sobre ti. Puede tener errores o vacíos; por eso nada se usa sin tu
-      confirmación.
-    </NoteBox>
-  </>
-);
+const DownloadHelpPanel = () => {
+  const { taxYear } = useTaxYear();
+  return (
+    <>
+      <div className='flex items-center gap-2'>
+        <Icon icon={LuCircleHelp} size={18} className='text-fg-action' />
+        <Text variant='title-s' as='h2'>
+          ¿Dónde la descargo?
+        </Text>
+      </div>
+      <ol className='flex flex-col gap-3.5'>
+        {downloadSteps(taxYear.year).map((step, index) => (
+          <li key={step} className='flex items-start gap-3'>
+            <Text
+              as='span'
+              variant='caption'
+              className='flex size-6 shrink-0 items-center justify-center rounded-md bg-action-soft text-fg-action'
+            >
+              {index + 1}
+            </Text>
+            <Text variant='body-m' className='flex-1 text-fg-secondary'>
+              {step}
+            </Text>
+          </li>
+        ))}
+      </ol>
+      <NoteBox>
+        La exógena es lo que otros reportaron sobre ti. Puede tener errores o vacíos; por eso nada se usa sin
+        tu confirmación.
+      </NoteBox>
+    </>
+  );
+};

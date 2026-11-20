@@ -8,6 +8,7 @@ import { formatLongDate } from '@/shared/lib/format';
 import { Button, Dialog, Text } from '@/shared/ui';
 
 import { BackupError, downloadBackup, parseBackup } from '../declaration/backup';
+import { useTaxYear } from '../declaration/tax-year-context';
 import type { DeclarationState } from '../declaration/declaration-state';
 import { useDeclaration } from '../declaration/declaration-context';
 
@@ -17,6 +18,7 @@ const ERRORS = {
   'not-a-backup':
     'Ese archivo no es una copia de Declara tu renta. Elige el .json que descargaste con «Descargar copia».',
   outdated: 'Esa copia es de una versión anterior de la plataforma y ya no se puede abrir.',
+  'other-year': 'Esa copia es de otro año gravable.',
 } as const;
 
 /** "Copia" in the top bar: download the declaration as a .json file or open one (ADR 0027). */
@@ -24,6 +26,7 @@ export const CopyMenu = () => {
   const { state, dispatch } = useDeclaration();
   const { containerRef, isOpen, openModal, closeModal } = useModal<HTMLButtonElement>();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { taxYear } = useTaxYear();
   const [pending, setPending] = useState<Pending | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,9 +35,15 @@ export const CopyMenu = () => {
     event.target.value = '';
     if (!file) return;
     try {
-      setPending(parseBackup(await file.text()));
+      setPending(parseBackup(await file.text(), taxYear.year));
     } catch (caught) {
-      setError(caught instanceof BackupError ? ERRORS[caught.reason] : ERRORS['not-a-backup']);
+      if (caught instanceof BackupError && caught.reason === 'other-year' && caught.year !== null) {
+        setError(
+          `Esa copia es del año gravable ${String(caught.year)}. Cambia el año en «Año gravable» y ábrela de nuevo.`,
+        );
+      } else {
+        setError(caught instanceof BackupError ? ERRORS[caught.reason] : ERRORS['not-a-backup']);
+      }
     }
   };
 

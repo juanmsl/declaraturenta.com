@@ -36,7 +36,7 @@ cap and simplification that affects a figure is explained on the screen where it
 
 The platform is configurable by taxable year: UVT, tax tables, caps, filing calendar and rates
 come from the selected year's configuration. The year is chosen in the side rail ("Año gravable");
-each year keeps its own return in the browser. Only AG 2025 is configured for now.
+each year keeps its own return in the browser. Only AG 2025 is configured for now (ADR 0034).
 
 ## Sections of the flow
 

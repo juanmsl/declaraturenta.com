@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router';
 import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
 import { useHelp } from '@/app/help/help-context';
-import { TAX_YEAR } from '@/domain/uvt';
 import { Button, Text } from '@/shared/ui';
 
 import { ChecklistCard } from './components/ChecklistCard';
@@ -15,6 +15,7 @@ const [firstStep, exogenousStep] = FLOW_STEPS;
 
 /** Screen 01 · Inicio (Figma node 7:2). */
 export const HomePage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch } = useDeclaration();
   const { taxpayer } = state;
@@ -27,7 +28,7 @@ export const HomePage = () => {
     <div className='flex flex-col gap-8 px-14 py-12'>
       <header className='flex flex-col gap-3.5'>
         <Text variant='display' className='max-w-205'>
-          Hola, {taxpayer.firstName}. Preparemos tu declaración de renta del año gravable {TAX_YEAR}.
+          Hola, {taxpayer.firstName}. Preparemos tu declaración de renta del año gravable {taxYear.year}.
         </Text>
         <Text variant='body-l' className='max-w-170 text-fg-secondary'>
           Te hacemos preguntas sencillas, prellenamos lo que la DIAN ya sabe de ti y te mostramos de dónde

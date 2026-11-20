@@ -1,3 +1,4 @@
+import { AG_2025 } from './tax-years';
 import { computeLaborIncome } from './labor-income';
 import type { LaborIncomeInput } from './labor-income';
 
@@ -13,7 +14,7 @@ const laura: LaborIncomeInput = {
 
 describe('computeLaborIncome', () => {
   it('matches the sample taxpayer with deductions', () => {
-    const result = computeLaborIncome(laura);
+    const result = computeLaborIncome(laura, AG_2025);
     expect(result.netIncome).toBe(163_800_000);
     expect(result.housingDeduction).toBe(14_400_000);
     expect(result.dependent).toBe(18_000_000);
@@ -29,26 +30,29 @@ describe('computeLaborIncome', () => {
   });
 
   it('matches the sample taxpayer before the deductions step', () => {
-    const result = computeLaborIncome({ ...laura, includeDeductions: false });
+    const result = computeLaborIncome({ ...laura, includeDeductions: false }, AG_2025);
     expect(result.totalDeductions).toBe(0);
     expect(result.exempt25).toBe(39_341_210);
     expect(result.ordinaryNetIncome).toBe(124_458_790);
   });
 
   it('limits each deduction', () => {
-    const result = computeLaborIncome({
-      ...laura,
-      grossIncome: 400_000_000,
-      housingInterestPaid: 80_000_000,
-      prepaidHealthPaid: 12_000_000,
-    });
+    const result = computeLaborIncome(
+      {
+        ...laura,
+        grossIncome: 400_000_000,
+        housingInterestPaid: 80_000_000,
+        prepaidHealthPaid: 12_000_000,
+      },
+      AG_2025,
+    );
     expect(result.housingDeduction).toBe(59_758_800);
     expect(result.dependent).toBe(19_122_816);
     expect(result.prepaidHealth).toBe(9_561_408);
   });
 
   it('caps benefits at 1.340 UVT when 40 % is higher', () => {
-    const result = computeLaborIncome({ ...laura, grossIncome: 400_000_000, nonTaxableIncome: 0 });
+    const result = computeLaborIncome({ ...laura, grossIncome: 400_000_000, nonTaxableIncome: 0 }, AG_2025);
     expect(result.benefitsCap).toBe(66_730_660);
   });
 });

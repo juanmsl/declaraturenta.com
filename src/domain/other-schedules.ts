@@ -1,5 +1,7 @@
-import { ART_241_UNTIL_2016_BRACKETS, computeTableTax } from './income-tax-table';
-import { pesosToUvt, roundToThousand, UVT_2025, uvtToPesos } from './uvt';
+import { computeTableTax } from './income-tax-table';
+import { uvtToPesos } from './tax-years';
+import type { TaxYearConfig } from './tax-years';
+import { pesosToUvt, roundToThousand } from './uvt';
 
 /** Where a value comes from: the DIAN exogenous report or the user. */
 type Origin = 'exogenous' | 'user';
@@ -10,9 +12,6 @@ const positive = (value: number) => Math.max(0, value);
 // ---------------------------------------------------------------------------------------------
 // Cédula de pensiones (boxes 99–103)
 // ---------------------------------------------------------------------------------------------
-
-/** Exempt pension: up to 1.000 UVT per month of pension received (art. 206 num. 5 E.T.). */
-export const PENSION_EXEMPT_MONTHLY_UVT = 1000;
 
 export type PensionConcept = {
   id: string;
@@ -39,18 +38,18 @@ export type PensionResult = {
   nonTaxableIncome: number;
   /** Box 101 = 99 − 100. */
   netIncome: number;
-  /** Box 102: up to 1.000 UVT per month. */
+  /** Box 102: up to the year's monthly UVT per month of pension (art. 206 num. 5 E.T.). */
   exemptIncome: number;
   /** Box 103 = 101 − 102. */
   taxableIncome: number;
 };
 
-export const computePensions = (data: PensionData, uvtValue: number = UVT_2025): PensionResult => {
+export const computePensions = (data: PensionData, year: TaxYearConfig): PensionResult => {
   const grossIncome = sum(data.concepts.map(concept => concept.amount));
   const nonTaxableIncome = Math.min(positive(data.nonTaxableIncome), grossIncome);
   const netIncome = positive(grossIncome - nonTaxableIncome);
   const months = Math.min(12, Math.max(0, Math.floor(data.months)));
-  const exemptIncome = Math.min(netIncome, uvtToPesos(PENSION_EXEMPT_MONTHLY_UVT * months, uvtValue));
+  const exemptIncome = Math.min(netIncome, uvtToPesos(year.pensions.exemptMonthlyUvt * months, year));
   return {
     grossIncome,
     nonTaxableIncome,
@@ -74,13 +73,6 @@ export const computePensions = (data: PensionData, uvtValue: number = UVT_2025):
  */
 export type DividendKind =
   'until-2016-non-taxed' | 'until-2016-taxed' | 'first-subcedule' | 'second-subcedule' | 'foreign';
-
-/** Box 118: art. 240 general rate for 2023 and later. Box 120: 35 % on foreign dividends. */
-export const SECOND_SUBCEDULE_RATE = 0.35;
-export const FOREIGN_DIVIDENDS_RATE = 0.35;
-/** Box 124: 19 % discount on dividends above 1.090 UVT (art. 254-1 E.T.). */
-export const DIVIDEND_DISCOUNT_FROM_UVT = 1090;
-export const DIVIDEND_DISCOUNT_RATE = 0.19;
 
 export type DividendConcept = {
   id: string;
@@ -124,8 +116,9 @@ const amountOf = (concepts: readonly DividendConcept[], ...kinds: DividendKind[]
 
 export const computeDividends = (
   concepts: readonly DividendConcept[],
-  uvtValue: number = UVT_2025,
+  year: TaxYearConfig,
 ): DividendResult => {
+  const rates = year.dividends;
   const until2016 = amountOf(concepts, 'until-2016-non-taxed', 'until-2016-taxed');
   const until2016NonTaxed = amountOf(concepts, 'until-2016-non-taxed');
   const until2016Net = positive(until2016 - until2016NonTaxed);
@@ -134,12 +127,11 @@ export const computeDividends = (
   const foreign = amountOf(concepts, 'foreign');
   const foreignExempt = 0;
 
-  const secondSubceduleTax = roundToThousand(secondSubcedule * SECOND_SUBCEDULE_RATE);
-  const until2016Tax = computeTableTax(until2016Net, uvtValue, ART_241_UNTIL_2016_BRACKETS).tax;
-  const foreignTax = roundToThousand(positive(foreign - foreignExempt) * FOREIGN_DIVIDENDS_RATE);
+  const secondSubceduleTax = roundToThousand(secondSubcedule * rates.secondSubceduleRate);
+  const until2016Tax = computeTableTax(until2016Net, year, year.until2016Brackets).tax;
+  const foreignTax = roundToThousand(positive(foreign - foreignExempt) * rates.foreignRate);
   const baseForTable = positive(firstSubcedule + secondSubcedule - secondSubceduleTax);
-  const discountUvt =
-    positive(pesosToUvt(baseForTable, uvtValue) - DIVIDEND_DISCOUNT_FROM_UVT) * DIVIDEND_DISCOUNT_RATE;
+  const discountUvt = positive(pesosToUvt(baseForTable, year) - rates.discountFromUvt) * rates.discountRate;
 
   return {
     until2016,
@@ -153,7 +145,7 @@ export const computeDividends = (
     until2016Tax,
     foreignTax,
     baseForTable,
-    discount: roundToThousand(discountUvt * uvtValue),
+    discount: roundToThousand(discountUvt * year.uvt),
   };
 };
 
@@ -188,20 +180,15 @@ export type OccasionalGainKind =
   | 'personal-effects'
   | 'other';
 
-export const OCCASIONAL_GAIN_RATE = 0.15;
-export const LOTTERY_RATE = 0.2;
-
-/** Exempt amount per kind, in UVT (null = fully exempt). */
-const EXEMPT_UVT: Partial<Record<OccasionalGainKind, number | null>> = {
-  'home-sale': 5000,
-  'inherited-home': 13_000,
-  'inherited-real-estate': 6500,
-  inheritance: 3250,
-  'life-insurance': 3250,
+/** Exempt amount per kind, in UVT of the year (null = fully exempt). */
+const exemptUvt = (year: TaxYearConfig): Partial<Record<OccasionalGainKind, number | null>> => ({
+  'home-sale': year.occasionalGains.homeSaleExemptUvt,
+  'inherited-home': year.occasionalGains.inheritedHomeExemptUvt,
+  'inherited-real-estate': year.occasionalGains.inheritedRealEstateExemptUvt,
+  inheritance: year.occasionalGains.inheritanceExemptUvt,
+  'life-insurance': year.occasionalGains.lifeInsuranceExemptUvt,
   'personal-effects': null,
-};
-const GIFT_EXEMPT_RATE = 0.2;
-const GIFT_EXEMPT_CAP_UVT = 1625;
+});
 
 export type OccasionalGainConcept = {
   id: string;
@@ -234,16 +221,17 @@ export type OccasionalGainsResult = {
 };
 
 /** Exempt part of one gain, by its kind. */
-export const occasionalGainExempt = (concept: OccasionalGainConcept, uvtValue: number = UVT_2025): number => {
+export const occasionalGainExempt = (concept: OccasionalGainConcept, year: TaxYearConfig): number => {
   const gain = positive(concept.amount - concept.cost);
   if (concept.kind === 'gift') {
-    return Math.min(Math.round(gain * GIFT_EXEMPT_RATE), uvtToPesos(GIFT_EXEMPT_CAP_UVT, uvtValue));
+    const { giftExemptRate, giftExemptCapUvt } = year.occasionalGains;
+    return Math.min(Math.round(gain * giftExemptRate), uvtToPesos(giftExemptCapUvt, year));
   }
   if (concept.kind === 'home-sale' && !concept.toAfcOrMortgage) return 0;
-  const capUvt = EXEMPT_UVT[concept.kind];
+  const capUvt = exemptUvt(year)[concept.kind];
   if (capUvt === undefined) return 0;
   if (capUvt === null) return gain;
-  return Math.min(gain, uvtToPesos(capUvt, uvtValue));
+  return Math.min(gain, uvtToPesos(capUvt, year));
 };
 
 /**
@@ -252,7 +240,7 @@ export const occasionalGainExempt = (concept: OccasionalGainConcept, uvtValue: n
  */
 export const computeOccasionalGains = (
   concepts: readonly OccasionalGainConcept[],
-  uvtValue: number = UVT_2025,
+  year: TaxYearConfig,
 ): OccasionalGainsResult => {
   const grossIncome = sum(concepts.map(concept => concept.amount));
   const costs = sum(concepts.map(concept => Math.min(positive(concept.cost), concept.amount)));
@@ -280,10 +268,10 @@ export const computeOccasionalGains = (
           cost: sum(ofKind.filter(c => c.toAfcOrMortgage).map(c => Math.min(positive(c.cost), c.amount))),
           toAfcOrMortgage: true,
         },
-        uvtValue,
+        year,
       );
     } else {
-      exempt += occasionalGainExempt(merged, uvtValue);
+      exempt += occasionalGainExempt(merged, year);
     }
     if (kind === 'lottery') taxableLottery = positive(merged.amount - merged.cost);
   }
@@ -291,7 +279,8 @@ export const computeOccasionalGains = (
   exempt = Math.min(exempt, positive(grossIncome - costs));
   const taxable = positive(grossIncome - costs - exempt);
   const lotteryPart = Math.min(taxableLottery, taxable);
-  const tax = roundToThousand(lotteryPart * LOTTERY_RATE + (taxable - lotteryPart) * OCCASIONAL_GAIN_RATE);
+  const { lotteryRate, rate } = year.occasionalGains;
+  const tax = roundToThousand(lotteryPart * lotteryRate + (taxable - lotteryPart) * rate);
 
   return { grossIncome, costs, exempt, taxable, taxableLottery: lotteryPart, tax };
 };

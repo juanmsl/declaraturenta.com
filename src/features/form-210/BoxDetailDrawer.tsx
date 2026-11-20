@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import {
   applyBoxConcepts,
-  BOX_DESCRIPTIONS,
+  boxDescription,
   getBoxConcepts,
   isCountBox,
   isEditableBox,
@@ -12,7 +13,6 @@ import {
 import type { BoxConcept, EditableBox } from '@/domain/box-concepts';
 import type { Form210, Form210Box } from '@/domain/form-210';
 import { findDependentBoxes, scheduleColumnOf } from '@/domain/form-210';
-import { LABOR_LIMITS_UVT } from '@/domain/labor-income';
 import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared/ui';
@@ -109,7 +109,8 @@ const Footer = ({
 );
 
 const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onClose: () => void }) => {
-  const description = BOX_DESCRIPTIONS[box.number];
+  const { taxYear } = useTaxYear();
+  const description = boxDescription(box.number, taxYear);
 
   if (isEditableBox(box.number)) {
     return (
@@ -187,6 +188,7 @@ const EditableDetail = ({
   description: string | undefined;
   onClose: () => void;
 }) => {
+  const { taxYear } = useTaxYear();
   const { state, dispatch } = useDeclaration();
   const [initial] = useState(() => getBoxConcepts(boxNumber, state.data));
   const [concepts, setConcepts] = useState<BoxConcept[]>(initial);
@@ -207,9 +209,9 @@ const EditableDetail = ({
           {description}
         </Text>
       )}
-      {boxNumber === 38 && total > uvtToPesos(LABOR_LIMITS_UVT.housingInterest) && (
+      {boxNumber === 38 && total > uvtToPesos(taxYear.labor.housingInterestUvt, taxYear) && (
         <Alert variant='warning' title='Pasas el tope de 1.200 UVT'>
-          La casilla toma {formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.housingInterest))}.
+          La casilla toma {formatCurrency(uvtToPesos(taxYear.labor.housingInterestUvt, taxYear))}.
         </Alert>
       )}
       <ConceptsEditor
@@ -232,6 +234,7 @@ const OtherDeductionsDetail = ({
   box: Form210Box;
   onClose: () => void;
 }) => {
+  const { taxYear } = useTaxYear();
   const { state, dispatch, result } = useDeclaration();
   const [values, setValues] = useState(state.data.deductions);
   const isDirty = JSON.stringify(values) !== JSON.stringify(state.data.deductions);
@@ -245,7 +248,7 @@ const OtherDeductionsDetail = ({
     <>
       <TotalCard form={form} box={box} total={box.value} />
       <Text variant='body-m' className='text-fg-secondary'>
-        {BOX_DESCRIPTIONS[39]}
+        {boxDescription(39, taxYear)}
       </Text>
       <MoneyField
         name='dependents'
@@ -255,7 +258,7 @@ const OtherDeductionsDetail = ({
         onChange={dependents => {
           setValues(current => ({ ...current, dependents: Math.max(0, Math.floor(dependents)) }));
         }}
-        hint={`Con uno o más: 10 % de tus ingresos brutos laborales, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT. Hoy suma ${formatCurrency(result.labor.dependent)}. También alimenta las casillas 138 y 139.`}
+        hint={`Con uno o más: 10 % de tus ingresos brutos laborales, hasta ${formatNumber(taxYear.labor.dependentUvt)} UVT. Hoy suma ${formatCurrency(result.labor.dependent)}. También alimenta las casillas 138 y 139.`}
       />
       <MoneyField
         name='prepaidHealthPaid'
@@ -264,7 +267,7 @@ const OtherDeductionsDetail = ({
         onChange={prepaidHealthPaid => {
           setValues(current => ({ ...current, prepaidHealthPaid }));
         }}
-        hint={`Hasta 16 UVT al mes, ${formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.prepaidHealth))} al año.`}
+        hint={`Hasta 16 UVT al mes, ${formatCurrency(uvtToPesos(taxYear.labor.prepaidHealthUvt, taxYear))} al año.`}
       />
       <Footer onClose={onClose} onSave={save} canSave={isDirty} />
     </>
@@ -272,6 +275,7 @@ const OtherDeductionsDetail = ({
 };
 
 const ExemptDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onClose: () => void }) => {
+  const { taxYear } = useTaxYear();
   const { result } = useDeclaration();
   const { labor } = result;
 
@@ -279,7 +283,7 @@ const ExemptDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; 
     <>
       <TotalCard form={form} box={box} total={box.value} />
       <Text variant='body-m' className='text-fg-secondary'>
-        {BOX_DESCRIPTIONS[36]}
+        {boxDescription(36, taxYear)}
       </Text>
       <div className='flex flex-col'>
         <CalcRow label='Renta líquida' value={labor.netIncome} />
@@ -291,7 +295,7 @@ const ExemptDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; 
           value={Math.max(0, labor.netIncome - labor.totalDeductions - labor.voluntaryContributions)}
         />
         <CalcRow
-          label={`25 %, hasta ${formatNumber(LABOR_LIMITS_UVT.exempt25)} UVT`}
+          label={`25 %, hasta ${formatNumber(taxYear.labor.exempt25Uvt)} UVT`}
           value={labor.exempt25}
         />
       </div>

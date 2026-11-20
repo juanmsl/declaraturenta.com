@@ -1,6 +1,7 @@
 import type { Asset, AssetKind, DeclarationData, Debt, IncomeConcept, LaborConcept } from './declaration';
 import type { ExogenousFile, ExogenousLine } from './exogenous-file';
 import type { DividendKind } from './other-schedules';
+import type { TaxYearConfig } from './tax-years';
 
 /**
  * Exogenous information (información exógena): what third parties reported to the DIAN about
@@ -240,8 +241,6 @@ const mergeConcepts = (current: LaborConcept[], reported: LaborConcept[]): Labor
     return edited ? { ...edited, exogenousAmount: concept.amount } : concept;
   });
 
-const ELECTRONIC_INVOICE_RATE = 0.01;
-
 const conceptsOf = (
   items: readonly ExogenousItem[],
   kind: ExogenousItemKind,
@@ -259,7 +258,11 @@ const conceptsOf = (
     }));
 
 /** Prefills the return with the report. Values the user entered or changed are kept. */
-export const applyExogenous = (data: DeclarationData, report: ExogenousReport): DeclarationData => {
+export const applyExogenous = (
+  data: DeclarationData,
+  report: ExogenousReport,
+  year: TaxYearConfig,
+): DeclarationData => {
   const { items } = report;
   const concepts = mergeConcepts(
     data.labor.concepts,
@@ -358,7 +361,9 @@ export const applyExogenous = (data: DeclarationData, report: ExogenousReport): 
     },
     general: {
       ...data.general,
-      electronicInvoicePurchases: Math.round(sumOf(items, 'electronic-invoice') * ELECTRONIC_INVOICE_RATE),
+      electronicInvoicePurchases: Math.round(
+        sumOf(items, 'electronic-invoice') * year.general.electronicInvoiceRate,
+      ),
     },
     obligation: {
       creditCardPurchases: report.thresholds.cardSpending,

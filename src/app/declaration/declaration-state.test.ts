@@ -1,6 +1,6 @@
 import { createInitialState, declarationReducer as reduce } from './declaration-state';
 import type { DeclarationAction, DeclarationState } from './declaration-state';
-import { loadState, saveState, STORAGE_KEY } from './storage';
+import { loadState, saveState, storageKey } from './storage';
 
 const AT = '2026-11-19T05:00:00.000Z';
 const declarationReducer = (state: DeclarationState, action: DeclarationAction) =>
@@ -40,9 +40,9 @@ describe('storage', () => {
   });
 
   it('falls back to the initial state on invalid data', () => {
-    window.localStorage.setItem(STORAGE_KEY, '{not json');
+    window.localStorage.setItem(storageKey(2025), '{not json');
     expect(loadState().completedSteps).toEqual([]);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 0 }));
+    window.localStorage.setItem(storageKey(2025), JSON.stringify({ version: 0 }));
     expect(loadState().data.withholdings).toBe(11_240_000);
   });
 });

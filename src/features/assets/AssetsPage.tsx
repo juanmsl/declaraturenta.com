@@ -4,9 +4,9 @@ import type { IconType } from 'react-icons';
 import { LuArrowRight, LuCar, LuChartLine, LuHouse, LuLandmark, LuPackage, LuWallet } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
 import type { AssetKind, ValueOrigin } from '@/domain/declaration';
-import { TAX_YEAR } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
@@ -36,6 +36,7 @@ const newDraft = (): HoldingDraft => ({
 
 /** Screen 05 · Patrimonio (Figma node 14:1386). */
 export const AssetsPage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
   const { assets, debts } = state.data;
@@ -100,7 +101,7 @@ export const AssetsPage = () => {
   return (
     <StepLayout aside={<AssetsEstimate />} className='gap-5.5 py-10'>
       <StepHeader
-        title={`¿Qué tenías al 31 de diciembre de ${TAX_YEAR}?`}
+        title={`¿Qué tenías al 31 de diciembre de ${taxYear.year}?`}
         description='Tu patrimonio no paga impuesto de renta, pero la DIAN lo usa para revisar que tus ingresos cuadren con lo que tienes.'
       />
 
@@ -169,8 +170,8 @@ export const AssetsPage = () => {
               : '¿Qué valor pongo a mi inmueble?'
           }
         >
-          Usa el mayor entre el avalúo catastral de {TAX_YEAR} y su costo fiscal (lo que pagaste más mejoras y
-          reajustes).
+          Usa el mayor entre el avalúo catastral de {taxYear.year} y su costo fiscal (lo que pagaste más
+          mejoras y reajustes).
         </Alert>
       )}
 

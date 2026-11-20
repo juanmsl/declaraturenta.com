@@ -1,13 +1,13 @@
 import { Link } from 'react-router';
 import { LuCalendar } from 'react-icons/lu';
 
-import { TAX_YEAR } from '@/domain/uvt';
 import { useDeclaration } from '../declaration/declaration-context';
 import { getInitials } from '@/domain/taxpayer';
 import { formatLongDate } from '@/shared/lib/format';
 import { Icon, Logo, Text } from '@/shared/ui';
 
 import { SideRailItem } from './SideRailItem';
+import { YearSelector } from './YearSelector';
 import type { StepProgress } from './useFlowProgress';
 
 type SideRailProps = {
@@ -30,12 +30,7 @@ export const SideRail = ({ steps }: SideRailProps) => {
         </Text>
       </Link>
 
-      <div className='flex w-fit items-center gap-2 rounded-full border border-line bg-surface py-1.5 pr-3 pl-2.5'>
-        <Icon icon={LuCalendar} size={14} className='text-fg-action' />
-        <Text variant='caption' className='text-fg-secondary'>
-          Año gravable {TAX_YEAR}
-        </Text>
-      </div>
+      <YearSelector />
 
       <nav aria-label='Secciones de la declaración'>
         <ul className='flex flex-col gap-1'>

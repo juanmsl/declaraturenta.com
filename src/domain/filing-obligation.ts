@@ -1,4 +1,5 @@
-import { UVT_2025, uvtToPesos } from './uvt';
+import { uvtToPesos } from './tax-years';
+import type { TaxYearConfig } from './tax-years';
 
 /**
  * The five tests that make a natural person resident in Colombia obliged to file for the
@@ -17,12 +18,12 @@ type FilingTest = {
   comparison: 'above' | 'atLeast';
 };
 
-export const FILING_TESTS: readonly FilingTest[] = [
-  { id: 'grossAssets', limitUvt: 4500, comparison: 'above' },
-  { id: 'grossIncome', limitUvt: 1400, comparison: 'atLeast' },
-  { id: 'creditCardPurchases', limitUvt: 1400, comparison: 'above' },
-  { id: 'totalPurchases', limitUvt: 1400, comparison: 'above' },
-  { id: 'deposits', limitUvt: 1400, comparison: 'above' },
+const FILING_TESTS: readonly Omit<FilingTest, 'limitUvt'>[] = [
+  { id: 'grossAssets', comparison: 'above' },
+  { id: 'grossIncome', comparison: 'atLeast' },
+  { id: 'creditCardPurchases', comparison: 'above' },
+  { id: 'totalPurchases', comparison: 'above' },
+  { id: 'deposits', comparison: 'above' },
 ];
 
 export type FilingTestResult = FilingTest & {
@@ -39,13 +40,14 @@ export type FilingObligation = {
 
 export const evaluateFilingObligation = (
   values: Record<FilingTestId, number>,
-  uvtValue: number = UVT_2025,
+  year: TaxYearConfig,
 ): FilingObligation => {
   const tests = FILING_TESTS.map(test => {
-    const limit = uvtToPesos(test.limitUvt, uvtValue);
+    const limitUvt = year.filingTestsUvt[test.id];
+    const limit = uvtToPesos(limitUvt, year);
     const value = values[test.id];
     const exceeds = test.comparison === 'atLeast' ? value >= limit : value > limit;
-    return { ...test, limit, value, exceeds };
+    return { ...test, limitUvt, limit, value, exceeds };
   });
   const exceededCount = tests.filter(test => test.exceeds).length;
 

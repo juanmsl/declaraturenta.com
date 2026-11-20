@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
-import { ADDITIONAL_DEPENDENT_UVT, MAX_ADDITIONAL_DEPENDENTS } from '@/domain/declaration';
-import { LABOR_LIMITS_UVT } from '@/domain/labor-income';
-import { TAX_YEAR, uvtToPesos } from '@/domain/uvt';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
+import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Button, CalcRow, Drawer, MoneyField, Text } from '@/shared/ui';
 
@@ -22,18 +21,22 @@ type DeductionDrawerProps = {
 };
 
 /** Side panel to correct a deduction or see how a calculated one is obtained (ADR 0018). */
-export const DeductionDrawer = ({ deduction, onClose }: DeductionDrawerProps) => (
-  <Drawer
-    isOpen={deduction !== null}
-    onClose={onClose}
-    title={deduction ? TITLES[deduction] : ''}
-    subtitle={`Año gravable ${TAX_YEAR}`}
-  >
-    {deduction && <DeductionForm key={deduction} deduction={deduction} onClose={onClose} />}
-  </Drawer>
-);
+export const DeductionDrawer = ({ deduction, onClose }: DeductionDrawerProps) => {
+  const { taxYear } = useTaxYear();
+  return (
+    <Drawer
+      isOpen={deduction !== null}
+      onClose={onClose}
+      title={deduction ? TITLES[deduction] : ''}
+      subtitle={`Año gravable ${taxYear.year}`}
+    >
+      {deduction && <DeductionForm key={deduction} deduction={deduction} onClose={onClose} />}
+    </Drawer>
+  );
+};
 
 const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose: () => void }) => {
+  const { taxYear } = useTaxYear();
   const { state, dispatch, result } = useDeclaration();
   const [values, setValues] = useState(state.data.deductions);
   const { labor } = result;
@@ -61,12 +64,12 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
       <>
         <MoneyField
           name='housingInterestPaid'
-          label={`Intereses que pagaste en ${TAX_YEAR}`}
+          label={`Intereses que pagaste en ${taxYear.year}`}
           value={values.housingInterestPaid}
           onChange={housingInterestPaid => {
             setValues(current => ({ ...current, housingInterestPaid }));
           }}
-          hint={`Según el certificado de tu banco. Puedes restar hasta ${formatNumber(LABOR_LIMITS_UVT.housingInterest)} UVT (${formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.housingInterest))}) al año.`}
+          hint={`Según el certificado de tu banco. Puedes restar hasta ${formatNumber(taxYear.labor.housingInterestUvt)} UVT (${formatCurrency(uvtToPesos(taxYear.labor.housingInterestUvt, taxYear))}) al año.`}
         />
         {actions}
       </>
@@ -78,12 +81,12 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
       <>
         <MoneyField
           name='prepaidHealthPaid'
-          label={`Pagos de medicina prepagada en ${TAX_YEAR}`}
+          label={`Pagos de medicina prepagada en ${taxYear.year}`}
           value={values.prepaidHealthPaid}
           onChange={prepaidHealthPaid => {
             setValues(current => ({ ...current, prepaidHealthPaid }));
           }}
-          hint={`Puedes restar hasta 16 UVT al mes, ${formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.prepaidHealth))} al año.`}
+          hint={`Puedes restar hasta 16 UVT al mes, ${formatCurrency(uvtToPesos(taxYear.labor.prepaidHealthUvt, taxYear))} al año.`}
         />
         {actions}
       </>
@@ -105,10 +108,11 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
         />
         <Text variant='body-m' className='text-fg-secondary'>
           Con uno o más restas el 10 % de tus ingresos brutos laborales, hasta{' '}
-          {formatNumber(LABOR_LIMITS_UVT.dependent)} UVT (
-          {formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.dependent))}) al año. Además sumamos{' '}
-          {ADDITIONAL_DEPENDENT_UVT} UVT ({formatCurrency(uvtToPesos(ADDITIONAL_DEPENDENT_UVT))}) por cada
-          dependiente, hasta {MAX_ADDITIONAL_DEPENDENTS}, por fuera del tope del 40 %. Lo calculamos por ti.
+          {formatNumber(taxYear.labor.dependentUvt)} UVT (
+          {formatCurrency(uvtToPesos(taxYear.labor.dependentUvt, taxYear))}) al año. Además sumamos{' '}
+          {taxYear.general.additionalDependentUvt} UVT (
+          {formatCurrency(uvtToPesos(taxYear.general.additionalDependentUvt, taxYear))}) por cada dependiente,
+          hasta {taxYear.general.maxAdditionalDependents}, por fuera del tope del 40 %. Lo calculamos por ti.
         </Text>
         {actions}
       </>
@@ -119,7 +123,7 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
     <>
       <Text variant='body-m' className='text-fg-secondary'>
         La ley deja como exento el 25 % de lo que queda de tus pagos laborales después de restar aportes,
-        deducciones y otras rentas exentas, hasta {formatNumber(LABOR_LIMITS_UVT.exempt25)} UVT al año.
+        deducciones y otras rentas exentas, hasta {formatNumber(taxYear.labor.exempt25Uvt)} UVT al año.
       </Text>
       <div className='flex flex-col'>
         <CalcRow label='Renta líquida' value={labor.netIncome} />
@@ -131,7 +135,7 @@ const DeductionForm = ({ deduction, onClose }: { deduction: DeductionId; onClose
           value={Math.max(0, labor.netIncome - labor.totalDeductions - labor.voluntaryContributions)}
         />
         <CalcRow
-          label={`25 %, hasta ${formatNumber(LABOR_LIMITS_UVT.exempt25)} UVT (${formatCurrency(uvtToPesos(LABOR_LIMITS_UVT.exempt25))})`}
+          label={`25 %, hasta ${formatNumber(taxYear.labor.exempt25Uvt)} UVT (${formatCurrency(uvtToPesos(taxYear.labor.exempt25Uvt, taxYear))})`}
           value={labor.exempt25}
         />
       </div>

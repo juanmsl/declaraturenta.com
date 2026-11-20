@@ -5,12 +5,12 @@ import { Switch } from 'polpo/components';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
 import { isCountBox } from '@/domain/box-concepts';
 import type { FilingCount } from '@/domain/advance-payment';
 import { buildForm210, OTHER_SCHEDULES, SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
 import type { Form210, Form210Box } from '@/domain/form-210';
-import { TAX_YEAR } from '@/domain/uvt';
 import { BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
 
 import { BoxDetailDrawer } from './BoxDetailDrawer';
@@ -32,11 +32,12 @@ const LEGEND = [
 
 /** Screen 09 · Formulario 210 (Figma node 18:1572) with the box detail of 09b (19:2267). */
 export const Form210Page = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { state, dispatch, result } = useDeclaration();
   const [isDownloading, setIsDownloading] = useState(false);
-  const form = buildForm210(state.data, result);
+  const form = buildForm210(state.data, result, taxYear);
   const selectedParam = Number(searchParams.get('casilla'));
   const selected = form.get(selectedParam)?.kind === 'entered' ? selectedParam : null;
   const focusBox = form.has(selectedParam) ? selectedParam : null;
@@ -58,7 +59,7 @@ export const Form210Page = () => {
     setIsDownloading(true);
     try {
       const { downloadDraftPdf } = await import('@/features/draft/pdf/download-draft-pdf');
-      await downloadDraftPdf(state.taxpayer, state.data, result);
+      await downloadDraftPdf(state.taxpayer, state.data, result, taxYear);
     } finally {
       setIsDownloading(false);
     }
@@ -102,7 +103,7 @@ export const Form210Page = () => {
         <div className='flex items-end gap-8'>
           <div className='flex min-w-0 flex-1 flex-col gap-2.5'>
             <Text variant='title-l' as='h1'>
-              Formulario 210 · Año gravable {TAX_YEAR}
+              Formulario 210 · Año gravable {taxYear.year}
             </Text>
             <Text variant='body-m' className='text-fg-secondary'>
               Toda tu declaración con la estructura oficial de la DIAN. Las casillas con flecha las llenaste
@@ -142,7 +143,7 @@ export const Form210Page = () => {
             />
             <MoneyField
               name='previousYearNetTax'
-              label={`Impuesto neto de renta de tu declaración ${String(TAX_YEAR - 1)}`}
+              label={`Impuesto neto de renta de tu declaración ${String(taxYear.year - 1)}`}
               size='compact'
               value={state.data.general.previousYearNetTax}
               onChange={previousYearNetTax => {
@@ -156,7 +157,7 @@ export const Form210Page = () => {
           </div>
         </Section>
 
-        <Section title='Patrimonio' note={`Al 31 de diciembre de ${String(TAX_YEAR)}`}>
+        <Section title='Patrimonio' note={`Al 31 de diciembre de ${String(taxYear.year)}`}>
           <BoxGrid form={form} rows={[[29, 30, 31]]} render={box} />
         </Section>
 
@@ -193,7 +194,7 @@ export const Form210Page = () => {
                       <Text variant='body-m-strong'>{schedule.title}</Text>
                       <Text variant='note' className='text-fg-muted'>
                         Casillas {schedule.fromBox} a {schedule.toBox}
-                        {isActive ? '' : ` · ${schedule.emptyNote} en ${String(TAX_YEAR)}`}
+                        {isActive ? '' : ` · ${schedule.emptyNote} en ${String(taxYear.year)}`}
                       </Text>
                     </div>
                     <button

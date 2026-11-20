@@ -2,6 +2,8 @@ import { createEmptyDeclaration } from '@/domain/declaration';
 import type { DeclarationData } from '@/domain/declaration';
 import { applyExogenous } from '@/domain/exogenous';
 import type { ExogenousReport } from '@/domain/exogenous';
+import { getTaxYear } from '@/domain/tax-years';
+import type { TaxYearConfig } from '@/domain/tax-years';
 import type { Taxpayer } from '@/domain/taxpayer';
 import { taxpayerFromReport } from '@/domain/taxpayer-from-report';
 import { sampleDeclaration } from '@/mocks/sample-declaration';
@@ -13,6 +15,8 @@ import type { FlowStepId } from '../flow';
 /** Everything the user has entered, plus where they are in the flow. Persisted in localStorage. */
 export type DeclarationState = {
   version: typeof STATE_VERSION;
+  /** Taxable year of this return; each year is saved apart (ADR 0034). */
+  taxYear: number;
   data: DeclarationData;
   /** Who is declaring. The fictional sample taxpayer until a real exogenous report is imported. */
   taxpayer: Taxpayer;
@@ -36,15 +40,23 @@ export type DeclarationState = {
   savedAt: string | null;
 };
 
+/** Taxable year of the fictional sample taxpayer. */
+const SAMPLE_YEAR = 2025;
+
 /**
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 9;
+export const STATE_VERSION = 10;
 
-export const createInitialState = (): DeclarationState => ({
+/**
+ * A new return for a year. The fictional sample taxpayer only exists for the year she was made
+ * for (AG 2025); other years start empty.
+ */
+export const createInitialState = (year: TaxYearConfig = getTaxYear(SAMPLE_YEAR)): DeclarationState => ({
   version: STATE_VERSION,
-  data: structuredClone(sampleDeclaration),
+  taxYear: year.year,
+  data: year.year === SAMPLE_YEAR ? structuredClone(sampleDeclaration) : createEmptyDeclaration(),
   taxpayer: { ...sampleTaxpayer },
   completedSteps: [],
   visitedSteps: [],
@@ -83,7 +95,8 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'importExogenous': {
       // The first real report replaces the sample data; later ones keep what the user entered.
       const base = state.taxpayer.isSample ? createEmptyDeclaration() : state.data;
-      const data = applyExogenous(base, action.report);
+      const year = getTaxYear(state.taxYear);
+      const data = applyExogenous(base, action.report, year);
       const withData = [
         data.pensions.concepts.length > 0 ? 'pensions' : null,
         data.dividends.concepts.length > 0 ? 'dividends' : null,
@@ -93,7 +106,7 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
         ...state,
         activeSchedules: [...new Set([...state.activeSchedules, ...withData])],
         data,
-        taxpayer: taxpayerFromReport(action.report),
+        taxpayer: taxpayerFromReport(action.report, year),
         exogenous: { fileName: action.report.fileName, confirmedItems: [], report: action.report },
         savedAt: action.at,
       };
@@ -120,7 +133,7 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'restore':
       return { ...action.state, savedAt: action.at };
     case 'reset':
-      return createInitialState();
+      return createInitialState(getTaxYear(state.taxYear));
   }
 };
 

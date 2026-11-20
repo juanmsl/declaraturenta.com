@@ -4,6 +4,7 @@ import { LuArrowRight } from 'react-icons/lu';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FORM_210_PATH } from '@/app/flow';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, Text } from '@/shared/ui';
@@ -30,6 +31,7 @@ const OriginChip = ({ origin, box }: { origin: DraftOrigin; box: number }) => {
 /** Screen 08 · Borrador 210 (Figma node 11:1213). */
 export const DraftPage = () => {
   const navigate = useNavigate();
+  const { taxYear } = useTaxYear();
   const { state, dispatch, result } = useDeclaration();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -45,7 +47,7 @@ export const DraftPage = () => {
     setDownloadError(false);
     try {
       const { downloadDraftPdf } = await import('./pdf/download-draft-pdf');
-      await downloadDraftPdf(state.taxpayer, state.data, result);
+      await downloadDraftPdf(state.taxpayer, state.data, result, taxYear);
       dispatch({ type: 'completeStep', step: 'draft-210' });
     } catch {
       setDownloadError(true);

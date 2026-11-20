@@ -39,3 +39,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0031](./0031-pensions-dividends-and-occasional-gains.md)       | Pensions, dividends and occasional gains                         | Accepted |
 | [0032](./0032-fees-with-both-options.md)                        | Fees (honorarios) with both options                              | Accepted |
 | [0033](./0033-other-schedules-in-the-income-screen.md)          | Fees and other schedules in the income screen                    | Accepted |
+| [0034](./0034-configurable-tax-year.md)                         | Configurable taxable year                                        | Accepted |

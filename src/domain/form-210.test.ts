@@ -1,10 +1,11 @@
+import { AG_2025 } from './tax-years';
 import { sampleDeclaration } from '@/mocks/sample-declaration';
 
 import { computeDeclaration } from './declaration';
 import { buildForm210, findDependentBoxes, scheduleColumnOf } from './form-210';
 
 const result = computeDeclaration(sampleDeclaration);
-const form = buildForm210(sampleDeclaration, result);
+const form = buildForm210(sampleDeclaration, result, AG_2025);
 const value = (box: number) => form.get(box)?.value;
 
 describe('buildForm210', () => {

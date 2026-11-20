@@ -1,28 +1,17 @@
-import { UVT_2025, uvtToPesos } from './uvt';
+import { uvtToPesos } from './tax-years';
+import type { TaxYearConfig } from './tax-years';
 
 /**
- * General schedule (cédula general), labor income (rentas de trabajo) of an employee.
- * Limits for taxable year 2025:
- * - Housing loan interest: up to 1.200 UVT a year (art. 119 E.T.).
- * - Economic dependent: 10 % of gross labor income, up to 384 UVT a year (art. 387 E.T.).
- * - Prepaid health: up to 16 UVT a month, 192 UVT a year (art. 387 E.T.).
- * - Exempt 25 % of labor payments, up to 790 UVT a year (art. 206 num. 10 E.T., Ley 2277 de 2022),
- *   computed after non-taxable income, deductions and other exempt income.
+ * General schedule (cédula general), labor income (rentas de trabajo). Limits come from the
+ * taxable year's configuration:
+ * - Housing loan interest (art. 119 E.T.).
+ * - Economic dependent: a share of gross labor income, up to a cap (art. 387 E.T.).
+ * - Prepaid health, up to a yearly cap (art. 387 E.T.).
+ * - Exempt 25 % of labor payments, up to a yearly cap (art. 206 num. 10 E.T.), computed after
+ *   non-taxable income, deductions and other exempt income.
  * - Exempt income plus deductions are capped at 40 % of the general schedule's gross income minus
- *   its non-taxable income, up to 1.340 UVT (art. 336 E.T., DIAN instructions of box 92).
+ *   its non-taxable income, up to a cap in UVT (art. 336 E.T., DIAN instructions of box 92).
  */
-export const LABOR_LIMITS_UVT = {
-  housingInterest: 1200,
-  dependent: 384,
-  prepaidHealth: 192,
-  exempt25: 790,
-  benefitsCap: 1340,
-} as const;
-
-export const DEPENDENT_RATE = 0.1;
-export const EXEMPT_LABOR_RATE = 0.25;
-export const BENEFITS_CAP_RATE = 0.4;
-
 export type LaborIncomeInput = {
   /** Gross labor income (box 32). */
   grossIncome: number;
@@ -76,24 +65,19 @@ export type LaborIncomeResult = {
 
 const nonNegative = (value: number) => Math.max(0, value);
 
-export const computeLaborIncome = (
-  input: LaborIncomeInput,
-  uvtValue: number = UVT_2025,
-): LaborIncomeResult => {
+export const computeLaborIncome = (input: LaborIncomeInput, year: TaxYearConfig): LaborIncomeResult => {
+  const { labor, general } = year;
   const netIncome = nonNegative(input.grossIncome - input.nonTaxableIncome);
 
   const housingInterest = input.includeDeductions
-    ? Math.min(nonNegative(input.housingInterestPaid), uvtToPesos(LABOR_LIMITS_UVT.housingInterest, uvtValue))
+    ? Math.min(nonNegative(input.housingInterestPaid), uvtToPesos(labor.housingInterestUvt, year))
     : 0;
   const dependent =
     input.includeDeductions && input.hasDependent
-      ? Math.min(
-          Math.round(input.grossIncome * DEPENDENT_RATE),
-          uvtToPesos(LABOR_LIMITS_UVT.dependent, uvtValue),
-        )
+      ? Math.min(Math.round(input.grossIncome * labor.dependentRate), uvtToPesos(labor.dependentUvt, year))
       : 0;
   const prepaidHealth = input.includeDeductions
-    ? Math.min(nonNegative(input.prepaidHealthPaid), uvtToPesos(LABOR_LIMITS_UVT.prepaidHealth, uvtValue))
+    ? Math.min(nonNegative(input.prepaidHealthPaid), uvtToPesos(labor.prepaidHealthUvt, year))
     : 0;
 
   const otherDeductions = dependent + prepaidHealth;
@@ -101,15 +85,15 @@ export const computeLaborIncome = (
   const voluntaryContributions = nonNegative(input.voluntaryContributions);
 
   const exempt25 = Math.min(
-    Math.round(nonNegative(netIncome - totalDeductions - voluntaryContributions) * EXEMPT_LABOR_RATE),
-    uvtToPesos(LABOR_LIMITS_UVT.exempt25, uvtValue),
+    Math.round(nonNegative(netIncome - totalDeductions - voluntaryContributions) * labor.exempt25Rate),
+    uvtToPesos(labor.exempt25Uvt, year),
   );
   const totalExempt = voluntaryContributions + exempt25;
 
   const benefitsBeforeCap = totalExempt + totalDeductions;
   const benefitsCap = Math.min(
-    Math.round((input.capBase ?? netIncome) * BENEFITS_CAP_RATE),
-    uvtToPesos(LABOR_LIMITS_UVT.benefitsCap, uvtValue),
+    Math.round((input.capBase ?? netIncome) * general.benefitsCapRate),
+    uvtToPesos(general.benefitsCapUvt, year),
   );
   const cappedBenefits = Math.min(benefitsBeforeCap, benefitsCap);
 

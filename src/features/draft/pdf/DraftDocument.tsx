@@ -7,7 +7,6 @@ import figtree700 from '@fontsource/figtree/files/figtree-latin-700-normal.woff?
 
 import type { Form210Box } from '@/domain/form-210';
 import type { Taxpayer } from '@/domain/taxpayer';
-import { TAX_YEAR } from '@/domain/uvt';
 import { formatCurrency, formatLongDate, formatNumber } from '@/shared/lib/format';
 
 import type { DraftRow } from '../draft-rows';
@@ -118,12 +117,13 @@ type DraftDocumentProps = {
   rows: DraftRow[];
   boxes: Form210Box[];
   generatedAt: Date;
+  year: number;
 };
 
 /** PDF of the draft: summary (screen 08) followed by every box of the 210 (ADR 0019). */
-export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt }: DraftDocumentProps) => (
+export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: DraftDocumentProps) => (
   <Document
-    title={`Borrador Formulario 210 · Año gravable ${TAX_YEAR}`}
+    title={`Borrador Formulario 210 · Año gravable ${String(year)}`}
     author='Declara tu renta'
     language='es-CO'
   >
@@ -132,7 +132,7 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt }: DraftDocum
         <Isotype />
         <Text style={s.brandName}>Declara tu renta</Text>
       </View>
-      <Text style={s.title}>Tu borrador del Formulario 210 · Año gravable {TAX_YEAR}</Text>
+      <Text style={s.title}>Tu borrador del Formulario 210 · Año gravable {year}</Text>
       <Text style={s.meta}>
         {taxpayer.fullName}
         {taxpayer.isSample ? ' (datos de ejemplo)' : ''} · NIT terminado en {taxpayer.nitLastDigits} · Fecha

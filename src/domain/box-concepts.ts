@@ -1,5 +1,5 @@
 import type { Asset, DeclarationData, Debt, IncomeConcept, ValueOrigin } from './declaration';
-import { TAX_YEAR } from './uvt';
+import type { TaxYearConfig } from './tax-years';
 
 /**
  * Concepts behind an entered box of the 210 (Figma screen 09b), and how edits to them are
@@ -278,21 +278,27 @@ export const editConcept = (
   return { ...changed, origin: 'user', exogenousAmount: concept.amount };
 };
 
-/** Short explanation of each box for the detail panel. */
-export const BOX_DESCRIPTIONS: Partial<Record<number, string>> = {
-  28: 'El 1 % de lo que compraste con factura electrónica a tu nombre, hasta 240 UVT.',
-  29: 'Todo lo que tenías al 31 de diciembre: inmuebles, cuentas, vehículos e inversiones.',
-  30: 'Lo que debías al 31 de diciembre.',
-  32: `Lo que recibiste como persona empleada en ${String(TAX_YEAR)}, antes de descontar aportes.`,
-  33: 'Aportes obligatorios a pensión, salud y fondo de solidaridad. No pagan impuesto.',
-  35: 'Aportes voluntarios a cuentas AFC, fondos de pensiones voluntarias (FVP) y ahorro voluntario (AVC).',
-  36: 'El 25 % exento de tus pagos laborales, calculado sobre lo que queda después de aportes y deducciones, hasta 790 UVT.',
-  38: 'Intereses que pagaste por el crédito de vivienda. La casilla toma hasta 1.200 UVT al año.',
-  58: 'Intereses y rendimientos financieros: cuentas, CDT y fondos de inversión. El 55,43 % de ellos no es renta (casilla 59).',
-  74: 'Otros ingresos que no vienen de tu trabajo ni de tus inversiones.',
-  39: 'Dependiente económico y medicina prepagada, cada uno con su tope.',
-  130: 'El anticipo que liquidaste en tu declaración del año pasado.',
-  131: 'El saldo a favor de tu declaración anterior que no pediste en devolución.',
-  132: 'Lo que te retuvieron durante el año.',
-  138: 'Dependientes por los que sumas 72 UVT cada uno a la casilla 92, hasta 4.',
+const percent = (rate: number) => `${String(Math.round(rate * 10_000) / 100).replace('.', ',')} %`;
+const uvt = (value: number) => value.toLocaleString('es-CO');
+
+/** Short explanation of each box for the detail panel, with the selected year's limits. */
+export const boxDescription = (box: number, year: TaxYearConfig): string | undefined => {
+  const descriptions: Partial<Record<number, string>> = {
+    28: `El ${percent(year.general.electronicInvoiceRate)} de lo que compraste con factura electrónica a tu nombre, hasta ${uvt(year.general.electronicInvoiceCapUvt)} UVT.`,
+    29: 'Todo lo que tenías al 31 de diciembre: inmuebles, cuentas, vehículos e inversiones.',
+    30: 'Lo que debías al 31 de diciembre.',
+    32: `Lo que recibiste como persona empleada en ${String(year.year)}, antes de descontar aportes.`,
+    33: 'Aportes obligatorios a pensión, salud y fondo de solidaridad. No pagan impuesto.',
+    35: 'Aportes voluntarios a cuentas AFC, fondos de pensiones voluntarias (FVP) y ahorro voluntario (AVC).',
+    36: `El ${percent(year.labor.exempt25Rate)} exento de tus pagos laborales, calculado sobre lo que queda después de aportes y deducciones, hasta ${uvt(year.labor.exempt25Uvt)} UVT.`,
+    38: `Intereses que pagaste por el crédito de vivienda. La casilla toma hasta ${uvt(year.labor.housingInterestUvt)} UVT al año.`,
+    58: `Intereses y rendimientos financieros: cuentas, CDT y fondos de inversión. El ${percent(year.general.inflationComponentRate)} de ellos no es renta (casilla 59).`,
+    74: 'Otros ingresos que no vienen de tu trabajo ni de tus inversiones.',
+    39: 'Dependiente económico y medicina prepagada, cada uno con su tope.',
+    130: 'El anticipo que liquidaste en tu declaración del año pasado.',
+    131: 'El saldo a favor de tu declaración anterior que no pediste en devolución.',
+    132: 'Lo que te retuvieron durante el año.',
+    138: `Dependientes por los que sumas ${uvt(year.general.additionalDependentUvt)} UVT cada uno a la casilla 92, hasta ${String(year.general.maxAdditionalDependents)}.`,
+  };
+  return descriptions[box];
 };

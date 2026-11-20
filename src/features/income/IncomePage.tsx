@@ -2,10 +2,9 @@ import { useNavigate } from 'react-router';
 import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
-import { INFLATION_COMPONENT_RATE } from '@/domain/declaration';
 import type { DeclarationData } from '@/domain/declaration';
-import { TAX_YEAR } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
@@ -19,10 +18,10 @@ import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } fro
 import { OtherSchedulesSection } from './OtherSchedulesSection';
 
 const [, exogenousStep, , assetsStep] = FLOW_STEPS;
-const INFLATION_PERCENT = formatNumber(INFLATION_COMPONENT_RATE * 100);
-
 /** Screen 04 · Ingresos (Figma node 9:783). */
 export const IncomePage = () => {
+  const { taxYear } = useTaxYear();
+  const inflationPercent = formatNumber(taxYear.general.inflationComponentRate * 100);
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
   const { labor, capital, nonLabor } = state.data;
@@ -50,7 +49,7 @@ export const IncomePage = () => {
   return (
     <StepLayout aside={<IncomeEstimate />} className='gap-7 py-11'>
       <StepHeader
-        title={`¿Cuánto recibiste por tu trabajo en ${TAX_YEAR}?`}
+        title={`¿Cuánto recibiste por tu trabajo en ${taxYear.year}?`}
         badge={<Chip variant='box'>Casilla 32</Chip>}
         description={
           employer
@@ -126,8 +125,8 @@ export const IncomePage = () => {
         origin={isFromExogenous(capital.concepts) ? EXOGENOUS_ORIGIN : undefined}
         hint={
           capitalResult.inflationComponent > 0
-            ? `Cuentas, CDT y fondos de inversión. El ${INFLATION_PERCENT} % no es renta: restamos ${formatCurrency(capitalResult.inflationComponent)} por ti (casilla 59).`
-            : `Cuentas, CDT y fondos de inversión. El ${INFLATION_PERCENT} % no es renta; lo restamos por ti.`
+            ? `Cuentas, CDT y fondos de inversión. El ${inflationPercent} % no es renta: restamos ${formatCurrency(capitalResult.inflationComponent)} por ti (casilla 59).`
+            : `Cuentas, CDT y fondos de inversión. El ${inflationPercent} % no es renta; lo restamos por ti.`
         }
       />
       <MoneyField

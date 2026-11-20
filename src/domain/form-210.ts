@@ -1,7 +1,7 @@
 import type { DeclarationData, DeclarationResult } from './declaration';
 import { EDITABLE_BOXES, getBoxConcepts, isCountBox } from './box-concepts';
-import { ADDITIONAL_DEPENDENT_UVT } from './declaration';
 import { OFFICIAL_BOX_TITLES } from './form-210-titles';
+import type { TaxYearConfig } from './tax-years';
 
 /**
  * Formulario 210 (taxable year 2025). Short labels and kinds follow the Figma screen 09; official
@@ -74,8 +74,14 @@ type BoxSpec = { label?: string; kind: BoxKind; formula?: string; note?: string 
 const ENTERED: BoxSpec = { kind: 'entered' };
 const NOT_APPLICABLE: BoxSpec = { kind: 'not-applicable' };
 
-/** Kind and formula of every box, as in Figma screen 09. Matrix labels come from SCHEDULE_ROWS. */
-const BOX_SPECS: Record<number, BoxSpec> = {
+const pct = (rate: number) => `${String(Math.round(rate * 10_000) / 100).replace('.', ',')} %`;
+const num = (value: number) => value.toLocaleString('es-CO');
+
+/**
+ * Kind and formula of every box, as in Figma screen 09, with the year's rates and caps. Matrix
+ * labels come from SCHEDULE_ROWS.
+ */
+const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
   28: { label: '1 % de compras con factura electrónica', kind: 'entered' },
   29: { label: 'Total patrimonio bruto', kind: 'entered' },
   30: { label: 'Deudas', kind: 'entered' },
@@ -89,7 +95,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   44: ENTERED,
   59: {
     kind: 'calculated',
-    formula: '= 55,43 % de los rendimientos financieros + aportes como independiente',
+    formula: `= ${pct(year.general.inflationComponentRate)} de los rendimientos financieros + aportes como independiente`,
   },
   76: ENTERED,
   45: ENTERED,
@@ -127,7 +133,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   85: { kind: 'calculated', formula: '= 83 + 84' },
   41: {
     kind: 'calculated',
-    formula: '= 37 + 40, tope del 40 % de los ingresos menos 33, 44, 59 y 76, hasta 1.340 UVT',
+    formula: `= 37 + 40, tope del ${pct(year.general.benefitsCapRate)} de los ingresos menos 33, 44, 59 y 76, hasta ${num(year.general.benefitsCapUvt)} UVT`,
   },
   53: { kind: 'calculated', formula: '= 49 + 52, con tope restante' },
   69: { kind: 'calculated', formula: '= 65 + 68, con tope restante' },
@@ -163,7 +169,7 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   102: {
     label: 'Rentas exentas de pensiones',
     kind: 'calculated',
-    formula: 'Hasta 1.000 UVT por cada mes de pensión (art. 206 num. 5 E.T.)',
+    formula: `Hasta ${num(year.pensions.exemptMonthlyUvt)} UVT por cada mes de pensión (art. 206 num. 5 E.T.)`,
   },
   103: { label: 'Renta líquida gravable de pensiones', kind: 'calculated', formula: '= 101 − 102' },
   104: { label: 'Dividendos 2016 y anteriores, y otros', kind: 'entered' },
@@ -193,13 +199,21 @@ const BOX_SPECS: Record<number, BoxSpec> = {
     kind: 'calculated',
     formula: 'Tabla art. 241 sobre 111, si 98 es mayor que 97',
   },
-  118: { label: 'Dividendos 2017 y siguientes, 2.ª subcédula', kind: 'calculated', formula: '= 108 × 35 %' },
+  118: {
+    label: 'Dividendos 2017 y siguientes, 2.ª subcédula',
+    kind: 'calculated',
+    formula: `= 108 × ${pct(year.dividends.secondSubceduleRate)}`,
+  },
   119: {
     label: 'Dividendos año 2016',
     kind: 'calculated',
     formula: 'Tabla art. 241 vigente hasta 2016 sobre 106',
   },
-  120: { label: 'Dividendos recibidos del exterior', kind: 'calculated', formula: '= (109 − 110) × 35 %' },
+  120: {
+    label: 'Dividendos recibidos del exterior',
+    kind: 'calculated',
+    formula: `= (109 − 110) × ${pct(year.dividends.foreignRate)}`,
+  },
   121: {
     label: 'Total impuesto sobre las rentas líquidas gravables',
     kind: 'calculated',
@@ -210,14 +224,14 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   124: {
     label: 'Dividendos, participaciones y otros',
     kind: 'calculated',
-    formula: '19 % de (107 + 108 − 118) por encima de 1.090 UVT',
+    formula: `${pct(year.dividends.discountRate)} de (107 + 108 − 118) por encima de ${num(year.dividends.discountFromUvt)} UVT`,
   },
   125: { label: 'Total descuentos tributarios', kind: 'calculated', formula: '= 122 + 123 + 124' },
   126: { label: 'Impuesto neto de renta', kind: 'calculated', formula: '= 121 − 125' },
   127: {
     label: 'Impuesto de ganancias ocasionales',
     kind: 'calculated',
-    formula: '15 % de 115; 20 % para loterías, rifas y apuestas',
+    formula: `${pct(year.occasionalGains.rate)} de 115; ${pct(year.occasionalGains.lotteryRate)} para loterías, rifas y apuestas`,
   },
   128: { label: 'Descuento por impuestos pagados en el exterior por ganancias ocasionales', kind: 'entered' },
   129: { label: 'Total impuesto a cargo', kind: 'calculated', formula: '= 126 + 127 − 128' },
@@ -237,15 +251,15 @@ const BOX_SPECS: Record<number, BoxSpec> = {
   139: {
     label: 'Adición por dependientes a la casilla 92',
     kind: 'calculated',
-    formula: `= 138 × ${ADDITIONAL_DEPENDENT_UVT} UVT, hasta 4 y sin pasar de 42 + 57`,
+    formula: `= 138 × ${num(year.general.additionalDependentUvt)} UVT, hasta ${String(year.general.maxAdditionalDependents)} y sin pasar de 42 + 57`,
   },
   140: {
     label: 'Superó el tope indicativo de costos (art. 336-1 E.T.)',
     kind: 'not-applicable',
-    note: 'Solo si 45 ÷ 43 supera el 60 %',
+    note: `Solo si 45 ÷ 43 supera el ${pct(year.general.feesIndicativeCostsRate)}`,
   },
   141: { label: 'Aporte voluntario', kind: 'entered', note: 'Opcional' },
-};
+});
 
 /** Boxes of the "Otras cédulas" sections (pensions, dividends, occasional gains), collapsed while 0. */
 export const OTHER_SCHEDULES = [
@@ -375,7 +389,11 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
 };
 
 /** "N conceptos" under each editable box: how many concepts add up to it right now. */
-const boxNotes = (data: DeclarationData, result: DeclarationResult): Partial<Record<number, string>> => {
+const boxNotes = (
+  data: DeclarationData,
+  result: DeclarationResult,
+  year: TaxYearConfig,
+): Partial<Record<number, string>> => {
   const notes: Partial<Record<number, string>> = {};
   for (const box of EDITABLE_BOXES) {
     if (isCountBox(box)) continue;
@@ -387,23 +405,29 @@ const boxNotes = (data: DeclarationData, result: DeclarationResult): Partial<Rec
   ).length;
   if (result.labor.exempt25 > 0) notes[36] = '25 % laboral · 1 concepto';
   if (otherDeductions > 0) notes[39] = plural(otherDeductions, 'concepto');
-  if (result.capital.inflationComponent > 0) notes[59] = 'Componente inflacionario 55,43 %';
-  if (result.fees.exceedsIndicativeCap) notes[140] = 'Marca X: tus costos superan el 60 % de 43';
+  if (result.capital.inflationComponent > 0)
+    notes[59] = `Componente inflacionario ${pct(year.general.inflationComponentRate)}`;
+  if (result.fees.exceedsIndicativeCap)
+    notes[140] = `Marca X: tus costos superan el ${pct(year.general.feesIndicativeCostsRate)} de 43`;
   return notes;
 };
 
 export type Form210 = Map<number, Form210Box>;
 
 /** Builds every box of the 210 from the user's data and the computed return. */
-export const buildForm210 = (data: DeclarationData, result: DeclarationResult): Form210 => {
+export const buildForm210 = (
+  data: DeclarationData,
+  result: DeclarationResult,
+  year: TaxYearConfig,
+): Form210 => {
   const values = boxValues(data, result);
-  const notes = boxNotes(data, result);
+  const notes = boxNotes(data, result, year);
   const form: Form210 = new Map();
 
   // The final result is highlighted: balance in favor (137) or amount to pay (136).
   const resultBox = result.amountToPay > 0 ? 136 : 137;
 
-  for (const [key, spec] of Object.entries(BOX_SPECS)) {
+  for (const [key, spec] of Object.entries(boxSpecs(year))) {
     const number = Number(key);
     const isResult = number === 136 || number === 137;
     form.set(number, {

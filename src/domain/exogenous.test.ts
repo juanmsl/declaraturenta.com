@@ -1,3 +1,4 @@
+import { AG_2025 } from './tax-years';
 import { exogenousSheetFixture } from '@/mocks/exogenous-sheet-fixture';
 import { sampleDeclaration } from '@/mocks/sample-declaration';
 import { sampleExogenous } from '@/mocks/sample-exogenous';
@@ -15,7 +16,7 @@ import { parseExogenousSheet } from './exogenous-file';
 
 describe('exogenous report', () => {
   it('reproduces the sample return and keeps the concept the user changed', () => {
-    const applied = applyExogenous(sampleDeclaration, sampleExogenous);
+    const applied = applyExogenous(sampleDeclaration, sampleExogenous, AG_2025);
     expect(applied).toEqual(sampleDeclaration);
     expect(applied.labor.salaries).toBe(180_000_000);
   });
@@ -30,7 +31,7 @@ describe('exogenous report', () => {
   });
 
   it('refills from the report after clearing, using the reported concepts', () => {
-    const refilled = applyExogenous(clearExogenous(sampleDeclaration), sampleExogenous);
+    const refilled = applyExogenous(clearExogenous(sampleDeclaration), sampleExogenous, AG_2025);
     expect(refilled.labor.salaries).toBe(179_600_000);
     expect(refilled.withholdings).toBe(11_240_000);
   });
@@ -77,7 +78,7 @@ describe('buildExogenousReport', () => {
   });
 
   it('fills a blank return', () => {
-    const data = applyExogenous(createEmptyDeclaration(), report);
+    const data = applyExogenous(createEmptyDeclaration(), report, AG_2025);
     expect(data.labor.salaries).toBe(180_000_000);
     expect(data.labor.voluntaryContributions).toBe(6_000_000);
     expect(data.general.electronicInvoicePurchases).toBe(300_000);
@@ -95,7 +96,7 @@ describe('capital and non-labor from the report', () => {
   const report = buildExogenousReport(parseExogenousSheet(exogenousSheetFixture), 'exogena.xlsx');
 
   it('fills rentas de capital as financial yields and rentas no laborales', () => {
-    const data = applyExogenous(createEmptyDeclaration(), report);
+    const data = applyExogenous(createEmptyDeclaration(), report, AG_2025);
     expect(data.capital.concepts.map(concept => [concept.amount, concept.financial])).toEqual([
       [500_000, true],
       [500_000, true],
@@ -107,7 +108,7 @@ describe('capital and non-labor from the report', () => {
   });
 
   it('clears reported capital and non-labor income', () => {
-    const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report));
+    const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report, AG_2025));
     expect(cleared.capital.concepts).toEqual([]);
     expect(cleared.nonLabor.concepts).toEqual([]);
   });
@@ -156,7 +157,7 @@ describe('fees, pensions, dividends and occasional gains from the report', () =>
         },
       ],
     };
-    const data = applyExogenous(createEmptyDeclaration(), report);
+    const data = applyExogenous(createEmptyDeclaration(), report, AG_2025);
     expect(data.fees.concepts.map(concept => concept.amount)).toEqual([9_000_000]);
     expect(data.labor.hasIndependentIncome).toBe(true);
     expect(data.fees.nonTaxableIncome).toBe(reportedTotal(report, 'other-non-taxable'));

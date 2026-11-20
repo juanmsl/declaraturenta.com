@@ -1,14 +1,7 @@
+import type { FilingCount, TaxYearConfig } from './tax-years';
 import { roundToThousand } from './uvt';
 
-/** How many times the taxpayer has filed income tax, including this return. */
-export type FilingCount = 'first' | 'second' | 'third-or-more';
-
-/** Share of the tax used for next year's advance payment (art. 807 E.T.). */
-export const ADVANCE_RATES: Record<FilingCount, number> = {
-  first: 0.25,
-  second: 0.5,
-  'third-or-more': 0.75,
-};
+export type { FilingCount } from './tax-years';
 
 export type AdvancePaymentInput = {
   filingCount: FilingCount;
@@ -31,8 +24,8 @@ export type AdvancePayment = {
 };
 
 /** Advance payment for the next taxable year (anticipo, art. 807 E.T.). */
-export const computeAdvancePayment = (input: AdvancePaymentInput): AdvancePayment => {
-  const rate = ADVANCE_RATES[input.filingCount];
+export const computeAdvancePayment = (input: AdvancePaymentInput, year: TaxYearConfig): AdvancePayment => {
+  const rate = year.advanceRates[input.filingCount];
   const currentMethod = input.currentNetTax * rate - input.withholdings;
   const averageMethod =
     input.filingCount === 'first'

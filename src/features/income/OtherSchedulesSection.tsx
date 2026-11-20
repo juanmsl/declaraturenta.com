@@ -1,8 +1,9 @@
 import { LuPlus, LuTrash2 } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import type { DeclarationData } from '@/domain/declaration';
-import { occasionalGainExempt, PENSION_EXEMPT_MONTHLY_UVT } from '@/domain/other-schedules';
+import { occasionalGainExempt } from '@/domain/other-schedules';
 import type { DividendKind, OccasionalGainConcept, OccasionalGainKind } from '@/domain/other-schedules';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Button, MoneyField, SelectField, Text, TextField, ToggleField } from '@/shared/ui';
@@ -120,6 +121,7 @@ const Indented = ({ children }: { children: React.ReactNode }) => (
 );
 
 const PensionFields = () => {
+  const { taxYear } = useTaxYear();
   const { state, dispatch, result } = useDeclaration();
   const { pensions } = state.data;
   const update = (patch: Partial<DeclarationData['pensions']>) => {
@@ -154,7 +156,7 @@ const PensionFields = () => {
         onChange={months => {
           update({ months: Math.min(12, Math.max(0, Math.round(months))) });
         }}
-        hint={`Hasta ${formatNumber(PENSION_EXEMPT_MONTHLY_UVT)} UVT por mes están exentas. De tu pensión, ${formatCurrency(result.pensions.exemptIncome)} no pagan impuesto.`}
+        hint={`Hasta ${formatNumber(taxYear.pensions.exemptMonthlyUvt)} UVT por mes están exentas. De tu pensión, ${formatCurrency(result.pensions.exemptIncome)} no pagan impuesto.`}
       />
     </Indented>
   );
@@ -211,6 +213,7 @@ const DividendFields = () => {
 };
 
 const OccasionalGainsEditor = () => {
+  const { taxYear } = useTaxYear();
   const { state, dispatch, result } = useDeclaration();
   const { concepts } = state.data.occasionalGains;
 
@@ -285,7 +288,7 @@ const OccasionalGainsEditor = () => {
             onChange={amount => {
               patch(concept.id, { amount });
             }}
-            hint={`Exenta: ${formatCurrency(occasionalGainExempt(concept))}${concept.kind === 'lottery' ? '. Paga 20 %.' : '. El resto paga 15 %.'}`}
+            hint={`Exenta: ${formatCurrency(occasionalGainExempt(concept, taxYear))}${concept.kind === 'lottery' ? '. Paga 20 %.' : '. El resto paga 15 %.'}`}
           />
           {isSale(concept.kind) && (
             <MoneyField

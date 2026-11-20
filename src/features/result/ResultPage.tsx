@@ -3,9 +3,8 @@ import { LuArrowRight, LuCircleAlert, LuCircleCheck } from 'react-icons/lu';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { FLOW_STEPS } from '@/app/flow';
-import { ART_241_BRACKETS } from '@/domain/income-tax-table';
-import { TAX_YEAR } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Button, CalcRow, Icon, OptionCard, Text } from '@/shared/ui';
 import { TaxRows } from '@/features/estimate/TaxRows';
@@ -14,6 +13,7 @@ const [firstStep, , , , , , draftStep] = FLOW_STEPS;
 
 /** Screen 07 · Resultado (Figma node 10:1188). */
 export const ResultPage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
   const { tableTax } = result;
@@ -79,7 +79,7 @@ export const ResultPage = () => {
                 });
               }}
               title='Dejarlo para el próximo año'
-              description={`Se descuenta de tu impuesto ${TAX_YEAR + 1}.`}
+              description={`Se descuenta de tu impuesto ${taxYear.year + 1}.`}
             />
           </div>
         )}
@@ -139,7 +139,7 @@ export const ResultPage = () => {
               </tr>
             </thead>
             <tbody>
-              {ART_241_BRACKETS.map(row => {
+              {taxYear.incomeTaxBrackets.map(row => {
                 const isCurrent = row === bracket;
                 return (
                   <tr key={row.fromUvt} className={isCurrent ? 'bg-sun-soft' : undefined}>

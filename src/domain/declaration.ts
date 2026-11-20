@@ -15,13 +15,8 @@ import type {
   PensionData,
   PensionResult,
 } from './other-schedules';
-import { UVT_2025, uvtToPesos } from './uvt';
-
-/** Box 28 cap: 1 % of purchases with electronic invoice, up to 240 UVT (art. 336 E.T.). */
-export const ELECTRONIC_INVOICE_CAP_UVT = 240;
-/** Box 139: 72 UVT per dependent, up to 4 (art. 336 E.T.). */
-export const ADDITIONAL_DEPENDENT_UVT = 72;
-export const MAX_ADDITIONAL_DEPENDENTS = 4;
+import { AG_2025, uvtToPesos } from './tax-years';
+import type { TaxYearConfig } from './tax-years';
 
 /** Where a value comes from: the DIAN exogenous report, the user, or our calculation. */
 export type ValueOrigin = 'exogenous' | 'user';
@@ -42,17 +37,8 @@ export type IncomeConcept = {
 /** How fees are declared: subtracting costs (43–57) or with the 25 % exempt income (32). */
 export type FeesOption = 'costs' | 'exempt';
 
-/** Indicative cap of costs for fees (art. 336-1 E.T.): above 60 % of 43 box 140 must be marked. */
-export const FEES_INDICATIVE_COSTS_RATE = 0.6;
-
 /** One labor payment that adds up to box 32 (e.g. salary, bonus). */
 export type LaborConcept = IncomeConcept;
-
-/**
- * Inflationary component of financial yields for taxable year 2025: 55,43 % is not income for
- * people not required to keep books (art. 40-1 E.T., Decreto 0898 de 2026).
- */
-export const INFLATION_COMPONENT_RATE = 0.5543;
 
 export type AssetKind = 'real-estate' | 'bank-account' | 'vehicle' | 'investment' | 'other';
 
@@ -282,10 +268,15 @@ export type NonLaborIncomeResult = {
 const conceptsTotal = (concepts: readonly IncomeConcept[]) => sum(concepts.map(concept => concept.amount));
 
 /** Rentas de capital: financial yields lose their inflationary component (box 59). */
-export const computeCapitalIncome = (capital: DeclarationData['capital']): CapitalIncomeResult => {
+/** Rentas de capital: financial yields lose the year's inflationary component (art. 40-1 E.T.). */
+export const computeCapitalIncome = (
+  capital: DeclarationData['capital'],
+  year: TaxYearConfig,
+): CapitalIncomeResult => {
   const grossIncome = conceptsTotal(capital.concepts);
   const inflationComponent = Math.round(
-    conceptsTotal(capital.concepts.filter(concept => concept.financial)) * INFLATION_COMPONENT_RATE,
+    conceptsTotal(capital.concepts.filter(concept => concept.financial)) *
+      year.general.inflationComponentRate,
   );
   const nonTaxableIncome = inflationComponent + Math.max(0, capital.independentContributions);
   const costs = Math.max(0, capital.costs);
@@ -312,7 +303,11 @@ export const computeNonLaborIncome = (nonLabor: DeclarationData['nonLabor']): No
   };
 };
 
-export const computeFeesIncome = (fees: DeclarationData['fees'], option: FeesOption): FeesIncomeResult => {
+export const computeFeesIncome = (
+  fees: DeclarationData['fees'],
+  option: FeesOption,
+  year: TaxYearConfig,
+): FeesIncomeResult => {
   if (option === 'exempt') {
     return {
       option,
@@ -334,14 +329,15 @@ export const computeFeesIncome = (fees: DeclarationData['fees'], option: FeesOpt
     costs,
     netIncome: Math.max(0, grossIncome - nonTaxableIncome - costs),
     loss: Math.max(0, nonTaxableIncome + costs - grossIncome),
-    exceedsIndicativeCap: grossIncome > 0 && costs / grossIncome > FEES_INDICATIVE_COSTS_RATE,
+    exceedsIndicativeCap: grossIncome > 0 && costs / grossIncome > year.general.feesIndicativeCostsRate,
   };
 };
 
 export type ComputeOptions = {
   /** Include deductions and their exempt-income effect (false before the deductions step). */
   includeDeductions?: boolean;
-  uvtValue?: number;
+  /** Taxable year whose UVT, caps and tables apply. The screens always pass the selected year. */
+  taxYear?: TaxYearConfig;
 };
 
 /**
@@ -367,22 +363,22 @@ export const computeDeclaration = (
 const computeWithFeesOption = (
   data: DeclarationData,
   feesOption: FeesOption,
-  { includeDeductions = true, uvtValue = UVT_2025 }: ComputeOptions,
+  { includeDeductions = true, taxYear: year = AG_2025 }: ComputeOptions,
   feesComparison: FeesComparison | null,
 ): DeclarationResult => {
   const grossAssets = sum(data.assets.map(asset => asset.amount));
   const totalDebts = sum(data.debts.map(debt => debt.amount));
-  const fees = computeFeesIncome(data.fees, feesOption);
+  const fees = computeFeesIncome(data.fees, feesOption, year);
   // With the exempt option, fees and their contributions join labor income (boxes 32 and 33).
   const feesInLabor = feesOption === 'exempt' ? conceptsTotal(data.fees.concepts) : 0;
   const feesNonTaxableInLabor = feesOption === 'exempt' ? Math.max(0, data.fees.nonTaxableIncome) : 0;
   const grossLaborIncome = data.labor.salaries + data.labor.otherPayments + feesInLabor;
   const laborNonTaxableIncome = data.labor.nonTaxableIncome + feesNonTaxableInLabor;
-  const capital = computeCapitalIncome(data.capital);
+  const capital = computeCapitalIncome(data.capital, year);
   const nonLabor = computeNonLaborIncome(data.nonLabor);
-  const pensions = computePensions(data.pensions, uvtValue);
-  const dividends = computeDividends(data.dividends.concepts, uvtValue);
-  const occasionalGains = computeOccasionalGains(data.occasionalGains.concepts, uvtValue);
+  const pensions = computePensions(data.pensions, year);
+  const dividends = computeDividends(data.dividends.concepts, year);
+  const occasionalGains = computeOccasionalGains(data.occasionalGains.concepts, year);
   const generalGrossIncome = grossLaborIncome + fees.grossIncome + capital.grossIncome + nonLabor.grossIncome;
   const grossIncome =
     generalGrossIncome +
@@ -411,7 +407,7 @@ const computeWithFeesOption = (
       totalPurchases: data.obligation.totalPurchases,
       deposits: data.obligation.deposits,
     },
-    uvtValue,
+    year,
   );
 
   const labor = computeLaborIncome(
@@ -425,13 +421,13 @@ const computeWithFeesOption = (
       includeDeductions,
       capBase: benefitsCapBase,
     },
-    uvtValue,
+    year,
   );
 
   const electronicInvoiceDeduction = includeDeductions
     ? Math.min(
         Math.max(0, data.general.electronicInvoicePurchases),
-        uvtToPesos(ELECTRONIC_INVOICE_CAP_UVT, uvtValue),
+        uvtToPesos(year.general.electronicInvoiceCapUvt, year),
       )
     : 0;
   // Boxes 41, 53, 69 and 86: the capped benefits go first to labor, then fees, capital and
@@ -455,9 +451,11 @@ const computeWithFeesOption = (
   const dependentsAddition = includeDeductions
     ? Math.min(
         uvtToPesos(
-          Math.min(Math.max(0, Math.floor(data.deductions.dependents)), MAX_ADDITIONAL_DEPENDENTS) *
-            ADDITIONAL_DEPENDENT_UVT,
-          uvtValue,
+          Math.min(
+            Math.max(0, Math.floor(data.deductions.dependents)),
+            year.general.maxAdditionalDependents,
+          ) * year.general.additionalDependentUvt,
+          year,
         ),
         laborOrdinaryIncome + feesOrdinaryIncome,
       )
@@ -471,7 +469,7 @@ const computeWithFeesOption = (
     dependentsAddition;
   const taxableIncome = Math.max(0, generalNetIncome - totalBenefits);
   const tableBase = taxableIncome + pensions.taxableIncome + dividends.baseForTable;
-  const tableTax = computeTableTax(tableBase, uvtValue);
+  const tableTax = computeTableTax(tableBase, year);
   const totalIncomeTax =
     tableTax.tax + dividends.secondSubceduleTax + dividends.until2016Tax + dividends.foreignTax;
   const taxDiscounts = dividends.discount;
@@ -479,12 +477,15 @@ const computeWithFeesOption = (
   const occasionalGainsTax = occasionalGains.tax;
   const taxDue = netIncomeTax + occasionalGainsTax;
 
-  const advance = computeAdvancePayment({
-    filingCount: data.general.filingCount,
-    currentNetTax: netIncomeTax,
-    previousNetTax: data.general.previousYearNetTax,
-    withholdings: data.withholdings,
-  });
+  const advance = computeAdvancePayment(
+    {
+      filingCount: data.general.filingCount,
+      currentNetTax: netIncomeTax,
+      previousNetTax: data.general.previousYearNetTax,
+      withholdings: data.withholdings,
+    },
+    year,
+  );
 
   const balance =
     taxDue + advance.amount - data.previousYearAdvance - data.previousBalanceInFavor - data.withholdings;

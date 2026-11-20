@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 
 import type { AssetKind } from '@/domain/declaration';
-import { TAX_YEAR } from '@/domain/uvt';
 import { Button, Drawer, MoneyField, SelectField, TextField } from '@/shared/ui';
 
 export type HoldingDraft = {
@@ -40,34 +40,37 @@ type HoldingDrawerProps = {
 };
 
 /** Side panel to add, edit or delete an asset or a debt (not designed in Figma; see ADR 0017). */
-export const HoldingDrawer = ({ type, draft, isNew, onClose, onSave, onDelete }: HoldingDrawerProps) => (
-  <Drawer
-    isOpen={draft !== null}
-    onClose={onClose}
-    title={
-      type === 'asset'
-        ? isNew
-          ? 'Agregar un bien'
-          : 'Editar bien'
-        : isNew
-          ? 'Agregar una deuda'
-          : 'Editar deuda'
-    }
-    subtitle={`Valores al 31 de diciembre de ${TAX_YEAR}`}
-  >
-    {draft && (
-      <HoldingForm
-        key={draft.id}
-        type={type}
-        draft={draft}
-        isNew={isNew}
-        onClose={onClose}
-        onSave={onSave}
-        onDelete={onDelete}
-      />
-    )}
-  </Drawer>
-);
+export const HoldingDrawer = ({ type, draft, isNew, onClose, onSave, onDelete }: HoldingDrawerProps) => {
+  const { taxYear } = useTaxYear();
+  return (
+    <Drawer
+      isOpen={draft !== null}
+      onClose={onClose}
+      title={
+        type === 'asset'
+          ? isNew
+            ? 'Agregar un bien'
+            : 'Editar bien'
+          : isNew
+            ? 'Agregar una deuda'
+            : 'Editar deuda'
+      }
+      subtitle={`Valores al 31 de diciembre de ${taxYear.year}`}
+    >
+      {draft && (
+        <HoldingForm
+          key={draft.id}
+          type={type}
+          draft={draft}
+          isNew={isNew}
+          onClose={onClose}
+          onSave={onSave}
+          onDelete={onDelete}
+        />
+      )}
+    </Drawer>
+  );
+};
 
 const HoldingForm = ({
   type,

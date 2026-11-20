@@ -4,10 +4,10 @@ import { LuArrowRight } from 'react-icons/lu';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { effectiveData } from '@/app/declaration/declaration-state';
 import { FLOW_STEPS } from '@/app/flow';
 import { computeDeclaration } from '@/domain/declaration';
-import { BENEFITS_CAP_RATE, LABOR_LIMITS_UVT } from '@/domain/labor-income';
 import { uvtToPesos } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
@@ -32,6 +32,7 @@ const ORIGIN_CHIPS: Record<Origin, { variant: 'exogenous' | 'box'; label: string
 
 /** Screen 06 · Deducciones y exentas (Figma node 10:871). */
 export const DeductionsPage = () => {
+  const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
   const [editing, setEditing] = useState<DeductionId | null>(null);
@@ -43,7 +44,7 @@ export const DeductionsPage = () => {
     {
       id: 'housing',
       label: 'Intereses del crédito de vivienda',
-      note: `Hasta ${formatNumber(LABOR_LIMITS_UVT.housingInterest)} UVT al año`,
+      note: `Hasta ${formatNumber(taxYear.labor.housingInterestUvt)} UVT al año`,
       amount: labor.housingDeduction,
       colorClass: 'bg-action',
       origin:
@@ -57,7 +58,7 @@ export const DeductionsPage = () => {
       label: 'Dependiente económico',
       note:
         deductions.dependents > 0
-          ? `${formatNumber(deductions.dependents)} ${deductions.dependents === 1 ? 'dependiente' : 'dependientes'} · 10 % de tus ingresos, hasta ${formatNumber(LABOR_LIMITS_UVT.dependent)} UVT`
+          ? `${formatNumber(deductions.dependents)} ${deductions.dependents === 1 ? 'dependiente' : 'dependientes'} · 10 % de tus ingresos, hasta ${formatNumber(taxYear.labor.dependentUvt)} UVT`
           : 'No registraste dependientes',
       amount: labor.dependent,
       colorClass: 'bg-sun',
@@ -77,7 +78,7 @@ export const DeductionsPage = () => {
     {
       id: 'exempt-25',
       label: 'Renta exenta del 25 %',
-      note: `Sobre lo que queda, hasta ${formatNumber(LABOR_LIMITS_UVT.exempt25)} UVT`,
+      note: `Sobre lo que queda, hasta ${formatNumber(taxYear.labor.exempt25Uvt)} UVT`,
       amount: labor.exempt25,
       colorClass: 'bg-ink',
       origin: 'calculated',
@@ -85,7 +86,8 @@ export const DeductionsPage = () => {
   ];
 
   const capByPercent =
-    Math.round(result.generalNetIncome * BENEFITS_CAP_RATE) <= uvtToPesos(LABOR_LIMITS_UVT.benefitsCap);
+    Math.round(result.generalNetIncome * taxYear.general.benefitsCapRate) <=
+    uvtToPesos(taxYear.general.benefitsCapUvt, taxYear);
 
   const handleContinue = () => {
     dispatch({ type: 'completeStep', step: 'deductions' });
@@ -96,7 +98,7 @@ export const DeductionsPage = () => {
     <StepLayout aside={<DeductionsEstimate />} className='gap-6 py-11'>
       <StepHeader
         title='Lo que la ley te deja restar'
-        description={`Deducciones y rentas exentas bajan la base de tu impuesto. Juntas tienen un tope: el 40 % de tu renta líquida, sin pasar de ${formatNumber(LABOR_LIMITS_UVT.benefitsCap)} UVT.`}
+        description={`Deducciones y rentas exentas bajan la base de tu impuesto. Juntas tienen un tope: el 40 % de tu renta líquida, sin pasar de ${formatNumber(taxYear.general.benefitsCapUvt)} UVT.`}
       />
 
       <ul className='flex flex-col rounded-lg border border-line bg-surface px-5'>
@@ -132,7 +134,7 @@ export const DeductionsPage = () => {
         segments={rows}
         cap={labor.benefitsCap}
         capDescription={
-          capByPercent ? '40 % de tu renta líquida' : `${formatNumber(LABOR_LIMITS_UVT.benefitsCap)} UVT`
+          capByPercent ? '40 % de tu renta líquida' : `${formatNumber(taxYear.general.benefitsCapUvt)} UVT`
         }
       />
 
