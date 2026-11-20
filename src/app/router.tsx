@@ -8,7 +8,6 @@ import { ExogenousPage } from '@/features/exogenous/ExogenousPage';
 import { HomePage } from '@/features/home/HomePage';
 import { IncomePage } from '@/features/income/IncomePage';
 import { ResultPage } from '@/features/result/ResultPage';
-import { ShouldFilePage } from '@/features/should-file/ShouldFilePage';
 import { ErrorPage } from '@/features/status/ErrorPage';
 import { NotFoundPage } from '@/features/status/NotFoundPage';
 
@@ -22,7 +21,6 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'debo-declarar', element: <ShouldFilePage /> },
       { path: 'exogena', element: <ExogenousPage /> },
       { path: 'ingresos', element: <IncomePage /> },
       { path: 'patrimonio', element: <AssetsPage /> },

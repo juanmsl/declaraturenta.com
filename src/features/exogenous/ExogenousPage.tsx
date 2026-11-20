@@ -17,7 +17,7 @@ import {
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import { buildExogenousReport, clearExogenous, countReportingEntities } from '@/domain/exogenous';
 import type { ExogenousItem, ExogenousItemKind } from '@/domain/exogenous';
 import { parseExogenousSheet } from '@/domain/exogenous-file';
@@ -26,7 +26,7 @@ import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayou
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-const [, , incomeStep] = FLOW_STEPS;
+const incomeStep = getStep('income');
 
 /** Sections of "Esto encontramos", in order, with the kinds they show. */
 const GROUPS: readonly { title: string; kinds: readonly ExogenousItemKind[] }[] = [
@@ -239,7 +239,7 @@ export const ExogenousPage = () => {
       )}
 
       <div className='flex items-center gap-3'>
-        <Button variant='ghost' onClick={() => void navigate(FLOW_STEPS[0].path)}>
+        <Button variant='ghost' onClick={() => void navigate('/')}>
           Atrás
         </Button>
         <div className='flex-1' />

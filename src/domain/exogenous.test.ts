@@ -86,6 +86,7 @@ describe('buildExogenousReport', () => {
       creditCardPurchases: 38_200_000,
       totalPurchases: 92_400_000,
       deposits: 185_000_000,
+      vatResponsible: false,
     });
     expect(data.assets.find(asset => asset.kind === 'vehicle')?.needsReview).toBe(true);
     expect(data.previousBalanceInFavor).toBe(250_000);

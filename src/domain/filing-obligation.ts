@@ -35,12 +35,15 @@ export type FilingTestResult = FilingTest & {
 export type FilingObligation = {
   tests: FilingTestResult[];
   exceededCount: number;
+  /** Responsable de IVA: obliged to file even below every test (art. 592 num. 3 E.T.). */
+  vatResponsible: boolean;
   mustFile: boolean;
 };
 
 export const evaluateFilingObligation = (
   values: Record<FilingTestId, number>,
   year: TaxYearConfig,
+  vatResponsible = false,
 ): FilingObligation => {
   const tests = FILING_TESTS.map(test => {
     const limitUvt = year.filingTestsUvt[test.id];
@@ -51,5 +54,5 @@ export const evaluateFilingObligation = (
   });
   const exceededCount = tests.filter(test => test.exceeds).length;
 
-  return { tests, exceededCount, mustFile: exceededCount > 0 };
+  return { tests, exceededCount, vatResponsible, mustFile: exceededCount > 0 || vatResponsible };
 };

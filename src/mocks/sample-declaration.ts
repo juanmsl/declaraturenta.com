@@ -14,6 +14,7 @@ export const sampleDeclaration: DeclarationData = {
     creditCardPurchases: 38_200_000,
     totalPurchases: 92_400_000,
     deposits: 185_000_000,
+    vatResponsible: false,
   },
   labor: {
     salaries: 180_000_000,

@@ -4,11 +4,12 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { DeclarationProvider } from '@/app/declaration/DeclarationProvider';
 import { createInitialState } from '@/app/declaration/declaration-state';
+import { createSampleState } from '@/mocks/sample-state';
 import { HelpProvider } from '@/app/help/HelpProvider';
 
 import { HomePage } from './HomePage';
 
-const renderHome = () => {
+const renderHome = (state = createSampleState()) => {
   const router = createMemoryRouter([
     {
       path: '/',
@@ -18,11 +19,10 @@ const renderHome = () => {
         </HelpProvider>
       ),
     },
-    { path: '/debo-declarar', element: <p>Debo declarar</p> },
     { path: '/exogena', element: <p>Exógena</p> },
   ]);
   render(
-    <DeclarationProvider initialState={createInitialState()}>
+    <DeclarationProvider initialState={state}>
       <RouterProvider router={router} />
     </DeclarationProvider>,
   );
@@ -30,18 +30,28 @@ const renderHome = () => {
 };
 
 describe('HomePage', () => {
-  it('greets the taxpayer and lists the seven sections', () => {
+  it('greets the taxpayer and lists the sections', () => {
     renderHome();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Hola, Laura. Preparemos tu declaración de renta del año gravable 2025.',
     );
-    expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(7);
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(6);
     expect(screen.getByText('15 de septiembre de 2026')).toBeInTheDocument();
   });
 
-  it('starts the flow from the primary action', async () => {
+  it('starts empty and asks for the NIT digits to find the deadline', async () => {
+    renderHome(createInitialState());
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Preparemos tu declaración de renta del año gravable 2025.',
+    );
+    expect(screen.getByText('Aún sin calcular')).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Últimos dos dígitos de tu NIT'), '47');
+    expect(screen.getByText('15 de septiembre de 2026')).toBeInTheDocument();
+  });
+
+  it('starts the flow with the exogenous report', async () => {
     const router = renderHome();
-    await userEvent.click(screen.getByRole('button', { name: /Empezar por ¿Debo declarar\?/u }));
-    expect(router.state.location.pathname).toBe('/debo-declarar');
+    await userEvent.click(screen.getByRole('button', { name: /Subir mi exógena/u }));
+    expect(router.state.location.pathname).toBe('/exogena');
   });
 });

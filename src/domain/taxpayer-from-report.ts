@@ -12,6 +12,12 @@ export const taxpayerFromReport = (report: ExogenousReport, year: TaxYearConfig)
     fullName,
     nitLastDigits: report.documentLastDigits,
     filingDeadline: findFilingDeadline(report.documentLastDigits, year),
-    isSample: false,
   };
+};
+
+/** The taxpayer with the last two digits of the NIT typed by hand; an empty value clears them. */
+export const withNitDigits = (taxpayer: Taxpayer, digits: string, year: TaxYearConfig): Taxpayer => {
+  const clean = digits.replace(/\D/gu, '').slice(0, 2);
+  if (clean.length < 2) return { ...taxpayer, nitLastDigits: null, filingDeadline: null };
+  return { ...taxpayer, nitLastDigits: clean, filingDeadline: findFilingDeadline(clean, year) };
 };

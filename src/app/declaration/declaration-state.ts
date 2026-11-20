@@ -1,14 +1,12 @@
 import { createEmptyDeclaration } from '@/domain/declaration';
 import type { DeclarationData } from '@/domain/declaration';
-import { applyExogenous } from '@/domain/exogenous';
+import { applyExogenous, createEmptyExogenousReport } from '@/domain/exogenous';
 import type { ExogenousReport } from '@/domain/exogenous';
-import { getTaxYear } from '@/domain/tax-years';
+import { DEFAULT_TAX_YEAR, getTaxYear } from '@/domain/tax-years';
 import type { TaxYearConfig } from '@/domain/tax-years';
+import { EMPTY_TAXPAYER } from '@/domain/taxpayer';
 import type { Taxpayer } from '@/domain/taxpayer';
-import { taxpayerFromReport } from '@/domain/taxpayer-from-report';
-import { sampleDeclaration } from '@/mocks/sample-declaration';
-import { sampleExogenous } from '@/mocks/sample-exogenous';
-import { sampleTaxpayer } from '@/mocks/sample-taxpayer';
+import { taxpayerFromReport, withNitDigits } from '@/domain/taxpayer-from-report';
 
 import type { FlowStepId } from '../flow';
 
@@ -18,16 +16,16 @@ export type DeclarationState = {
   /** Taxable year of this return; each year is saved apart (ADR 0034). */
   taxYear: number;
   data: DeclarationData;
-  /** Who is declaring. The fictional sample taxpayer until a real exogenous report is imported. */
+  /** Who is declaring: empty until the exogenous report is imported or the NIT digits are typed. */
   taxpayer: Taxpayer;
   /** Steps confirmed with their primary action ("Guardar y seguir"). */
   completedSteps: FlowStepId[];
   /** Steps the user has opened at least once. */
   visitedSteps: FlowStepId[];
   exogenous: {
-    /** Name of the imported exogenous file; null while showing the sample data. */
+    /** Name of the imported exogenous file; null until one is imported. */
     fileName: string | null;
-    /** What the report says, classified (ADR 0024). The sample report until a file is imported. */
+    /** What the report says, classified (ADR 0024). Empty until a file is imported. */
     report: ExogenousReport;
     /** Exogenous items the user explicitly confirmed (e.g. housing interest). */
     confirmedItems: string[];
@@ -40,27 +38,21 @@ export type DeclarationState = {
   savedAt: string | null;
 };
 
-/** Taxable year of the fictional sample taxpayer. */
-const SAMPLE_YEAR = 2025;
-
 /**
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 10;
+export const STATE_VERSION = 11;
 
-/**
- * A new return for a year. The fictional sample taxpayer only exists for the year she was made
- * for (AG 2025); other years start empty.
- */
-export const createInitialState = (year: TaxYearConfig = getTaxYear(SAMPLE_YEAR)): DeclarationState => ({
+/** A new, empty return for a year (ADR 0035). */
+export const createInitialState = (year: TaxYearConfig = getTaxYear(DEFAULT_TAX_YEAR)): DeclarationState => ({
   version: STATE_VERSION,
   taxYear: year.year,
-  data: year.year === SAMPLE_YEAR ? structuredClone(sampleDeclaration) : createEmptyDeclaration(),
-  taxpayer: { ...sampleTaxpayer },
+  data: createEmptyDeclaration(),
+  taxpayer: { ...EMPTY_TAXPAYER },
   completedSteps: [],
   visitedSteps: [],
-  exogenous: { fileName: null, confirmedItems: [], report: structuredClone(sampleExogenous) },
+  exogenous: { fileName: null, confirmedItems: [], report: createEmptyExogenousReport() },
   activeSchedules: [],
   helpIntroDismissed: false,
   savedAt: null,
@@ -72,6 +64,7 @@ export type DeclarationAction =
   | { type: 'updateData'; update: (data: DeclarationData) => DeclarationData }
   | { type: 'importExogenous'; report: ExogenousReport }
   | { type: 'confirmExogenousItem'; itemId: string }
+  | { type: 'setNitDigits'; digits: string }
   | { type: 'toggleSchedule'; scheduleId: string }
   | { type: 'dismissHelpIntro' }
   | { type: 'restore'; state: DeclarationState }
@@ -93,10 +86,9 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'updateData':
       return { ...state, data: action.update(state.data), savedAt: action.at };
     case 'importExogenous': {
-      // The first real report replaces the sample data; later ones keep what the user entered.
-      const base = state.taxpayer.isSample ? createEmptyDeclaration() : state.data;
+      // The report fills its values and keeps what the user entered by hand.
       const year = getTaxYear(state.taxYear);
-      const data = applyExogenous(base, action.report, year);
+      const data = applyExogenous(state.data, action.report, year);
       const withData = [
         data.pensions.concepts.length > 0 ? 'pensions' : null,
         data.dividends.concepts.length > 0 ? 'dividends' : null,
@@ -118,6 +110,12 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
           ...state.exogenous,
           confirmedItems: addOnce(state.exogenous.confirmedItems, action.itemId),
         },
+        savedAt: action.at,
+      };
+    case 'setNitDigits':
+      return {
+        ...state,
+        taxpayer: withNitDigits(state.taxpayer, action.digits, getTaxYear(state.taxYear)),
         savedAt: action.at,
       };
     case 'toggleSchedule':

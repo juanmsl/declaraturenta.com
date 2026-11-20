@@ -4,12 +4,15 @@ import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Button, CalcRow, Icon, OptionCard, Text } from '@/shared/ui';
 import { TaxRows } from '@/features/estimate/TaxRows';
 
-const [firstStep, , , , , , draftStep] = FLOW_STEPS;
+import { FilingObligationCard } from './FilingObligationCard';
+
+const firstStep = getStep('exogenous');
+const draftStep = getStep('draft-210');
 
 /** Screen 07 · Resultado (Figma node 10:1188). */
 export const ResultPage = () => {
@@ -182,6 +185,8 @@ export const ResultPage = () => {
           </Text>
         </section>
       </div>
+
+      <FilingObligationCard />
 
       <div className='flex items-start justify-between'>
         <Button variant='secondary' onClick={() => void navigate(firstStep.path)}>

@@ -3,7 +3,7 @@ import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import type { DeclarationData } from '@/domain/declaration';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
@@ -17,7 +17,8 @@ import { FeesSection } from './FeesSection';
 import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } from './income-concepts';
 import { OtherSchedulesSection } from './OtherSchedulesSection';
 
-const [, exogenousStep, , assetsStep] = FLOW_STEPS;
+const exogenousStep = getStep('exogenous');
+const assetsStep = getStep('assets');
 /** Screen 04 · Ingresos (Figma node 9:783). */
 export const IncomePage = () => {
   const { taxYear } = useTaxYear();

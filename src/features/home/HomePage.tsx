@@ -3,7 +3,7 @@ import { LuArrowRight } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import { useHelp } from '@/app/help/help-context';
 import { Button, Text } from '@/shared/ui';
 
@@ -11,7 +11,7 @@ import { ChecklistCard } from './components/ChecklistCard';
 import { DeadlineCard } from './components/DeadlineCard';
 import { JourneyList } from './components/JourneyList';
 
-const [firstStep, exogenousStep] = FLOW_STEPS;
+const firstStep = getStep('exogenous');
 
 /** Screen 01 · Inicio (Figma node 7:2). */
 export const HomePage = () => {
@@ -28,11 +28,13 @@ export const HomePage = () => {
     <div className='flex flex-col gap-8 px-14 py-12'>
       <header className='flex flex-col gap-3.5'>
         <Text variant='display' className='max-w-205'>
-          Hola, {taxpayer.firstName}. Preparemos tu declaración de renta del año gravable {taxYear.year}.
+          {taxpayer.firstName ? `Hola, ${taxpayer.firstName}. ` : ''}Preparemos tu declaración de renta del
+          año gravable {taxYear.year}.
         </Text>
         <Text variant='body-l' className='max-w-170 text-fg-secondary'>
-          Te hacemos preguntas sencillas, prellenamos lo que la DIAN ya sabe de ti y te mostramos de dónde
-          sale cada cifra. Al final tendrás tu Formulario 210 listo para revisar.
+          {state.exogenous.fileName
+            ? 'Te hacemos preguntas sencillas, prellenamos lo que la DIAN ya sabe de ti y te mostramos de dónde sale cada cifra. Al final tendrás tu Formulario 210 listo para revisar.'
+            : 'Empieza por tu información exógena: la descargas del portal de la DIAN y llevamos cada dato a su casilla. Si no la tienes, puedes llenar todo a mano.'}
         </Text>
       </header>
 
@@ -67,17 +69,14 @@ export const HomePage = () => {
               </div>
             </section>
           )}
-          <DeadlineCard taxpayer={taxpayer} />
+          <DeadlineCard />
           <ChecklistCard />
         </div>
       </div>
 
       <div className='flex items-start gap-3'>
         <Button icon={LuArrowRight} onClick={() => void navigate(firstStep.path)}>
-          Empezar por {firstStep.title}
-        </Button>
-        <Button variant='secondary' onClick={() => void navigate(exogenousStep.path)}>
-          Ya tengo mi exógena
+          Subir mi exógena
         </Button>
       </div>
     </div>

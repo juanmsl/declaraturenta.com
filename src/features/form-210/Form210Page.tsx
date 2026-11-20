@@ -6,7 +6,7 @@ import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import { isCountBox } from '@/domain/box-concepts';
 import type { FilingCount } from '@/domain/advance-payment';
 import { buildForm210, OTHER_SCHEDULES, SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
@@ -15,7 +15,7 @@ import { BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
 
 import { BoxDetailDrawer } from './BoxDetailDrawer';
 
-const draftStep = FLOW_STEPS[6];
+const draftStep = getStep('draft-210');
 
 const FILING_COUNT_OPTIONS: readonly { value: FilingCount; label: string }[] = [
   { value: 'first', label: 'Primera vez' },
@@ -92,7 +92,6 @@ export const Form210Page = () => {
         <div className='flex-1' />
         <Text variant='note' className='text-fg-muted'>
           {state.taxpayer.fullName}
-          {state.taxpayer.isSample ? ' · datos de ejemplo' : ''}
         </Text>
         <Button variant='secondary' onClick={() => void handleDownload()} isLoading={isDownloading}>
           Descargar PDF

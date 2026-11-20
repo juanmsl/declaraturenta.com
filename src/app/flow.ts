@@ -1,10 +1,9 @@
 /**
- * The seven sections of the declaration flow, in order. Single source of truth for
+ * The sections of the declaration flow, in order (ADR 0035: «¿Debo declarar?» moved to the landing). Single source of truth for
  * the side rail, the top bar braid, the home journey list and the routes.
  * Paths are user-facing, so they are in Spanish.
  */
-export type FlowStepId =
-  'should-file' | 'exogenous' | 'income' | 'assets' | 'deductions' | 'result' | 'draft-210';
+export type FlowStepId = 'exogenous' | 'income' | 'assets' | 'deductions' | 'result' | 'draft-210';
 
 export type FlowStep = {
   id: FlowStepId;
@@ -20,14 +19,6 @@ export type FlowStep = {
 };
 
 export const FLOW_STEPS = [
-  {
-    id: 'should-file',
-    path: '/debo-declarar',
-    title: '¿Debo declarar?',
-    railLabel: '¿Debo declarar?',
-    summary: 'Revisamos los cinco topes con tus datos.',
-    minutes: 2,
-  },
   {
     id: 'exogenous',
     path: '/exogena',
@@ -78,6 +69,15 @@ export const FLOW_STEPS = [
   },
 ] as const satisfies readonly FlowStep[];
 
+const STEPS_BY_ID = new Map<FlowStepId, FlowStep>(FLOW_STEPS.map(step => [step.id, step]));
+
+/** A step by its id, so screens do not depend on the order of the flow. */
+export const getStep = (id: FlowStepId): FlowStep => {
+  const step = STEPS_BY_ID.get(id);
+  if (!step) throw new Error(`Unknown flow step: ${id}`);
+  return step;
+};
+
 export const findStepByPath = (pathname: string): FlowStep | undefined =>
   FLOW_STEPS.find(step => pathname === step.path || pathname.startsWith(`${step.path}/`));
 
@@ -86,4 +86,4 @@ export const FORM_210_PATH = '/formulario-210';
 
 /** Step to resume the declaration from: the first one not completed, or the draft when all are done. */
 export const findResumeStep = (completed: readonly FlowStepId[]): FlowStep =>
-  FLOW_STEPS.find(step => !completed.includes(step.id)) ?? FLOW_STEPS[6];
+  FLOW_STEPS.find(step => !completed.includes(step.id)) ?? getStep('draft-210');

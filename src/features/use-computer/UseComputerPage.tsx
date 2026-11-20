@@ -112,7 +112,9 @@ export const UseComputerPage = () => {
             <Text variant='note' className='text-fg-warning'>
               Tu fecha límite
             </Text>
-            <Text variant='body-m-strong'>{formatLongDate(taxpayer.filingDeadline)}</Text>
+            <Text variant='body-m-strong'>
+              {taxpayer.filingDeadline ? formatLongDate(taxpayer.filingDeadline) : 'Aún sin calcular'}
+            </Text>
           </div>
         </div>
       </main>

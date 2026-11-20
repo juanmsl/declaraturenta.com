@@ -6,7 +6,7 @@ import { cn } from 'polpo/helpers';
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { effectiveData } from '@/app/declaration/declaration-state';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import { computeDeclaration } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
@@ -20,7 +20,8 @@ import type { CapSegment } from './CapMeter';
 import { DeductionDrawer } from './DeductionDrawer';
 import type { DeductionId } from './DeductionDrawer';
 
-const [, , , assetsStep, , resultStep] = FLOW_STEPS;
+const assetsStep = getStep('assets');
+const resultStep = getStep('result');
 
 type Origin = 'exogenous' | 'calculated' | 'user';
 

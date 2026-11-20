@@ -2,12 +2,18 @@
 export type Taxpayer = {
   firstName: string;
   fullName: string;
-  /** Last two digits of the NIT; they set the filing deadline in the DIAN calendar. */
-  nitLastDigits: string;
-  /** ISO date (YYYY-MM-DD) of the filing deadline. */
-  filingDeadline: string;
-  /** True for the fictional example taxpayer shown while there is no real data. */
-  isSample: boolean;
+  /** Last two digits of the NIT; they set the filing deadline in the DIAN calendar. Null until known. */
+  nitLastDigits: string | null;
+  /** ISO date (YYYY-MM-DD) of the filing deadline. Null until the NIT digits are known. */
+  filingDeadline: string | null;
+};
+
+/** Nobody yet: the app starts empty (ADR 0035). */
+export const EMPTY_TAXPAYER: Taxpayer = {
+  firstName: '',
+  fullName: '',
+  nitLastDigits: null,
+  filingDeadline: null,
 };
 
 export const getInitials = (fullName: string): string =>

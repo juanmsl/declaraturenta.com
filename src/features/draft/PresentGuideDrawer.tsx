@@ -26,7 +26,9 @@ export const PresentGuideDrawer = ({
     'Ingresa al portal de la DIAN con tu usuario y contraseña.',
     `Abre el diligenciamiento del Formulario 210 del año gravable ${taxYear.year}.`,
     'Pasa las cifras de este borrador casilla por casilla. Con «Ver formato 210» las ubicas fácil.',
-    `Revisa, firma con tu firma electrónica y presenta antes de tu fecha límite: ${formatLongDate(state.taxpayer.filingDeadline)}.`,
+    state.taxpayer.filingDeadline
+      ? `Revisa, firma con tu firma electrónica y presenta antes de tu fecha límite: ${formatLongDate(state.taxpayer.filingDeadline)}.`
+      : 'Revisa, firma con tu firma electrónica y presenta antes de tu fecha límite, que depende de los dos últimos dígitos de tu NIT.',
     ...(toPay ? ['Paga el saldo en línea o en un banco con el recibo de pago que genera el portal.'] : []),
     ...(wantsRefund
       ? ['Después de presentar, solicita en el portal la devolución de tu saldo a favor.']

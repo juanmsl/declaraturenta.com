@@ -134,9 +134,13 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
       </View>
       <Text style={s.title}>Tu borrador del Formulario 210 · Año gravable {year}</Text>
       <Text style={s.meta}>
-        {taxpayer.fullName}
-        {taxpayer.isSample ? ' (datos de ejemplo)' : ''} · NIT terminado en {taxpayer.nitLastDigits} · Fecha
-        límite: {formatLongDate(taxpayer.filingDeadline)}
+        {[
+          taxpayer.fullName,
+          taxpayer.nitLastDigits ? `NIT terminado en ${taxpayer.nitLastDigits}` : null,
+          taxpayer.filingDeadline ? `Fecha límite: ${formatLongDate(taxpayer.filingDeadline)}` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
       </Text>
       <View style={s.notice}>
         <Text style={s.noticeTitle}>Esto es un borrador</Text>

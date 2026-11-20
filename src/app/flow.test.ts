@@ -1,9 +1,9 @@
 import { FLOW_STEPS, findStepByPath } from './flow';
 
 describe('flow', () => {
-  it('has the seven sections of the design', () => {
-    expect(FLOW_STEPS).toHaveLength(7);
-    expect(new Set(FLOW_STEPS.map(step => step.path)).size).toBe(7);
+  it('starts with the exogenous report and has unique paths', () => {
+    expect(FLOW_STEPS[0].id).toBe('exogenous');
+    expect(new Set(FLOW_STEPS.map(step => step.path)).size).toBe(FLOW_STEPS.length);
   });
 
   it('finds a step by its path or a nested path', () => {

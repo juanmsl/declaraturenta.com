@@ -5,7 +5,7 @@ import { LuArrowRight, LuCar, LuChartLine, LuHouse, LuLandmark, LuPackage, LuWal
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { FLOW_STEPS } from '@/app/flow';
+import { getStep } from '@/app/flow';
 import type { AssetKind, ValueOrigin } from '@/domain/declaration';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { formatCurrency } from '@/shared/lib/format';
@@ -13,8 +13,10 @@ import { Alert, Button, CalcRow, Chip, Icon, NoteBox, StepHeader, StepLayout, Te
 
 import { HoldingDrawer } from './HoldingDrawer';
 import type { HoldingDraft } from './HoldingDrawer';
+import { YearMovementsSection } from './YearMovementsSection';
 
-const [, , incomeStep, , deductionsStep] = FLOW_STEPS;
+const incomeStep = getStep('income');
+const deductionsStep = getStep('deductions');
 
 const KIND_ICONS: Record<AssetKind, IconType> = {
   'real-estate': LuHouse,
@@ -160,6 +162,8 @@ export const AssetsPage = () => {
         <Operator symbol='=' />
         <Summary label='Patrimonio líquido' value={result.netAssets} highlight />
       </div>
+
+      <YearMovementsSection />
 
       {firstRealEstate && (
         <Alert

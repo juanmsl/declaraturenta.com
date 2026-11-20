@@ -40,20 +40,24 @@ each year keeps its own return in the browser. Only AG 2025 is configured for no
 
 ## Sections of the flow
 
-1. ¿Debo declarar? — the filing thresholds.
-2. Importar exógena — upload the DIAN report (.xlsx), read in the browser.
-3. Ingresos — salaries, fees, financial yields, other income, pensions, dividends and occasional
-   gains.
-4. Patrimonio — assets, accounts and debts at December 31.
-5. Deducciones y exentas — housing, dependents, health, contributions and other deductions.
-6. Otros ajustes — uncommon boxes: loss compensations, taxable income, renta presuntiva, ECE
-   passive income, taxes paid abroad and the Andean Community exemption (planned).
-7. Resultado — the calculation step by step, filing date (late filing penalty) and the voluntary
-   contribution.
-8. Borrador 210 — the form box by box (plus the full 210 view and box detail panels).
+Inicio is the summary before the flow: the steps, the filing deadline (asks the last two NIT
+digits when there is no exogenous report) and a single action, «Subir mi exógena» (ADR 0035).
 
-Outside the flow: landing page, legal texts (accepted the first time the app is used, and linked
-in the footer), 404 and error pages, help panel.
+1. Importar exógena — upload the DIAN report (.xlsx), read in the browser, or fill in by hand.
+2. Ingresos — salaries, fees, financial yields, other income, pensions, dividends and occasional
+   gains.
+3. Patrimonio — assets, accounts and debts at December 31, plus the year's movements (credit card,
+   purchases, deposits) and whether the person was responsible for VAT.
+4. Deducciones y exentas — housing, dependents, health, contributions and other deductions.
+5. Otros ajustes — uncommon boxes: loss compensations, taxable income, renta presuntiva, ECE
+   passive income, taxes paid abroad and the Andean Community exemption (planned).
+6. Resultado — the calculation step by step, «¿Tenías que declarar?» with every filing test, filing
+   date (late filing penalty, planned) and the voluntary contribution (planned).
+7. Borrador 210 — the form box by box (plus the full 210 view and box detail panels).
+
+Outside the flow: landing page (with the quick «¿Debo declarar?» calculator: monthly salary and
+yes/no questions; desktop and 390 px mobile), legal texts (accepted the first time the app is used,
+and linked in the footer), 404 and error pages, help panel.
 
 ## Legal
 
@@ -61,6 +65,9 @@ Terms of use, privacy policy (Ley 1581 de 2012) and a notice that the platform i
 and has no relation with the DIAN. Responsible party: Juan Sánchez, juanmsl.pk@gmail.com.
 
 ## Sample data
+
+The app starts empty (ADR 0035). The sample data lives only in Figma and in the tests
+(`src/mocks/sample-state.ts`).
 
 Fictional taxpayer **Laura Gómez** (`src/mocks/sample-taxpayer.ts`), NIT ending in 47, deadline
 September 15, 2026. Fictional entities: Empresa Andina S.A.S., Banco Cordillera, Medicina Sabana
@@ -88,6 +95,12 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-19 | Late filing penalty computed from the filing date the person enters in Resultado.          |
 | 2026-11-19 | Occasional gains count for the 1.400 UVT income test (ADR 0031).                           |
 | 2026-11-19 | Every decision is recorded in this document and in an ADR.                                 |
+| 2026-11-20 | The app starts empty; the sample taxpayer stays in Figma and tests (ADR 0035).             |
+| 2026-11-20 | «¿Debo declarar?» moves to a landing calculator; the flow starts at the exogenous report.  |
+| 2026-11-20 | Resultado checks every filing test; movements and VAT are asked in Patrimonio.             |
+| 2026-11-20 | Without an exogenous report, the last two NIT digits are typed in Inicio.                  |
+| 2026-11-20 | Inicio has a single action, «Subir mi exógena».                                            |
+| 2026-11-20 | The landing page has a mobile version (390 px); the app stays desktop only.                |
 
 ## Not defined yet
 

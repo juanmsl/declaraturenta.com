@@ -234,6 +234,16 @@ export const buildExogenousReport = (file: ExogenousFile, fileName: string): Exo
   };
 };
 
+/** No report yet: the app starts empty (ADR 0035). */
+export const createEmptyExogenousReport = (): ExogenousReport => ({
+  fileName: null,
+  year: null,
+  holderName: '',
+  documentLastDigits: '',
+  thresholds: { income: 0, assets: 0, cardSpending: 0, deposits: 0, purchases: 0 },
+  items: [],
+});
+
 /** Keeps concepts the user changed and takes the rest from the report. */
 const mergeConcepts = (current: LaborConcept[], reported: LaborConcept[]): LaborConcept[] =>
   reported.map(concept => {
@@ -369,6 +379,7 @@ export const applyExogenous = (
       creditCardPurchases: report.thresholds.cardSpending,
       totalPurchases: report.thresholds.purchases,
       deposits: report.thresholds.deposits,
+      vatResponsible: data.obligation.vatResponsible,
     },
     labor: {
       ...data.labor,
@@ -394,7 +405,7 @@ export const applyExogenous = (
 export const clearExogenous = (data: DeclarationData): DeclarationData => ({
   ...data,
   general: { ...data.general, electronicInvoicePurchases: 0 },
-  obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
+  obligation: { ...data.obligation, creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
   labor: { ...data.labor, concepts: [], salaries: 0, nonTaxableIncome: 0, voluntaryContributions: 0 },
   fees: { ...data.fees, concepts: data.fees.concepts.filter(c => c.origin === 'user'), nonTaxableIncome: 0 },
   pensions: { ...data.pensions, concepts: data.pensions.concepts.filter(c => c.origin === 'user') },

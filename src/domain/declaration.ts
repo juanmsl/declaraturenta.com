@@ -69,11 +69,13 @@ export type DeclarationData = {
     /** Box 28: 1 % of purchases backed by electronic invoices (capped at 240 UVT). */
     electronicInvoicePurchases: number;
   };
-  /** Values only used by the filing obligation test, taken from the exogenous report. */
+  /** Values only used by the filing obligation test, from the exogenous report or typed in Patrimonio. */
   obligation: {
     creditCardPurchases: number;
     totalPurchases: number;
     deposits: number;
+    /** Responsable de IVA during the year: obliged to file whatever the tests say. */
+    vatResponsible: boolean;
   };
   labor: {
     /** "Salarios y pagos laborales" as confirmed by the user. */
@@ -408,6 +410,7 @@ const computeWithFeesOption = (
       deposits: data.obligation.deposits,
     },
     year,
+    data.obligation.vatResponsible,
   );
 
   const labor = computeLaborIncome(
@@ -528,10 +531,10 @@ const computeWithFeesOption = (
   };
 };
 
-/** A return with nothing filled in, used when the user imports their own exogenous report. */
+/** A return with nothing filled in: how every taxable year starts (ADR 0035). */
 export const createEmptyDeclaration = (): DeclarationData => ({
   general: { filingCount: 'third-or-more', previousYearNetTax: 0, electronicInvoicePurchases: 0 },
-  obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
+  obligation: { creditCardPurchases: 0, totalPurchases: 0, deposits: 0, vatResponsible: false },
   labor: {
     salaries: 0,
     concepts: [],

@@ -51,27 +51,26 @@ export const SideRail = ({ steps }: SideRailProps) => {
             Tu fecha límite
           </Text>
         </div>
-        <Text variant='body-m-strong'>{formatLongDate(taxpayer.filingDeadline)}</Text>
+        <Text variant='body-m-strong'>
+          {taxpayer.filingDeadline ? formatLongDate(taxpayer.filingDeadline) : 'Aún sin calcular'}
+        </Text>
         <Text variant='note' className='text-fg-muted'>
-          NIT terminado en {taxpayer.nitLastDigits}
+          {taxpayer.nitLastDigits ? `NIT terminado en ${taxpayer.nitLastDigits}` : 'Depende de tu NIT'}
         </Text>
       </section>
 
-      <div className='flex items-center gap-2.5'>
-        <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sun' aria-hidden>
-          <Text as='span' variant='caption'>
-            {getInitials(taxpayer.fullName)}
-          </Text>
-        </div>
-        <div className='flex flex-col'>
-          <Text variant='caption'>{taxpayer.fullName}</Text>
-          {taxpayer.isSample && (
-            <Text variant='note' className='text-fg-muted'>
-              Datos de ejemplo
+      {taxpayer.fullName && (
+        <div className='flex items-center gap-2.5'>
+          <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-sun' aria-hidden>
+            <Text as='span' variant='caption'>
+              {getInitials(taxpayer.fullName)}
             </Text>
-          )}
+          </div>
+          <div className='flex flex-col'>
+            <Text variant='caption'>{taxpayer.fullName}</Text>
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 };
