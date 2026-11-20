@@ -32,6 +32,13 @@ export const TaxRows = ({ result, taxLabel = 'Impuesto sobre la renta', withBox 
       {result.occasionalGainsTax > 0 && (
         <CalcRow label={label('Impuesto de ganancias ocasionales', 127)} value={result.occasionalGainsTax} />
       )}
+      {result.occasionalForeignTaxDiscount > 0 && (
+        <CalcRow
+          variant='subtract'
+          label={label('Impuesto pagado en el exterior por ganancias ocasionales', 128)}
+          value={result.occasionalForeignTaxDiscount}
+        />
+      )}
     </>
   );
 };

@@ -9,6 +9,7 @@ import { HomePage } from '@/features/home/HomePage';
 import { IncomePage } from '@/features/income/IncomePage';
 import { LandingPage } from '@/features/landing/LandingPage';
 import { LegalPage } from '@/features/legal/LegalPage';
+import { AdjustmentsPage } from '@/features/adjustments/AdjustmentsPage';
 import { ResultPage } from '@/features/result/ResultPage';
 import { ErrorPage } from '@/features/status/ErrorPage';
 import { NotFoundPage } from '@/features/status/NotFoundPage';
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: 'ingresos', element: <IncomePage /> },
       { path: 'patrimonio', element: <AssetsPage /> },
       { path: 'deducciones', element: <DeductionsPage /> },
+      { path: 'otros-ajustes', element: <AdjustmentsPage /> },
       { path: 'resultado', element: <ResultPage /> },
       { path: 'borrador-210', element: <DraftPage /> },
     ],

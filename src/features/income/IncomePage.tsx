@@ -99,7 +99,7 @@ export const IncomePage = () => {
       />
 
       <div className='flex flex-col gap-1'>
-        <Text variant='title-s' as='h2'>
+        <Text id='other-income-title' variant='title-s' as='h2'>
           Rendimientos financieros y otros ingresos
         </Text>
         <Text variant='body-m' className='text-fg-secondary'>

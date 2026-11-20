@@ -3,7 +3,8 @@
  * the side rail, the top bar braid, the home journey list and the routes.
  * Paths are user-facing, so they are in Spanish.
  */
-export type FlowStepId = 'exogenous' | 'income' | 'assets' | 'deductions' | 'result' | 'draft-210';
+export type FlowStepId =
+  'exogenous' | 'income' | 'assets' | 'deductions' | 'adjustments' | 'result' | 'draft-210';
 
 export type FlowStep = {
   id: FlowStepId;
@@ -50,6 +51,14 @@ export const FLOW_STEPS = [
     railLabel: 'Deducciones',
     summary: 'Vivienda, dependientes, salud y aportes.',
     minutes: 6,
+  },
+  {
+    id: 'adjustments',
+    path: '/otros-ajustes',
+    title: 'Otros ajustes',
+    railLabel: 'Otros ajustes',
+    summary: 'Pérdidas, renta presuntiva e impuestos del exterior.',
+    minutes: 2,
   },
   {
     id: 'result',

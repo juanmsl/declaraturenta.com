@@ -166,10 +166,22 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       type: 'line',
       box: 93,
       label: 'Renta líquida ordinaria',
-      value: result.taxableIncome,
+      value: result.ordinaryIncome,
       origin: null,
       strong: true,
     },
+    ...(result.taxableIncome !== result.ordinaryIncome
+      ? ([
+          {
+            type: 'line',
+            box: 97,
+            label: 'Renta líquida gravable (con compensaciones y rentas gravables)',
+            value: result.taxableIncome,
+            origin: 'user',
+            strong: true,
+          },
+        ] satisfies DraftRow[])
+      : []),
     ...(result.pensions.grossIncome > 0
       ? ([
           { type: 'section', label: 'Cédula de pensiones' },
@@ -252,6 +264,17 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       value: result.tableTax.tax,
       origin: null,
     },
+    ...(result.taxDiscounts > 0
+      ? ([
+          {
+            type: 'line',
+            box: 125,
+            label: 'Descuentos tributarios',
+            value: result.taxDiscounts,
+            origin: null,
+          },
+        ] satisfies DraftRow[])
+      : []),
     ...(result.netIncomeTax !== result.tableTax.tax
       ? ([
           {
@@ -274,6 +297,17 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
           },
         ] satisfies DraftRow[])
       : []),
+    ...(result.occasionalForeignTaxDiscount > 0
+      ? ([
+          {
+            type: 'line',
+            box: 128,
+            label: 'Impuesto pagado en el exterior por ganancias ocasionales',
+            value: result.occasionalForeignTaxDiscount,
+            origin: 'user',
+          },
+        ] satisfies DraftRow[])
+      : []),
     {
       type: 'line',
       box: 132,
@@ -288,6 +322,17 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       value: result.advance.amount,
       origin: null,
     },
+    ...(result.lateFiling.penalty > 0
+      ? ([
+          {
+            type: 'line',
+            box: 135,
+            label: 'Sanción por extemporaneidad',
+            value: result.lateFiling.penalty,
+            origin: null,
+          },
+        ] satisfies DraftRow[])
+      : []),
     {
       type: 'total',
       box: toPay ? 136 : 137,
@@ -295,6 +340,17 @@ export const buildDraftRows = (data: DeclarationData, result: DeclarationResult)
       value: toPay ? result.amountToPay : result.amountInFavor,
       toPay,
     },
+    ...(result.voluntaryContribution > 0
+      ? ([
+          {
+            type: 'line',
+            box: 141,
+            label: 'Aporte voluntario (se paga aparte)',
+            value: result.voluntaryContribution,
+            origin: 'user',
+          },
+        ] satisfies DraftRow[])
+      : []),
   ];
 };
 

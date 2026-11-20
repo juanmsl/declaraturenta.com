@@ -10,6 +10,7 @@ import { Button, CalcRow, Icon, OptionCard, Text } from '@/shared/ui';
 import { TaxRows } from '@/features/estimate/TaxRows';
 
 import { FilingObligationCard } from './FilingObligationCard';
+import { FilingSection } from './FilingSection';
 
 const firstStep = getStep('exogenous');
 const draftStep = getStep('draft-210');
@@ -88,6 +89,8 @@ export const ResultPage = () => {
         )}
       </section>
 
+      <FilingSection />
+
       <div className='flex items-start gap-8'>
         <section className='flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-line bg-surface p-6'>
           <Text variant='title-m' as='h2'>
@@ -105,6 +108,9 @@ export const ResultPage = () => {
             <TaxRows result={result} />
             {result.advance.amount > 0 && (
               <CalcRow label='Anticipo para el año siguiente' value={result.advance.amount} />
+            )}
+            {result.lateFiling.penalty > 0 && (
+              <CalcRow label='Sanción por extemporaneidad' value={result.lateFiling.penalty} />
             )}
             <CalcRow variant='subtract' label='Retenciones en la fuente' value={result.withholdings} />
             <CalcRow

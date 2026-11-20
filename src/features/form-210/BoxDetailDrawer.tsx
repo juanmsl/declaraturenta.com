@@ -20,21 +20,48 @@ import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared
 import { ConceptsEditor } from './ConceptsEditor';
 import { sectionOf } from './sections';
 
-/** Boxes filled from a section of the Ingresos screen (ADRs 0031 and 0032). */
-const INCOME_SCREEN_BOXES: Partial<Record<number, string>> = {
-  43: 'Honorarios y servicios',
-  44: 'Honorarios y servicios',
-  45: 'Honorarios y servicios',
-  99: 'Recibí una pensión',
-  100: 'Recibí una pensión',
-  104: 'Recibí dividendos o participaciones',
-  105: 'Recibí dividendos o participaciones',
-  107: 'Recibí dividendos o participaciones',
-  108: 'Recibí dividendos o participaciones',
-  109: 'Recibí dividendos o participaciones',
-  112: 'Tuve ganancias ocasionales',
-  113: 'Tuve ganancias ocasionales',
-  114: 'Tuve ganancias ocasionales',
+type ScreenLink = { screen: string; path: string; section: string };
+
+const income = (section: string, anchor: string): ScreenLink => ({
+  screen: 'Ingresos',
+  path: `/ingresos#${anchor}`,
+  section,
+});
+const adjustments = (section: string): ScreenLink => ({
+  screen: 'Otros ajustes',
+  path: '/otros-ajustes',
+  section,
+});
+
+/** Boxes filled from a section of another screen (ADRs 0031, 0032 and 0038). */
+const SCREEN_BOXES: Partial<Record<number, ScreenLink>> = {
+  43: income('Honorarios y servicios', 'fees-title'),
+  44: income('Honorarios y servicios', 'fees-title'),
+  45: income('Honorarios y servicios', 'fees-title'),
+  60: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
+  75: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
+  76: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
+  77: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
+  99: income('Recibí una pensión', 'other-schedules-title'),
+  100: income('Recibí una pensión', 'other-schedules-title'),
+  104: income('Recibí dividendos o participaciones', 'other-schedules-title'),
+  105: income('Recibí dividendos o participaciones', 'other-schedules-title'),
+  107: income('Recibí dividendos o participaciones', 'other-schedules-title'),
+  108: income('Recibí dividendos o participaciones', 'other-schedules-title'),
+  109: income('Recibí dividendos o participaciones', 'other-schedules-title'),
+  112: income('Tuve ganancias ocasionales', 'other-schedules-title'),
+  113: income('Tuve ganancias ocasionales', 'other-schedules-title'),
+  114: income('Tuve ganancias ocasionales', 'other-schedules-title'),
+  56: adjustments('Tengo pérdidas fiscales de años anteriores'),
+  72: adjustments('Tengo pérdidas fiscales de años anteriores'),
+  89: adjustments('Tengo pérdidas fiscales de años anteriores'),
+  94: adjustments('Tengo pérdidas fiscales de años anteriores'),
+  95: adjustments('Tuve excesos de renta presuntiva'),
+  96: adjustments('Debo sumar rentas gravables'),
+  62: adjustments('Tengo rentas pasivas de una sociedad del exterior (ECE)'),
+  79: adjustments('Tengo rentas pasivas de una sociedad del exterior (ECE)'),
+  110: adjustments('Recibí dividendos de un país de la Comunidad Andina'),
+  141: { screen: 'Resultado', path: '/resultado', section: '¿Cuándo vas a presentar?' },
 };
 
 type BoxDetailDrawerProps = {
@@ -125,49 +152,49 @@ const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onC
   }
   if (box.number === 39) return <OtherDeductionsDetail form={form} box={box} onClose={onClose} />;
   if (box.number === 36) return <ExemptDetail form={form} box={box} onClose={onClose} />;
-  const incomeSection = INCOME_SCREEN_BOXES[box.number];
-  if (incomeSection) {
-    return <IncomeScreenDetail form={form} box={box} section={incomeSection} onClose={onClose} />;
-  }
+  const link = SCREEN_BOXES[box.number];
+  if (link) return <ScreenDetail form={form} box={box} link={link} onClose={onClose} />;
 
   return (
     <>
       <TotalCard form={form} box={box} total={box.value} />
-      <Alert variant='info' title='Por ahora no calculamos esta casilla'>
-        Queda en $ 0. Si tuviste este tipo de ingresos o valores, pronto podrás registrarlos aquí.
-      </Alert>
+      {description && (
+        <Text variant='body-m' className='text-fg-secondary'>
+          {description}
+        </Text>
+      )}
       <Footer onClose={onClose} />
     </>
   );
 };
 
-const IncomeScreenDetail = ({
+const ScreenDetail = ({
   form,
   box,
-  section,
+  link,
   onClose,
 }: {
   form: Form210;
   box: Form210Box;
-  section: string;
+  link: ScreenLink;
   onClose: () => void;
 }) => {
   const navigate = useNavigate();
   return (
     <>
       <TotalCard form={form} box={box} total={box.value} />
-      <Alert variant='info' title='Sale de lo que escribiste en Ingresos'>
-        La llenas en la sección «{section}» de Ingresos. Allí calculamos también lo que está exento.
+      <Alert variant='info' title={`Sale de lo que escribiste en ${link.screen}`}>
+        La llenas en «{link.section}». Allí aplicamos también los límites de la ley.
       </Alert>
       <div>
         <Button
           variant='secondary'
           onClick={() => {
             onClose();
-            void navigate(`/ingresos#${box.number >= 99 ? 'other-schedules-title' : 'fees-title'}`);
+            void navigate(link.path);
           }}
         >
-          Ir a Ingresos
+          Ir a {link.screen}
         </Button>
       </div>
       <Footer onClose={onClose} />
@@ -269,6 +296,12 @@ const OtherDeductionsDetail = ({
         }}
         hint={`Hasta 16 UVT al mes, ${formatCurrency(uvtToPesos(taxYear.labor.prepaidHealthUvt, taxYear))} al año.`}
       />
+      {box.value - result.labor.dependent - result.labor.prepaidHealth > 0 && (
+        <Text variant='note' className='text-fg-muted'>
+          También suma {formatCurrency(box.value - result.labor.dependent - result.labor.prepaidHealth)} de
+          GMF, ICETEX o aportes a cesantías como independiente. Los editas en Deducciones.
+        </Text>
+      )}
       <Footer onClose={onClose} onSave={save} canSave={isDirty} />
     </>
   );
@@ -278,6 +311,7 @@ const ExemptDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; 
   const { taxYear } = useTaxYear();
   const { result } = useDeclaration();
   const { labor } = result;
+  const { detail, columns } = result.benefits;
 
   return (
     <>
@@ -286,21 +320,19 @@ const ExemptDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; 
         {boxDescription(36, taxYear)}
       </Text>
       <div className='flex flex-col'>
-        <CalcRow label='Renta líquida' value={labor.netIncome} />
-        <CalcRow variant='subtract' label='Deducciones' value={labor.totalDeductions} />
-        <CalcRow variant='subtract' label='Aportes voluntarios' value={labor.voluntaryContributions} />
-        <CalcRow
-          variant='subtotal'
-          label='Base'
-          value={Math.max(0, labor.netIncome - labor.totalDeductions - labor.voluntaryContributions)}
-        />
+        <CalcRow label='Cesantías exentas' value={detail.severanceExempt} />
+        <CalcRow label='Otras rentas exentas de tu trabajo' value={detail.otherLaborExempt} />
+        {columns.labor.unlimitedExempt > 0 && (
+          <CalcRow label='Rentas exentas sin el tope del 40 %' value={columns.labor.unlimitedExempt} />
+        )}
         <CalcRow
           label={`25 %, hasta ${formatNumber(taxYear.labor.exempt25Uvt)} UVT`}
           value={labor.exempt25}
         />
+        <CalcRow variant='total' label='Casilla 36' value={columns.labor.otherExempt} />
       </div>
       <Text variant='note' className='text-fg-muted'>
-        Se calcula sola. Cambia si corriges tus ingresos o deducciones.
+        Se calcula sola con lo que escribiste en Deducciones.
       </Text>
       <Footer onClose={onClose} />
     </>

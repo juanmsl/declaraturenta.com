@@ -48,11 +48,14 @@ digits when there is no exogenous report) and a single action, «Subir mi exóge
    gains.
 3. Patrimonio — assets, accounts and debts at December 31, plus the year's movements (credit card,
    purchases, deposits) and whether the person was responsible for VAT.
-4. Deducciones y exentas — housing, dependents, health, contributions and other deductions.
-5. Otros ajustes — uncommon boxes: loss compensations, taxable income, renta presuntiva, ECE
-   passive income, taxes paid abroad and the Andean Community exemption (planned).
-6. Resultado — the calculation step by step, «¿Tenías que declarar?» with every filing test, filing
-   date (late filing penalty, planned) and the voluntary contribution (planned).
+4. Deducciones y exentas — housing, dependents, prepaid health, severance pay, AFC/FVP/AVC, GMF,
+   ICETEX, independent severance contributions, other exempt income (with and without the 40 %
+   cap), the 25 % and donations.
+5. Otros ajustes — uncommon boxes behind switches: loss compensations, presumptive excess,
+   rentas gravables, ECE passive income, taxes paid abroad, Andean Community dividends and other
+   discounts (ADR 0038).
+6. Resultado — the calculation step by step, filing date with the late filing penalty and the
+   voluntary contribution, and «¿Tenías que declarar?» with every filing test.
 7. Borrador 210 — the form box by box (plus the full 210 view and box detail panels).
 
 Outside the flow: landing page (with the quick «¿Debo declarar?» calculator: monthly salary and

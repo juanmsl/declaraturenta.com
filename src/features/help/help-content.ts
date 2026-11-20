@@ -21,8 +21,12 @@ export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
     text: 'Intereses de vivienda, dependientes, medicina prepagada y la renta exenta del 25 %. Te mostramos cuándo llegas al tope del 40 %.',
   },
   {
+    title: 'Otros ajustes',
+    text: 'Casos poco comunes: pérdidas de años anteriores, rentas gravables, sociedades del exterior, impuestos pagados en otro país y otros descuentos. Si no te aplican, sigue de largo.',
+  },
+  {
     title: 'Resultado',
-    text: 'Ves si tienes saldo a pagar o a favor, cómo llegamos a esa cifra y si tenías que declarar.',
+    text: 'Ves si tienes saldo a pagar o a favor, cómo llegamos a esa cifra, si tenías que declarar y la sanción si presentas tarde.',
   },
   {
     title: 'Borrador 210',
@@ -67,10 +71,10 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   {
     id: 'not-yet',
     category: 'La plataforma',
-    question: '¿Qué no calculamos todavía?',
+    question: '¿Calculan todas las casillas del 210?',
     answer:
-      'Rentas exentas y deducciones propias de los honorarios, los rendimientos y otros ingresos, compensaciones por pérdidas, renta presuntiva, donaciones e impuestos pagados en el exterior. Esas casillas quedan en $ 0 con un aviso.',
-    keywords: 'compensaciones pérdidas renta presuntiva donaciones exterior',
+      'Sí, de la 28 a la 141. Algunas dependen de datos que solo tú tienes, como pérdidas de años anteriores, impuestos pagados en el exterior o rentas de sociedades del exterior: los preguntamos en «Otros ajustes». Lo que no sale de la exógena hay que escribirlo con tus certificados.',
+    keywords: 'casillas calculan todas compensaciones pérdidas renta presuntiva donaciones exterior',
   },
   {
     id: 'fees-option',

@@ -21,14 +21,15 @@ import { DeductionDrawer } from './DeductionDrawer';
 import type { DeductionId } from './DeductionDrawer';
 
 const assetsStep = getStep('assets');
-const resultStep = getStep('result');
+const resultStep = getStep('adjustments');
 
-type Origin = 'exogenous' | 'calculated' | 'user';
+type Origin = 'exogenous' | 'calculated' | 'user' | 'box123';
 
 const ORIGIN_CHIPS: Record<Origin, { variant: 'exogenous' | 'box'; label: string }> = {
   exogenous: { variant: 'exogenous', label: 'Desde exógena' },
   calculated: { variant: 'box', label: 'Calculado' },
   user: { variant: 'box', label: 'Lo ingresaste tú' },
+  box123: { variant: 'box', label: 'Casilla 123' },
 };
 
 /** Screen 06 · Deducciones y exentas (Figma node 10:871). */
@@ -41,18 +42,23 @@ export const DeductionsPage = () => {
   const { deductions } = state.data;
   const imported = state.exogenous.fileName !== null || state.data.labor.concepts.length > 0;
 
-  const rows: (CapSegment & { id: DeductionId; note: string; origin: Origin })[] = [
+  const { detail } = result.benefits;
+  const userOrigin = (amount: number): Origin | null => (amount > 0 ? 'user' : null);
+  const fromReport = (amount: number, kind: Parameters<typeof reportedTotal>[1]): Origin | null =>
+    imported && amount > 0 && amount === reportedTotal(state.exogenous.report, kind)
+      ? 'exogenous'
+      : userOrigin(amount);
+
+  type Row = CapSegment & { id: DeductionId; note: string; origin: Origin | null; inCap: boolean };
+  const rows: Row[] = [
     {
       id: 'housing',
       label: 'Intereses del crédito de vivienda',
       note: `Hasta ${formatNumber(taxYear.labor.housingInterestUvt)} UVT al año`,
-      amount: labor.housingDeduction,
+      amount: detail.housingInterest,
       colorClass: 'bg-action',
-      origin:
-        imported &&
-        deductions.housingInterestPaid === reportedTotal(state.exogenous.report, 'housing-interest')
-          ? 'exogenous'
-          : 'user',
+      origin: fromReport(deductions.housingInterestPaid, 'housing-interest'),
+      inCap: true,
     },
     {
       id: 'dependent',
@@ -64,6 +70,7 @@ export const DeductionsPage = () => {
       amount: labor.dependent,
       colorClass: 'bg-sun',
       origin: 'calculated',
+      inCap: true,
     },
     {
       id: 'prepaid-health',
@@ -71,10 +78,65 @@ export const DeductionsPage = () => {
       note: 'Hasta 16 UVT al mes',
       amount: labor.prepaidHealth,
       colorClass: 'bg-mint',
-      origin:
-        imported && deductions.prepaidHealthPaid === reportedTotal(state.exogenous.report, 'prepaid-health')
-          ? 'exogenous'
-          : 'user',
+      origin: fromReport(deductions.prepaidHealthPaid, 'prepaid-health'),
+      inCap: true,
+    },
+    {
+      id: 'severance',
+      label: 'Cesantías exentas',
+      note:
+        deductions.severanceReceived > 0
+          ? `Salario promedio de 6 meses: ${formatNumber(Math.round(detail.severanceAverageSalary / taxYear.uvt))} UVT · exentas al ${String(Math.round(detail.severanceExemptShare * 100))} %`
+          : 'Cesantías e intereses que recibiste en el año',
+      amount: detail.severanceExempt,
+      colorClass: 'bg-mint',
+      origin: detail.severanceExempt > 0 ? 'calculated' : null,
+      inCap: true,
+    },
+    {
+      id: 'voluntary',
+      label: 'Aportes voluntarios a pensión y AFC',
+      note: `Hasta el ${String(Math.round(taxYear.benefits.voluntaryContributionsRate * 100))} % de tus ingresos y ${formatNumber(taxYear.benefits.voluntaryContributionsUvt)} UVT al año`,
+      amount: detail.voluntaryContributionsAllowed,
+      colorClass: 'bg-mint',
+      origin: fromReport(state.data.labor.voluntaryContributions, 'voluntary-pension'),
+      inCap: true,
+    },
+    {
+      id: 'gmf',
+      label: 'Gravamen a los movimientos financieros (4 × 1.000)',
+      note: `El ${String(Math.round(taxYear.benefits.gmfRate * 100))} % de lo que te cobraron en el año`,
+      amount: detail.gmf,
+      colorClass: 'bg-mint',
+      origin: userOrigin(detail.gmf),
+      inCap: true,
+    },
+    {
+      id: 'icetex',
+      label: 'Intereses de crédito ICETEX',
+      note: `Hasta ${formatNumber(taxYear.benefits.icetexInterestUvt)} UVT al año`,
+      amount: detail.icetex,
+      colorClass: 'bg-mint',
+      origin: userOrigin(detail.icetex),
+      inCap: true,
+    },
+    {
+      id: 'independent-severance',
+      label: 'Aportes a cesantías como independiente',
+      note: `Hasta ${formatNumber(taxYear.benefits.independentSeveranceUvt)} UVT, sin pasar de 1/12 de tu ingreso gravable`,
+      amount: detail.independentSeverance,
+      colorClass: 'bg-mint',
+      origin: userOrigin(detail.independentSeverance),
+      inCap: true,
+    },
+    {
+      id: 'other-exempt',
+      label: 'Otras rentas exentas de tu trabajo',
+      note: 'Indemnizaciones, maternidad o gastos de entierro',
+      amount: detail.otherLaborExempt,
+      colorClass: 'bg-mint',
+      origin: userOrigin(detail.otherLaborExempt),
+      inCap: true,
     },
     {
       id: 'exempt-25',
@@ -83,11 +145,30 @@ export const DeductionsPage = () => {
       amount: labor.exempt25,
       colorClass: 'bg-ink',
       origin: 'calculated',
+      inCap: true,
+    },
+    {
+      id: 'unlimited-exempt',
+      label: 'Rentas exentas sin el tope del 40 %',
+      note: 'Comunidad Andina, convenios de doble tributación y art. 206 num. 5 a 8',
+      amount: detail.unlimitedExempt,
+      colorClass: 'bg-line-strong',
+      origin: userOrigin(detail.unlimitedExempt),
+      inCap: false,
+    },
+    {
+      id: 'donations',
+      label: 'Donaciones',
+      note: `Restas el ${String(Math.round(taxYear.discounts.donationRate * 100))} % de lo donado de tu impuesto`,
+      amount: result.donationsDiscount,
+      colorClass: 'bg-line-strong',
+      origin: result.donationsDiscount > 0 ? 'box123' : null,
+      inCap: false,
     },
   ];
 
   const capByPercent =
-    Math.round(result.generalNetIncome * taxYear.general.benefitsCapRate) <=
+    Math.round(result.benefitsCapBase * taxYear.general.benefitsCapRate) <=
     uvtToPesos(taxYear.general.benefitsCapUvt, taxYear);
 
   const handleContinue = () => {
@@ -99,7 +180,7 @@ export const DeductionsPage = () => {
     <StepLayout aside={<DeductionsEstimate />} className='gap-6 py-11'>
       <StepHeader
         title='Lo que la ley te deja restar'
-        description={`Deducciones y rentas exentas bajan la base de tu impuesto. Juntas tienen un tope: el 40 % de tu renta líquida, sin pasar de ${formatNumber(taxYear.general.benefitsCapUvt)} UVT.`}
+        description={`Deducciones y rentas exentas bajan la base de tu impuesto. Juntas tienen un tope: el 40 % de tus ingresos menos los no constitutivos, sin pasar de ${formatNumber(taxYear.general.benefitsCapUvt)} UVT.`}
       />
 
       <ul className='flex flex-col rounded-lg border border-line bg-surface px-5'>
@@ -122,7 +203,9 @@ export const DeductionsPage = () => {
                   {row.note}
                 </Text>
               </span>
-              <Chip variant={ORIGIN_CHIPS[row.origin].variant}>{ORIGIN_CHIPS[row.origin].label}</Chip>
+              {row.origin && (
+                <Chip variant={ORIGIN_CHIPS[row.origin].variant}>{ORIGIN_CHIPS[row.origin].label}</Chip>
+              )}
               <Text as='span' variant='figure-m' className='w-32.5 shrink-0 text-right'>
                 {formatCurrency(row.amount)}
               </Text>
@@ -132,10 +215,12 @@ export const DeductionsPage = () => {
       </ul>
 
       <CapMeter
-        segments={rows}
+        segments={rows.filter(row => row.inCap)}
         cap={labor.benefitsCap}
         capDescription={
-          capByPercent ? '40 % de tu renta líquida' : `${formatNumber(taxYear.general.benefitsCapUvt)} UVT`
+          capByPercent
+            ? '40 % de tus ingresos menos los no constitutivos'
+            : `${formatNumber(taxYear.general.benefitsCapUvt)} UVT`
         }
       />
 
@@ -154,7 +239,7 @@ export const DeductionsPage = () => {
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
-          Ver mi resultado
+          Seguir con otros ajustes
         </Button>
       </div>
 

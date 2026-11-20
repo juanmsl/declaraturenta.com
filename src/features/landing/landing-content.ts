@@ -98,6 +98,6 @@ export const LANDING_FAQ: readonly { question: string; answer: string }[] = [
   {
     question: '¿Qué pasa si mi caso es muy particular?',
     answer:
-      'En la ayuda de la plataforma te contamos qué no calculamos todavía. Si tienes ingresos del exterior, pérdidas de años anteriores u otra situación poco común, revisa tu borrador con un contador.',
+      'Calculamos todas las casillas del Formulario 210, también las poco comunes: pérdidas de años anteriores, impuestos pagados en el exterior o sociedades del exterior. Si tu caso es complejo, revisa tu borrador con un contador.',
   },
 ];
