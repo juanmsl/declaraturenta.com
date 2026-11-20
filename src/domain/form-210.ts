@@ -72,7 +72,6 @@ export const SCHEDULE_ROWS: readonly ScheduleRow[] = [
 type BoxSpec = { label?: string; kind: BoxKind; formula?: string; note?: string };
 
 const ENTERED: BoxSpec = { kind: 'entered' };
-const NOT_APPLICABLE: BoxSpec = { kind: 'not-applicable' };
 
 const pct = (rate: number) => `${String(Math.round(rate * 10_000) / 100).replace('.', ',')} %`;
 const num = (value: number) => value.toLocaleString('es-CO');
@@ -108,25 +107,31 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
   62: ENTERED,
   79: ENTERED,
   35: ENTERED,
-  47: { kind: 'not-applicable', note: 'Sin renta líquida' },
-  63: { kind: 'not-applicable', note: 'Sin renta líquida' },
-  80: NOT_APPLICABLE,
-  36: ENTERED,
-  48: NOT_APPLICABLE,
-  64: NOT_APPLICABLE,
-  81: NOT_APPLICABLE,
+  47: { kind: 'calculated', formula: 'Aportes voluntarios que no caben en la renta líquida de 34' },
+  63: { kind: 'calculated', formula: 'Aportes voluntarios que no caben en 34 ni en 46' },
+  80: { kind: 'calculated', formula: 'Aportes voluntarios que no caben en 34, 46 ni 61' },
+  36: {
+    kind: 'calculated',
+    formula: `Cesantías exentas + otras rentas exentas + ${pct(year.labor.exempt25Rate)} (hasta ${num(year.labor.exempt25Uvt)} UVT)`,
+  },
+  48: { kind: 'calculated', formula: 'Rentas exentas sin tope del 40 % de esta columna' },
+  64: { kind: 'calculated', formula: 'Rentas exentas sin tope del 40 % de esta columna' },
+  81: { kind: 'calculated', formula: 'Rentas exentas sin tope del 40 % de esta columna' },
   37: { kind: 'calculated', formula: '= 35 + 36' },
   49: { kind: 'calculated', formula: '= 47 + 48' },
   65: { kind: 'calculated', formula: '= 63 + 64' },
   82: { kind: 'calculated', formula: '= 80 + 81' },
   38: ENTERED,
-  50: NOT_APPLICABLE,
-  66: NOT_APPLICABLE,
-  83: NOT_APPLICABLE,
+  50: { kind: 'calculated', formula: 'Intereses de vivienda cuando no hay rentas de trabajo' },
+  66: { kind: 'calculated', formula: 'Intereses de vivienda cuando no hay rentas de trabajo' },
+  83: { kind: 'calculated', formula: 'Intereses de vivienda cuando no hay rentas de trabajo' },
   39: ENTERED,
-  51: NOT_APPLICABLE,
-  67: NOT_APPLICABLE,
-  84: NOT_APPLICABLE,
+  51: {
+    kind: 'calculated',
+    formula: `Aportes a cesantías como independiente (hasta ${num(year.benefits.independentSeveranceUvt)} UVT y 1/12 de 43); GMF e ICETEX sin rentas de trabajo`,
+  },
+  67: { kind: 'calculated', formula: 'GMF e ICETEX cuando no hay rentas de trabajo' },
+  84: { kind: 'calculated', formula: 'GMF e ICETEX cuando no hay rentas de trabajo' },
   40: { kind: 'calculated', formula: '= 38 + 39' },
   52: { kind: 'calculated', formula: '= 50 + 51' },
   68: { kind: 'calculated', formula: '= 66 + 67' },
@@ -146,7 +151,7 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
   88: { kind: 'calculated', formula: '= 75 + 76 + 77 − 74 − 79' },
   56: ENTERED,
   72: ENTERED,
-  89: NOT_APPLICABLE,
+  89: ENTERED,
   42: { kind: 'calculated', formula: '= 34 − 41' },
   57: { kind: 'calculated', formula: '= 54 − 56' },
   73: { kind: 'calculated', formula: '= 70 − 72' },
@@ -162,7 +167,7 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
   95: { label: 'Compensaciones por exceso de renta presuntiva', kind: 'entered' },
   96: { label: 'Rentas gravables', kind: 'entered' },
   97: { label: 'Renta líquida gravable', kind: 'calculated', formula: '= 93 + 96 − 94 − 95' },
-  98: { label: 'Renta presuntiva', kind: 'entered' },
+  98: { label: 'Renta presuntiva', kind: 'calculated', formula: 'Tarifa del 0 % desde 2021 (art. 188 E.T.)' },
   99: { label: 'Ingresos brutos por pensiones', kind: 'entered' },
   100: { label: 'Ingresos no constitutivos de renta', kind: 'entered' },
   101: { label: 'Renta líquida', kind: 'calculated', formula: '= 99 − 100' },
@@ -178,7 +183,7 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
   107: { label: 'Dividendos 2017 y siguientes, 1.ª subcédula', kind: 'entered' },
   108: { label: 'Dividendos 2017 y siguientes, 2.ª subcédula', kind: 'entered' },
   109: { label: 'Dividendos recibidos del exterior', kind: 'entered' },
-  110: { label: 'Rentas exentas de la casilla 109', kind: 'entered' },
+  110: { label: 'Rentas exentas de la casilla 109 (Comunidad Andina)', kind: 'entered' },
   111: {
     label:
       'Renta líquida gravable total (cédula general o renta presuntiva, pensiones y dividendos · art. 241 E.T.)',
@@ -195,6 +200,7 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
     formula: 'Tabla art. 241 sobre 111, si 97 es mayor que 98',
   },
   117: {
+    note: 'La renta presuntiva es 0 %',
     label: 'Renta presuntiva, pensiones y dividendos',
     kind: 'calculated',
     formula: 'Tabla art. 241 sobre 111, si 98 es mayor que 97',
@@ -219,8 +225,16 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
     kind: 'calculated',
     formula: '= 116 + 117 + 118 + 119 + 120',
   },
-  122: { label: 'Impuestos pagados en el exterior', kind: 'entered' },
-  123: { label: 'Donaciones', kind: 'entered' },
+  122: {
+    label: 'Impuestos pagados en el exterior',
+    kind: 'calculated',
+    formula: 'Hasta el impuesto colombiano sobre esas mismas rentas (art. 254 E.T.)',
+  },
+  123: {
+    label: 'Donaciones',
+    kind: 'calculated',
+    formula: `${pct(year.discounts.donationRate)} de lo donado + otros descuentos, hasta el ${pct(year.discounts.capRate)} de 121 (art. 258 E.T.)`,
+  },
   124: {
     label: 'Dividendos, participaciones y otros',
     kind: 'calculated',
@@ -233,7 +247,11 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
     kind: 'calculated',
     formula: `${pct(year.occasionalGains.rate)} de 115; ${pct(year.occasionalGains.lotteryRate)} para loterías, rifas y apuestas`,
   },
-  128: { label: 'Descuento por impuestos pagados en el exterior por ganancias ocasionales', kind: 'entered' },
+  128: {
+    label: 'Descuento por impuestos pagados en el exterior por ganancias ocasionales',
+    kind: 'calculated',
+    formula: 'Hasta 127, solo con convenio de doble imposición',
+  },
   129: { label: 'Total impuesto a cargo', kind: 'calculated', formula: '= 126 + 127 − 128' },
   130: { label: 'Anticipo de renta liquidado el año anterior', kind: 'entered' },
   131: { label: 'Saldo a favor del año anterior sin solicitud de devolución', kind: 'entered' },
@@ -244,7 +262,11 @@ const boxSpecs = (year: TaxYearConfig): Record<number, BoxSpec> => ({
     formula: '25 %, 50 % o 75 % de 126 (o del promedio de dos años) − 132',
   },
   134: { label: 'Saldo a pagar por impuesto', kind: 'calculated', formula: '= 129 + 133 − 130 − 131 − 132' },
-  135: { label: 'Sanciones', kind: 'entered' },
+  135: {
+    label: 'Sanciones',
+    kind: 'calculated',
+    formula: `Extemporaneidad: ${pct(year.penalties.voluntary.taxRate)} de 129 por mes o fracción (art. 641), reducción del art. 640, mínimo ${num(year.penalties.minimumUvt)} UVT`,
+  },
   136: { label: 'Total saldo a pagar', kind: 'calculated', formula: '= 129 + 133 + 135 − 130 − 131 − 132' },
   137: { label: 'Total saldo a favor', kind: 'highlighted', formula: '= 130 + 131 + 132 − 129 − 133 − 135' },
   138: { label: 'Número de dependientes económicos', kind: 'entered' },
@@ -306,6 +328,7 @@ const matrixLabel = (box: number): string | undefined => {
 /** Values of every box from the computed return. Boxes the engine does not model are 0. */
 const boxValues = (data: DeclarationData, result: DeclarationResult): Record<number, number> => {
   const { labor, fees, limitedBenefits } = result;
+  const { columns } = result.benefits;
   return {
     28: result.electronicInvoiceDeduction,
     29: result.grossAssets,
@@ -315,7 +338,7 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     33: labor.nonTaxableIncome,
     34: labor.netIncome,
     35: labor.voluntaryContributions,
-    36: labor.exempt25,
+    36: columns.labor.otherExempt,
     37: labor.totalExempt,
     38: labor.housingDeduction,
     39: labor.otherDeductions,
@@ -326,28 +349,74 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     44: fees.nonTaxableIncome,
     45: fees.costs,
     46: fees.netIncome,
+    47: columns.fees.voluntaryContributions,
+    48: columns.fees.otherExempt,
+    49: columns.fees.totalExempt,
+    50: columns.fees.housing,
+    51: columns.fees.otherDeductions,
+    52: columns.fees.totalDeductions,
     53: limitedBenefits.fees,
     54: fees.netIncome - limitedBenefits.fees,
     55: fees.loss,
-    57: fees.netIncome - limitedBenefits.fees,
+    56: result.compensations.fees,
+    57: fees.netIncome - limitedBenefits.fees - result.compensations.fees,
     58: result.capital.grossIncome,
     59: result.capital.nonTaxableIncome,
     60: result.capital.costs,
     61: result.capital.netIncome,
+    62: result.ece.capital,
+    63: columns.capital.voluntaryContributions,
+    64: columns.capital.otherExempt,
+    65: columns.capital.totalExempt,
+    66: columns.capital.housing,
+    67: columns.capital.otherDeductions,
+    68: columns.capital.totalDeductions,
     69: limitedBenefits.capital,
-    70: result.capital.netIncome - limitedBenefits.capital,
-    73: result.capital.netIncome - limitedBenefits.capital,
+    70: result.capital.netIncome + result.ece.capital - limitedBenefits.capital,
+    71: Math.max(
+      0,
+      result.capital.nonTaxableIncome +
+        result.capital.costs -
+        result.capital.grossIncome -
+        result.ece.capital,
+    ),
+    72: result.compensations.capital,
+    73:
+      result.capital.netIncome + result.ece.capital - limitedBenefits.capital - result.compensations.capital,
     74: result.nonLabor.grossIncome,
     75: result.nonLabor.returns,
     76: result.nonLabor.nonTaxableIncome,
     77: result.nonLabor.costs,
     78: result.nonLabor.netIncome,
+    79: result.ece.nonLabor,
+    80: columns.nonLabor.voluntaryContributions,
+    81: columns.nonLabor.otherExempt,
+    82: columns.nonLabor.totalExempt,
+    83: columns.nonLabor.housing,
+    84: columns.nonLabor.otherDeductions,
+    85: columns.nonLabor.totalDeductions,
     86: limitedBenefits.nonLabor,
-    87: result.nonLabor.netIncome - limitedBenefits.nonLabor,
-    90: result.nonLabor.netIncome - limitedBenefits.nonLabor,
+    87: result.nonLabor.netIncome + result.ece.nonLabor - limitedBenefits.nonLabor,
+    88: Math.max(
+      0,
+      result.nonLabor.returns +
+        result.nonLabor.nonTaxableIncome +
+        result.nonLabor.costs -
+        result.nonLabor.grossIncome -
+        result.ece.nonLabor,
+    ),
+    89: result.compensations.nonLabor,
+    90:
+      result.nonLabor.netIncome +
+      result.ece.nonLabor -
+      limitedBenefits.nonLabor -
+      result.compensations.nonLabor,
     91: result.generalNetIncome,
     92: result.totalBenefits,
-    93: result.taxableIncome,
+    93: result.ordinaryIncome,
+    94: result.compensations.until2018,
+    95: result.compensations.presumptiveExcess,
+    96: result.taxableAdditions,
     97: result.taxableIncome,
     99: result.pensions.grossIncome,
     100: result.pensions.nonTaxableIncome,
@@ -371,20 +440,25 @@ const boxValues = (data: DeclarationData, result: DeclarationResult): Record<num
     119: result.dividends.until2016Tax,
     120: result.dividends.foreignTax,
     121: result.totalIncomeTax,
+    122: result.foreignTaxDiscount,
+    123: result.donationsDiscount,
     124: result.dividends.discount,
     125: result.taxDiscounts,
     126: result.netIncomeTax,
     127: result.occasionalGainsTax,
+    128: result.occasionalForeignTaxDiscount,
     129: result.taxDue,
     130: data.previousYearAdvance,
     131: data.previousBalanceInFavor,
     132: result.withholdings,
     133: result.advance.amount,
-    134: result.amountToPay,
+    134: Math.max(0, result.balance - result.lateFiling.penalty),
+    135: result.lateFiling.penalty,
     136: result.amountToPay,
     137: result.amountInFavor,
     138: data.deductions.dependents,
     139: result.dependentsAddition,
+    141: result.voluntaryContribution,
   };
 };
 

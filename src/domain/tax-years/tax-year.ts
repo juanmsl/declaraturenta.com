@@ -25,6 +25,9 @@ export type TaxYearConfig = {
   /** UVT of the taxable year, in pesos, and the rule that set it. */
   uvt: number;
   uvtSource: string;
+  /** UVT of the filing year: late filing penalties use it (art. 639 E.T.). */
+  filingYearUvt: number;
+  filingYearUvtSource: string;
   /** Art. 241 E.T. table for the general, pensions and dividends schedules (box 116). */
   incomeTaxBrackets: readonly TaxBracket[];
   /** Art. 241 table in force until 2016, for dividends of 2016 and earlier (box 119). */
@@ -62,6 +65,41 @@ export type TaxYearConfig = {
     prepaidHealthUvt: number;
     exempt25Rate: number;
     exempt25Uvt: number;
+    /**
+     * Exempt share of severance pay and its interest by average monthly salary in UVT
+     * (art. 206 num. 4 E.T.): each entry is [salary up to, exempt share]; above the last, 0.
+     */
+    severanceExemptBrackets: readonly (readonly [number, number])[];
+  };
+  /** Other deductions and exempt income of the general schedule. */
+  benefits: {
+    /** Voluntary AFC, FVP and AVC contributions: share of gross income and cap (arts. 126-1, 126-4). */
+    voluntaryContributionsRate: number;
+    voluntaryContributionsUvt: number;
+    /** Deductible share of the GMF paid (art. 115 E.T.). */
+    gmfRate: number;
+    /** ICETEX loan interest cap (art. 119 E.T.). */
+    icetexInterestUvt: number;
+    /** Severance contributions of independents: cap and share of income (art. 126-1 E.T.). */
+    independentSeveranceUvt: number;
+    independentSeveranceShare: number;
+  };
+  /** Tax discounts (box 123). */
+  discounts: {
+    /** Donations to non-profits of the special regime (art. 257 E.T.). */
+    donationRate: number;
+    /** Arts. 256, 257 and 257-1 together cannot pass this share of the income tax (art. 258 E.T.). */
+    capRate: number;
+  };
+  /** Late filing (arts. 639, 640, 641 and 642 E.T.). */
+  penalties: {
+    minimumUvt: number;
+    /** Per month or fraction of month: [over tax, over gross income, over last year's net assets]. */
+    voluntary: PenaltyRates;
+    summoned: PenaltyRates;
+    /** Art. 640 reductions when the taxpayer liquidates the penalty. */
+    reductionNoRepeatTwoYears: number;
+    reductionNoRepeatOneYear: number;
   };
   pensions: { exemptMonthlyUvt: number };
   dividends: {
@@ -89,6 +127,20 @@ export type TaxYearConfig = {
    */
   filingCalendar: readonly (readonly [number, string])[];
   filingCalendarSource: string;
+};
+
+/** Late filing rates of art. 641 (voluntary) or art. 642 (after a summons). */
+export type PenaltyRates = {
+  taxRate: number;
+  taxCap: number;
+  incomeRate: number;
+  incomeCap: number;
+  assetsRate: number;
+  assetsCap: number;
+  /** Times the balance in favor, as a cap when there is no tax. */
+  balanceMultiple: number;
+  /** Cap in UVT when there is no tax nor balance in favor. */
+  capUvt: number;
 };
 
 export const uvtToPesos = (uvt: number, year: TaxYearConfig): number => Math.round(uvt * year.uvt);

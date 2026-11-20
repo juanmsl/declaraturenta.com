@@ -42,7 +42,7 @@ export type DeclarationState = {
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 11;
+export const STATE_VERSION = 12;
 
 /** A new, empty return for a year (ADR 0035). */
 export const createInitialState = (year: TaxYearConfig = getTaxYear(DEFAULT_TAX_YEAR)): DeclarationState => ({

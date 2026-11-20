@@ -97,7 +97,7 @@ export type DividendResult = {
   secondSubcedule: number;
   /** Box 109. */
   foreign: number;
-  /** Box 110: exempt part of 109 (Andean Community); not modeled, always 0. */
+  /** Box 110: exempt part of 109 (Andean Community, Decisión 578). */
   foreignExempt: number;
   /** Box 118 = 108 × 35 %. */
   secondSubceduleTax: number;
@@ -117,6 +117,8 @@ const amountOf = (concepts: readonly DividendConcept[], ...kinds: DividendKind[]
 export const computeDividends = (
   concepts: readonly DividendConcept[],
   year: TaxYearConfig,
+  /** Dividends from Andean Community countries included in the foreign ones (Decisión 578). */
+  andeanExempt = 0,
 ): DividendResult => {
   const rates = year.dividends;
   const until2016 = amountOf(concepts, 'until-2016-non-taxed', 'until-2016-taxed');
@@ -125,7 +127,7 @@ export const computeDividends = (
   const firstSubcedule = amountOf(concepts, 'first-subcedule');
   const secondSubcedule = amountOf(concepts, 'second-subcedule');
   const foreign = amountOf(concepts, 'foreign');
-  const foreignExempt = 0;
+  const foreignExempt = Math.min(positive(andeanExempt), foreign);
 
   const secondSubceduleTax = roundToThousand(secondSubcedule * rates.secondSubceduleRate);
   const until2016Tax = computeTableTax(until2016Net, year, year.until2016Brackets).tax;

@@ -1,3 +1,5 @@
+import { createEmptyDeclaration } from '@/domain/declaration';
+
 import { STATE_VERSION } from './declaration-state';
 import type { DeclarationState } from './declaration-state';
 
@@ -17,21 +19,23 @@ const withoutShouldFile = (steps: unknown): DeclarationState['completedSteps'] =
  * - 9 → 10: adds the taxable year; every earlier state is AG 2025 (ADR 0034).
  * - 10 → 11: the app starts empty (ADR 0035). A state still showing the fictional sample taxpayer
  *   is dropped; the others lose `isSample`, get `vatResponsible: false` and forget «should-file».
+ * - 11 → 12: adds the new deductions, «Otros ajustes» and the filing data, empty (ADR 0038).
  */
 export const migrateState = (value: unknown): DeclarationState | null => {
   if (!isRecord(value) || !isRecord(value.data)) return null;
   if (value.version === STATE_VERSION) return value as DeclarationState;
+  if (value.version === 11) return toVersion12(value);
   if (typeof value.version !== 'number' || value.version < 7 || value.version > 10) return null;
   if (!isRecord(value.taxpayer) || value.taxpayer.isSample === true) return null;
   const taxpayer = { ...value.taxpayer };
   delete taxpayer.isSample;
   const data = value.data as Partial<DeclarationState['data']>;
   const obligation = (data.obligation ?? {}) as Partial<DeclarationState['data']['obligation']>;
-  return {
+  return toVersion12({
     ...(value as unknown as DeclarationState),
-    version: STATE_VERSION,
+    version: 11,
     taxYear: typeof value.taxYear === 'number' ? value.taxYear : 2025,
-    taxpayer: taxpayer as unknown as DeclarationState['taxpayer'],
+    taxpayer: taxpayer,
     // «¿Debo declarar?» left the flow (ADR 0035).
     completedSteps: withoutShouldFile(value.completedSteps),
     visitedSteps: withoutShouldFile(value.visitedSteps),
@@ -47,6 +51,23 @@ export const migrateState = (value: unknown): DeclarationState | null => {
       dividends: data.dividends ?? { concepts: [] },
       occasionalGains: data.occasionalGains ?? { concepts: [] },
       fees: data.fees ?? { concepts: [], nonTaxableIncome: 0, costs: 0, option: null },
+    },
+  });
+};
+
+/** Version 12 (ADR 0038): new deductions, «Otros ajustes» and filing data start empty. */
+const toVersion12 = (value: Record<string, unknown>): DeclarationState => {
+  const state = value as unknown as DeclarationState;
+  const empty = createEmptyDeclaration();
+  const data = state.data as Partial<DeclarationState['data']>;
+  return {
+    ...state,
+    version: STATE_VERSION,
+    data: {
+      ...state.data,
+      deductions: { ...empty.deductions, ...data.deductions },
+      adjustments: data.adjustments ?? empty.adjustments,
+      filing: data.filing ?? empty.filing,
     },
   };
 };

@@ -62,8 +62,12 @@ const YearDeclaration = ({ children, initialState, year }: DeclarationProviderPr
     return {
       state,
       dispatch,
-      result: computeDeclaration(data, { taxYear }),
-      estimate: computeDeclaration(data, { includeDeductions, taxYear }),
+      result: computeDeclaration(data, { taxYear, filingDeadline: state.taxpayer.filingDeadline }),
+      estimate: computeDeclaration(data, {
+        includeDeductions,
+        taxYear,
+        filingDeadline: state.taxpayer.filingDeadline,
+      }),
       estimateIncludesDeductions: includeDeductions,
     };
   }, [state, dispatch, taxYear]);

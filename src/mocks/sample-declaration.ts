@@ -1,3 +1,4 @@
+import { createEmptyAdjustments } from '@/domain/declaration';
 import type { DeclarationData } from '@/domain/declaration';
 
 /**
@@ -105,6 +106,22 @@ export const sampleDeclaration: DeclarationData = {
     housingInterestPaid: 14_400_000,
     prepaidHealthPaid: 4_800_000,
     dependents: 1,
+    severanceReceived: 0,
+    severanceAverageSalary: null,
+    otherLaborExempt: 0,
+    unlimitedExempt: { amount: 0, column: 'labor' },
+    gmfPaid: 0,
+    icetexInterest: 0,
+    independentSeverance: 0,
+    donations: 0,
+  },
+  adjustments: createEmptyAdjustments(),
+  filing: {
+    date: null,
+    priorLateFiling: 'none',
+    summoned: false,
+    previousNetAssets: 0,
+    voluntaryContribution: { mode: 'amount', value: 0 },
   },
   withholdings: 11_240_000,
   previousYearAdvance: 0,

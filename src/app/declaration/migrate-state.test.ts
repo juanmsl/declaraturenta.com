@@ -39,6 +39,19 @@ describe('migrateState', () => {
     expect(migrated?.data.obligation.deposits).toBe(185_000_000);
   });
 
+  it('adds the new deductions, «Otros ajustes» and filing data to a version 11 state', () => {
+    const data: Record<string, unknown> = { ...structuredClone(sampleDeclaration) };
+    delete data.adjustments;
+    delete data.filing;
+    data.deductions = { housingInterestPaid: 1, prepaidHealthPaid: 2, dependents: 1 };
+    const migrated = migrateState({ ...createInitialState(), version: 11, data });
+    expect(migrated?.version).toBe(STATE_VERSION);
+    expect(migrated?.data.deductions.housingInterestPaid).toBe(1);
+    expect(migrated?.data.deductions.gmfPaid).toBe(0);
+    expect(migrated?.data.adjustments.enabled).toEqual([]);
+    expect(migrated?.data.filing.date).toBeNull();
+  });
+
   it('drops a state that still shows the fictional sample taxpayer', () => {
     expect(migrateState(oldState(10, structuredClone(sampleDeclaration), true))).toBeNull();
   });

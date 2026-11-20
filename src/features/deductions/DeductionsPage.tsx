@@ -170,7 +170,12 @@ export const DeductionsPage = () => {
 
 const DeductionsEstimate = () => {
   const { state, estimate } = useDeclaration();
-  const before = computeDeclaration(effectiveData(state), { includeDeductions: false });
+  const { taxYear } = useTaxYear();
+  const before = computeDeclaration(effectiveData(state), {
+    includeDeductions: false,
+    taxYear,
+    filingDeadline: state.taxpayer.filingDeadline,
+  });
   const toPay = estimate.balance > 0;
 
   let note: string;

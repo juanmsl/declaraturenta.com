@@ -4,8 +4,10 @@ import { evaluateFilingObligation } from './filing-obligation';
 import type { FilingObligation } from './filing-obligation';
 import { computeTableTax } from './income-tax-table';
 import type { TableTax } from './income-tax-table';
-import { computeLaborIncome } from './labor-income';
-import type { LaborIncomeResult } from './labor-income';
+import { computeGeneralBenefits } from './general-benefits';
+import type { GeneralBenefits, GeneralColumn } from './general-benefits';
+import { computeLateFiling } from './late-filing';
+import type { LateFiling, PriorLateFiling } from './late-filing';
 import { computeDividends, computeOccasionalGains, computePensions } from './other-schedules';
 import type {
   DividendConcept,
@@ -16,6 +18,7 @@ import type {
   PensionResult,
 } from './other-schedules';
 import { AG_2025, uvtToPesos } from './tax-years';
+import { roundToThousand } from './uvt';
 import type { TaxYearConfig } from './tax-years';
 
 /** Where a value comes from: the DIAN exogenous report, the user, or our calculation. */
@@ -132,6 +135,25 @@ export type DeclarationData = {
   deductions: {
     housingInterestPaid: number;
     prepaidHealthPaid: number;
+    /** Severance pay and its interest received or deposited in the year (part of box 32). */
+    severanceReceived: number;
+    /** Average monthly salary of the last six months; null uses salaries ÷ 12 (art. 206 num. 4). */
+    severanceAverageSalary: number | null;
+    /** Other exempt labor income within the cap: indemnities, maternity, funeral (box 36). */
+    otherLaborExempt: number;
+    /**
+     * Exempt income without the 40 % cap: Andean Community (Decisión 578), tax treaties and art. 206
+     * num. 5 to 8 (armed forces, judges, public university professors).
+     */
+    unlimitedExempt: { amount: number; column: GeneralColumn };
+    /** GMF (4 × 1.000) paid; 50 % is deductible (art. 115). */
+    gmfPaid: number;
+    /** ICETEX loan interest paid (art. 119). */
+    icetexInterest: number;
+    /** Severance contributions as an independent (art. 126-1). */
+    independentSeverance: number;
+    /** Donations to non-profits of the special regime; 25 % is discounted (art. 257, box 123). */
+    donations: number;
     /**
      * Box 138: number of economic dependents. With one or more, box 39 includes the 10 % deduction
      * (art. 387 E.T.) and box 139 adds 72 UVT per dependent, up to 4 (art. 336 num. 3 E.T.). For
@@ -139,6 +161,10 @@ export type DeclarationData = {
      */
     dependents: number;
   };
+  /** Uncommon boxes («Otros ajustes»); each group counts only when its switch is on. */
+  adjustments: Adjustments;
+  /** Filing date and voluntary contribution (Resultado). */
+  filing: FilingData;
   /** Withholdings of the taxable year (box 132). */
   withholdings: number;
   /** Advance paid last year for this year (box 130). */
@@ -146,6 +172,81 @@ export type DeclarationData = {
   /** Balance in favor from last year not refunded (box 131). */
   previousBalanceInFavor: number;
   refundPreference: 'refund' | 'next-year';
+};
+
+/** Switches of «Otros ajustes» (Figma 15). */
+export type AdjustmentId =
+  | 'losses'
+  | 'presumptive-excess'
+  | 'taxable-additions'
+  | 'ece'
+  | 'foreign-taxes'
+  | 'can-dividends'
+  | 'other-discounts';
+
+export type Adjustments = {
+  enabled: AdjustmentId[];
+  /** Losses of earlier years compensated in each column (56, 72, 89) and from 2018 or before (94). */
+  losses: { fees: number; capital: number; nonLabor: number; until2018: number };
+  /** Box 95: excess of renta presuntiva of earlier years. */
+  presumptiveExcess: number;
+  /** Box 96: omitted assets, nonexistent debts, recovered deductions, unjustified net worth. */
+  taxableAdditions: number;
+  /** Passive income of controlled foreign entities (62 and 79, and hidden boxes 268–269). */
+  ece: { capitalIncome: number; capitalCosts: number; nonLaborIncome: number; nonLaborCosts: number };
+  /** Box 122: income tax paid abroad, and the net foreign income it was paid on. */
+  foreignTax: { paid: number; foreignIncome: number };
+  /** Box 128: tax paid abroad on occasional gains (treaties). */
+  occasionalForeignTax: number;
+  /** Box 110: dividends from Andean Community countries included in 109. */
+  canDividends: number;
+  /** Other discounts of arts. 256 and 257-1 (research, sports scholarships), already computed. */
+  otherDiscounts: number;
+};
+
+export type FilingData = {
+  /** ISO date the person plans to file; null when not given. */
+  date: string | null;
+  priorLateFiling: PriorLateFiling;
+  /** The DIAN sent a summons to file (art. 642). */
+  summoned: boolean;
+  /** Net assets of last year's return: base of the penalty without tax nor income. */
+  previousNetAssets: number;
+  /** Voluntary contribution (art. 244-1, box 141), in pesos or as % of the tax to pay. */
+  voluntaryContribution: { mode: 'amount' | 'percent'; value: number };
+};
+
+/** Labor income (boxes 32–42), as the screens show it. */
+export type LaborIncomeResult = {
+  grossIncome: number;
+  nonTaxableIncome: number;
+  /** Renta líquida (box 34). */
+  netIncome: number;
+  housingInterest: number;
+  dependent: number;
+  prepaidHealth: number;
+  /** Box 38. */
+  housingDeduction: number;
+  /** Box 39. */
+  otherDeductions: number;
+  /** Box 40. */
+  totalDeductions: number;
+  /** Box 35. */
+  voluntaryContributions: number;
+  /** 25 % exempt labor income (part of box 36). */
+  exempt25: number;
+  /** Box 37. */
+  totalExempt: number;
+  /** Every limited benefit of the general schedule before the cap. */
+  benefitsBeforeCap: number;
+  /** Cap: lower of 40 % of the cap base and 1.340 UVT. */
+  benefitsCap: number;
+  /** Limited benefits used (41 + 53 + 69 + 86). */
+  cappedBenefits: number;
+  /** Benefits that could not be used. */
+  benefitsExcess: number;
+  /** Renta líquida ordinaria (box 42). */
+  ordinaryNetIncome: number;
 };
 
 export type FeesIncomeResult = {
@@ -187,6 +288,22 @@ export type DeclarationResult = {
   /** Present when there are fees: tax due with each option. */
   feesComparison: FeesComparison | null;
   limitedBenefits: LimitedBenefits;
+  /** Exempt income and deductions of every column (35–41, 47–53, 63–69, 80–86). */
+  benefits: GeneralBenefits;
+  /** Compensated losses: 56, 72, 89 and 94; and 95 (presumptive excess). */
+  compensations: {
+    fees: number;
+    capital: number;
+    nonLabor: number;
+    until2018: number;
+    presumptiveExcess: number;
+  };
+  /** Boxes 62 and 79: net passive income of controlled foreign entities. */
+  ece: { capital: number; nonLabor: number };
+  /** Box 96. */
+  taxableAdditions: number;
+  /** Renta líquida ordinaria cédula general (box 93). */
+  ordinaryIncome: number;
   capital: CapitalIncomeResult;
   nonLabor: NonLaborIncomeResult;
   pensions: PensionResult;
@@ -223,16 +340,28 @@ export type DeclarationResult = {
   tableTax: TableTax;
   /** Box 121 = 116 + 118 + 119 + 120. */
   totalIncomeTax: number;
-  /** Box 125: only the dividends discount (124) is modeled. */
+  /** Box 122: tax paid abroad, up to the Colombian tax on that income. */
+  foreignTaxDiscount: number;
+  /** Box 123: donations (25 %) and other discounts, up to 30 % of box 121 together (art. 258). */
+  donationsDiscount: number;
+  /** Part of the box 123 discounts left for next year (over the 30 % cap). */
+  donationsExcess: number;
+  /** Box 125 = 122 + 123 + 124. */
   taxDiscounts: number;
   /** Impuesto neto de renta (box 126). */
   netIncomeTax: number;
   /** Box 127. */
   occasionalGainsTax: number;
+  /** Box 128: tax paid abroad on occasional gains, up to box 127. */
+  occasionalForeignTaxDiscount: number;
   /** Impuesto a cargo (box 129). */
   taxDue: number;
   withholdings: number;
   advance: AdvancePayment;
+  /** Box 135: late filing penalty. */
+  lateFiling: LateFiling;
+  /** Box 141: voluntary contribution, paid apart. */
+  voluntaryContribution: number;
   /** Positive: amount to pay. Negative: balance in favor. */
   balance: number;
   amountToPay: number;
@@ -336,6 +465,8 @@ export const computeFeesIncome = (
 };
 
 export type ComputeOptions = {
+  /** Filing deadline (ISO date) for the late filing penalty; null when unknown. */
+  filingDeadline?: string | null;
   /** Include deductions and their exempt-income effect (false before the deductions step). */
   includeDeductions?: boolean;
   /** Taxable year whose UVT, caps and tables apply. The screens always pass the selected year. */
@@ -365,22 +496,41 @@ export const computeDeclaration = (
 const computeWithFeesOption = (
   data: DeclarationData,
   feesOption: FeesOption,
-  { includeDeductions = true, taxYear: year = AG_2025 }: ComputeOptions,
+  { includeDeductions = true, taxYear: year = AG_2025, filingDeadline = null }: ComputeOptions,
   feesComparison: FeesComparison | null,
 ): DeclarationResult => {
+  const positive = (value: number) => Math.max(0, value);
+  const { adjustments } = data;
+  const isOn = (id: AdjustmentId) => adjustments.enabled.includes(id);
+
   const grossAssets = sum(data.assets.map(asset => asset.amount));
   const totalDebts = sum(data.debts.map(debt => debt.amount));
   const fees = computeFeesIncome(data.fees, feesOption, year);
   // With the exempt option, fees and their contributions join labor income (boxes 32 and 33).
   const feesInLabor = feesOption === 'exempt' ? conceptsTotal(data.fees.concepts) : 0;
-  const feesNonTaxableInLabor = feesOption === 'exempt' ? Math.max(0, data.fees.nonTaxableIncome) : 0;
+  const feesNonTaxableInLabor = feesOption === 'exempt' ? positive(data.fees.nonTaxableIncome) : 0;
   const grossLaborIncome = data.labor.salaries + data.labor.otherPayments + feesInLabor;
   const laborNonTaxableIncome = data.labor.nonTaxableIncome + feesNonTaxableInLabor;
   const capital = computeCapitalIncome(data.capital, year);
   const nonLabor = computeNonLaborIncome(data.nonLabor);
   const pensions = computePensions(data.pensions, year);
-  const dividends = computeDividends(data.dividends.concepts, year);
+  const dividends = computeDividends(
+    data.dividends.concepts,
+    year,
+    isOn('can-dividends') ? adjustments.canDividends : 0,
+  );
   const occasionalGains = computeOccasionalGains(data.occasionalGains.concepts, year);
+
+  // Passive income of controlled foreign entities (62, 79); their gross income joins the cap base.
+  const eceOn = isOn('ece');
+  const eceGross = eceOn
+    ? positive(adjustments.ece.capitalIncome) + positive(adjustments.ece.nonLaborIncome)
+    : 0;
+  const ece = {
+    capital: eceOn ? positive(adjustments.ece.capitalIncome - adjustments.ece.capitalCosts) : 0,
+    nonLabor: eceOn ? positive(adjustments.ece.nonLaborIncome - adjustments.ece.nonLaborCosts) : 0,
+  };
+
   const generalGrossIncome = grossLaborIncome + fees.grossIncome + capital.grossIncome + nonLabor.grossIncome;
   const grossIncome =
     generalGrossIncome +
@@ -390,11 +540,13 @@ const computeWithFeesOption = (
     dividends.secondSubcedule +
     dividends.foreign +
     occasionalGains.grossIncome;
-  const laborNetIncome = Math.max(0, grossLaborIncome - laborNonTaxableIncome);
-  const generalNetIncome = laborNetIncome + fees.netIncome + capital.netIncome + nonLabor.netIncome;
-  const benefitsCapBase = Math.max(
-    0,
-    generalGrossIncome -
+  const laborNetIncome = positive(grossLaborIncome - laborNonTaxableIncome);
+  const capitalNetIncome = capital.netIncome + ece.capital;
+  const nonLaborNetIncome = nonLabor.netIncome + ece.nonLabor;
+  const generalNetIncome = laborNetIncome + fees.netIncome + capitalNetIncome + nonLaborNetIncome;
+  const benefitsCapBase = positive(
+    generalGrossIncome +
+      eceGross -
       laborNonTaxableIncome -
       fees.nonTaxableIncome -
       capital.nonTaxableIncome -
@@ -413,51 +565,93 @@ const computeWithFeesOption = (
     data.obligation.vatResponsible,
   );
 
-  const labor = computeLaborIncome(
+  const { deductions } = data;
+  const benefits = computeGeneralBenefits(
     {
-      grossIncome: grossLaborIncome,
-      nonTaxableIncome: laborNonTaxableIncome,
-      voluntaryContributions: data.labor.voluntaryContributions,
-      housingInterestPaid: data.deductions.housingInterestPaid,
-      prepaidHealthPaid: data.deductions.prepaidHealthPaid,
-      hasDependent: data.deductions.dependents > 0,
       includeDeductions,
+      netIncome: {
+        labor: laborNetIncome,
+        fees: fees.netIncome,
+        capital: capitalNetIncome,
+        nonLabor: nonLaborNetIncome,
+      },
+      grossIncome: {
+        labor: grossLaborIncome,
+        fees: fees.grossIncome,
+        capital: capital.grossIncome,
+        nonLabor: nonLabor.grossIncome,
+      },
       capBase: benefitsCapBase,
+      voluntaryContributions: data.labor.voluntaryContributions,
+      housingInterestPaid: deductions.housingInterestPaid,
+      prepaidHealthPaid: deductions.prepaidHealthPaid,
+      dependents: deductions.dependents,
+      severanceReceived: deductions.severanceReceived,
+      severanceAverageSalary: deductions.severanceAverageSalary,
+      salaries: data.labor.salaries,
+      otherLaborExempt: deductions.otherLaborExempt,
+      gmfPaid: deductions.gmfPaid,
+      icetexInterest: deductions.icetexInterest,
+      independentSeverance: deductions.independentSeverance,
+      unlimitedExempt: deductions.unlimitedExempt,
     },
     year,
   );
+  const { columns } = benefits;
+  const labor: LaborIncomeResult = {
+    grossIncome: grossLaborIncome,
+    nonTaxableIncome: laborNonTaxableIncome,
+    netIncome: laborNetIncome,
+    housingInterest: benefits.detail.housingInterest,
+    dependent: benefits.detail.dependent,
+    prepaidHealth: benefits.detail.prepaidHealth,
+    housingDeduction: columns.labor.housing,
+    otherDeductions: columns.labor.otherDeductions,
+    totalDeductions: columns.labor.totalDeductions,
+    voluntaryContributions: columns.labor.voluntaryContributions,
+    exempt25: benefits.detail.exempt25,
+    totalExempt: columns.labor.totalExempt,
+    benefitsBeforeCap: benefits.beforeCap,
+    benefitsCap: benefits.cap,
+    cappedBenefits: benefits.used,
+    benefitsExcess: benefits.excess,
+    ordinaryNetIncome: positive(laborNetIncome - columns.labor.limited),
+  };
 
   const electronicInvoiceDeduction = includeDeductions
     ? Math.min(
-        Math.max(0, data.general.electronicInvoicePurchases),
+        positive(data.general.electronicInvoicePurchases),
         uvtToPesos(year.general.electronicInvoiceCapUvt, year),
       )
     : 0;
-  // Boxes 41, 53, 69 and 86: the capped benefits go first to labor, then fees, capital and
-  // non-labor income, never above each column's net income (DIAN instructions).
-  let remaining = labor.cappedBenefits;
-  const take = (limit: number) => {
-    const taken = Math.min(remaining, Math.max(0, limit));
-    remaining -= taken;
-    return taken;
-  };
   const limitedBenefits: LimitedBenefits = {
-    labor: take(labor.netIncome),
-    fees: take(fees.netIncome),
-    capital: take(capital.netIncome),
-    nonLabor: take(nonLabor.netIncome),
+    labor: columns.labor.limited,
+    fees: columns.fees.limited,
+    capital: columns.capital.limited,
+    nonLabor: columns.nonLabor.limited,
   };
-  const laborOrdinaryIncome = labor.netIncome - limitedBenefits.labor;
-  const feesOrdinaryIncome = fees.netIncome - limitedBenefits.fees;
 
-  // Box 139: outside the 40 % / 1.340 UVT cap, but never above boxes 42 + 57 (labor ordinary income).
+  // Losses of earlier years (56, 72, 89), never over each column's ordinary income (54, 70, 87).
+  const lossesOn = isOn('losses');
+  const feesOrdinaryBefore = positive(fees.netIncome - limitedBenefits.fees);
+  const capitalOrdinaryBefore = positive(capitalNetIncome - limitedBenefits.capital);
+  const nonLaborOrdinaryBefore = positive(nonLaborNetIncome - limitedBenefits.nonLabor);
+  const feesLosses = lossesOn ? Math.min(positive(adjustments.losses.fees), feesOrdinaryBefore) : 0;
+  const capitalLosses = lossesOn ? Math.min(positive(adjustments.losses.capital), capitalOrdinaryBefore) : 0;
+  const nonLaborLosses = lossesOn
+    ? Math.min(positive(adjustments.losses.nonLabor), nonLaborOrdinaryBefore)
+    : 0;
+  const laborOrdinaryIncome = labor.ordinaryNetIncome;
+  const feesOrdinaryIncome = feesOrdinaryBefore - feesLosses;
+  const capitalOrdinaryIncome = capitalOrdinaryBefore - capitalLosses;
+  const nonLaborOrdinaryIncome = nonLaborOrdinaryBefore - nonLaborLosses;
+
+  // Box 139: outside the 40 % / 1.340 UVT cap, but never above boxes 42 + 57.
   const dependentsAddition = includeDeductions
     ? Math.min(
         uvtToPesos(
-          Math.min(
-            Math.max(0, Math.floor(data.deductions.dependents)),
-            year.general.maxAdditionalDependents,
-          ) * year.general.additionalDependentUvt,
+          Math.min(positive(Math.floor(deductions.dependents)), year.general.maxAdditionalDependents) *
+            year.general.additionalDependentUvt,
           year,
         ),
         laborOrdinaryIncome + feesOrdinaryIncome,
@@ -470,15 +664,55 @@ const computeWithFeesOption = (
     limitedBenefits.nonLabor +
     electronicInvoiceDeduction +
     dependentsAddition;
-  const taxableIncome = Math.max(0, generalNetIncome - totalBenefits);
+  // Box 91 = 41 + 42 + 53 + 57 + 69 + 73 + 86 + 90.
+  const generalIncomeAfterLosses = generalNetIncome - feesLosses - capitalLosses - nonLaborLosses;
+  const ordinaryIncome = positive(generalIncomeAfterLosses - totalBenefits);
+  // Box 94 (2018 and before) cannot touch labor income; 95 up to what is left of 93.
+  const until2018 = lossesOn
+    ? Math.min(
+        positive(adjustments.losses.until2018),
+        ordinaryIncome,
+        capitalOrdinaryIncome + nonLaborOrdinaryIncome,
+      )
+    : 0;
+  const presumptiveExcess = isOn('presumptive-excess')
+    ? Math.min(positive(adjustments.presumptiveExcess), ordinaryIncome - until2018)
+    : 0;
+  const taxableAdditions = isOn('taxable-additions') ? positive(adjustments.taxableAdditions) : 0;
+  const taxableIncome = positive(ordinaryIncome + taxableAdditions - until2018 - presumptiveExcess);
+
+  // Renta presuntiva is 0 % since 2021, so 111 always takes box 97.
   const tableBase = taxableIncome + pensions.taxableIncome + dividends.baseForTable;
   const tableTax = computeTableTax(tableBase, year);
   const totalIncomeTax =
     tableTax.tax + dividends.secondSubceduleTax + dividends.until2016Tax + dividends.foreignTax;
-  const taxDiscounts = dividends.discount;
-  const netIncomeTax = Math.max(0, totalIncomeTax - taxDiscounts);
+
+  // Box 122: up to the Colombian tax on the foreign income (its share of box 111).
+  const foreignTaxDiscount = isOn('foreign-taxes')
+    ? Math.min(
+        positive(adjustments.foreignTax.paid),
+        tableBase > 0
+          ? roundToThousand(
+              totalIncomeTax * Math.min(1, positive(adjustments.foreignTax.foreignIncome) / tableBase),
+            )
+          : 0,
+      )
+    : 0;
+  // Box 123: 25 % of donations plus other discounts, together up to 30 % of box 121 (art. 258).
+  const donationsRequested =
+    (includeDeductions ? roundToThousand(positive(deductions.donations) * year.discounts.donationRate) : 0) +
+    (isOn('other-discounts') ? positive(adjustments.otherDiscounts) : 0);
+  const donationsDiscount = Math.min(
+    donationsRequested,
+    roundToThousand(totalIncomeTax * year.discounts.capRate),
+  );
+  const taxDiscounts = Math.min(totalIncomeTax, foreignTaxDiscount + donationsDiscount + dividends.discount);
+  const netIncomeTax = positive(totalIncomeTax - taxDiscounts);
   const occasionalGainsTax = occasionalGains.tax;
-  const taxDue = netIncomeTax + occasionalGainsTax;
+  const occasionalForeignTaxDiscount = isOn('foreign-taxes')
+    ? Math.min(positive(adjustments.occasionalForeignTax), occasionalGainsTax)
+    : 0;
+  const taxDue = netIncomeTax + occasionalGainsTax - occasionalForeignTaxDiscount;
 
   const advance = computeAdvancePayment(
     {
@@ -490,19 +724,49 @@ const computeWithFeesOption = (
     year,
   );
 
-  const balance =
+  const balanceBeforePenalty =
     taxDue + advance.amount - data.previousYearAdvance - data.previousBalanceInFavor - data.withholdings;
+  const lateFiling = computeLateFiling(
+    {
+      deadline: filingDeadline,
+      filingDate: data.filing.date,
+      taxDue,
+      grossIncome,
+      balanceInFavor: positive(-balanceBeforePenalty),
+      previousNetAssets: data.filing.previousNetAssets,
+      summoned: data.filing.summoned,
+      priorLateFiling: data.filing.priorLateFiling,
+    },
+    year,
+  );
+  const balance = balanceBeforePenalty + lateFiling.penalty;
+  const { voluntaryContribution: contribution } = data.filing;
+  const voluntaryContribution =
+    contribution.mode === 'amount'
+      ? roundToThousand(positive(contribution.value))
+      : roundToThousand((positive(balance) * Math.min(100, positive(contribution.value))) / 100);
 
   return {
     obligation,
     grossAssets,
     totalDebts,
-    netAssets: Math.max(0, grossAssets - totalDebts),
+    netAssets: positive(grossAssets - totalDebts),
     grossLaborIncome,
     labor,
     fees,
     feesComparison,
     limitedBenefits,
+    benefits,
+    compensations: {
+      fees: feesLosses,
+      capital: capitalLosses,
+      nonLabor: nonLaborLosses,
+      until2018,
+      presumptiveExcess,
+    },
+    ece,
+    taxableAdditions,
+    ordinaryIncome,
     capital,
     nonLabor,
     pensions,
@@ -510,7 +774,7 @@ const computeWithFeesOption = (
     occasionalGains,
     grossIncome,
     generalGrossIncome,
-    generalNetIncome,
+    generalNetIncome: generalIncomeAfterLosses,
     benefitsCapBase,
     electronicInvoiceDeduction,
     dependentsAddition,
@@ -519,15 +783,21 @@ const computeWithFeesOption = (
     tableBase,
     tableTax,
     totalIncomeTax,
+    foreignTaxDiscount,
+    donationsDiscount,
+    donationsExcess: positive(donationsRequested - donationsDiscount),
     taxDiscounts,
     netIncomeTax,
     occasionalGainsTax,
+    occasionalForeignTaxDiscount,
     taxDue,
     withholdings: data.withholdings,
     advance,
+    lateFiling,
+    voluntaryContribution,
     balance,
-    amountToPay: Math.max(0, balance),
-    amountInFavor: Math.max(0, -balance),
+    amountToPay: positive(balance),
+    amountInFavor: positive(-balance),
   };
 };
 
@@ -551,9 +821,42 @@ export const createEmptyDeclaration = (): DeclarationData => ({
   occasionalGains: { concepts: [] },
   assets: [],
   debts: [],
-  deductions: { housingInterestPaid: 0, prepaidHealthPaid: 0, dependents: 0 },
+  deductions: {
+    housingInterestPaid: 0,
+    prepaidHealthPaid: 0,
+    dependents: 0,
+    severanceReceived: 0,
+    severanceAverageSalary: null,
+    otherLaborExempt: 0,
+    unlimitedExempt: { amount: 0, column: 'labor' },
+    gmfPaid: 0,
+    icetexInterest: 0,
+    independentSeverance: 0,
+    donations: 0,
+  },
+  adjustments: createEmptyAdjustments(),
+  filing: {
+    date: null,
+    priorLateFiling: 'none',
+    summoned: false,
+    previousNetAssets: 0,
+    voluntaryContribution: { mode: 'amount', value: 0 },
+  },
   withholdings: 0,
   previousYearAdvance: 0,
   previousBalanceInFavor: 0,
   refundPreference: 'refund',
+});
+
+/** «Otros ajustes» with every switch off. */
+export const createEmptyAdjustments = (): Adjustments => ({
+  enabled: [],
+  losses: { fees: 0, capital: 0, nonLabor: 0, until2018: 0 },
+  presumptiveExcess: 0,
+  taxableAdditions: 0,
+  ece: { capitalIncome: 0, capitalCosts: 0, nonLaborIncome: 0, nonLaborCosts: 0 },
+  foreignTax: { paid: 0, foreignIncome: 0 },
+  occasionalForeignTax: 0,
+  canDividends: 0,
+  otherDiscounts: 0,
 });

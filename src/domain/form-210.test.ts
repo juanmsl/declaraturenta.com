@@ -62,7 +62,7 @@ describe('buildForm210', () => {
 
   it('finds the boxes fed by a box', () => {
     expect(findDependentBoxes(form, 32).map(box => box.number)).toEqual([34]);
-    expect(findDependentBoxes(form, 34).map(box => box.number)).toEqual([42]);
+    expect(findDependentBoxes(form, 34).map(box => box.number)).toEqual([42, 47, 63]);
   });
 
   it('highlights the balance in favor', () => {
