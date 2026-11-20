@@ -42,6 +42,13 @@ describe('declarationReducer', () => {
     state = declarationReducer(state, { type: 'setNitDigits', digits: '' });
     expect(state.taxpayer.filingDeadline).toBeNull();
   });
+
+  it('resets the open year to the empty state', () => {
+    let state = declarationReducer(createInitialState(), { type: 'setNitDigits', digits: '47' });
+    state = declarationReducer(state, { type: 'completeStep', step: 'income' });
+    const reset = declarationReducer(state, { type: 'reset' });
+    expect(reset).toEqual(createInitialState());
+  });
 });
 
 describe('storage', () => {

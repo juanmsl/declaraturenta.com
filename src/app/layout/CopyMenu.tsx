@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { LuChevronDown, LuDownload, LuUpload } from 'react-icons/lu';
+import { LuChevronDown, LuDownload, LuTrash2, LuUpload } from 'react-icons/lu';
 import { Menu } from 'polpo/components';
 import { useModal } from 'polpo/hooks';
+import { useNavigate } from 'react-router';
 
 import { formatLongDate } from '@/shared/lib/format';
 import { Button, Dialog, Text } from '@/shared/ui';
 
+import { HOME_PATH } from '../flow';
 import { BackupError, downloadBackup, parseBackup } from '../declaration/backup';
 import { useTaxYear } from '../declaration/tax-year-context';
 import type { DeclarationState } from '../declaration/declaration-state';
@@ -21,7 +23,10 @@ const ERRORS = {
   'other-year': 'Esa copia es de otro año gravable.',
 } as const;
 
-/** "Copia" in the top bar: download the declaration as a .json file or open one (ADR 0027). */
+/**
+ * "Copia" in the top bar: download the declaration as a .json file, open one (ADR 0027) or delete
+ * the open year from this browser (ADR 0040).
+ */
 export const CopyMenu = () => {
   const { state, dispatch } = useDeclaration();
   const { containerRef, isOpen, openModal, closeModal } = useModal<HTMLButtonElement>();
@@ -29,6 +34,8 @@ export const CopyMenu = () => {
   const { taxYear } = useTaxYear();
   const [pending, setPending] = useState<Pending | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const navigate = useNavigate();
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -83,6 +90,16 @@ export const CopyMenu = () => {
             inputRef.current?.click();
           }}
         />
+        <Menu.Divider />
+        <Menu.Option
+          icon={LuTrash2}
+          label='Borrar mis datos'
+          className='text-fg-error'
+          onClick={() => {
+            closeModal();
+            setConfirmingReset(true);
+          }}
+        />
       </Menu>
       <input
         ref={inputRef}
@@ -110,6 +127,26 @@ export const CopyMenu = () => {
           Lo que tienes ahora en este navegador se cambia por la copia
           {pending?.createdAt ? ` del ${formatLongDate(pending.createdAt.slice(0, 10))}` : ''}. Si quieres
           conservarlo, descarga primero una copia.
+        </Text>
+      </Dialog>
+
+      <Dialog
+        isOpen={confirmingReset}
+        onClose={() => {
+          setConfirmingReset(false);
+        }}
+        title='¿Borrar tus datos de este navegador?'
+        confirmLabel='Borrar mis datos'
+        cancelLabel='Cancelar'
+        onConfirm={() => {
+          dispatch({ type: 'reset' });
+          setConfirmingReset(false);
+          void navigate(HOME_PATH);
+        }}
+      >
+        <Text variant='body-m' className='text-fg-secondary'>
+          Se borra tu declaración del año gravable {String(taxYear.year)} guardada aquí y vuelves a empezar
+          desde cero. Si quieres conservarla, descarga una copia antes. No se puede deshacer.
         </Text>
       </Dialog>
 
