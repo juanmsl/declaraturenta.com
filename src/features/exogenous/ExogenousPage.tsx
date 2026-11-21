@@ -24,6 +24,7 @@ import { parseExogenousSheet } from '@/domain/exogenous-file';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
+import { PreviousReturnCard } from './PreviousReturnCard';
 import { VatQuestion } from './VatQuestion';
 import { YearMovementsSection } from './YearMovementsSection';
 
@@ -234,6 +235,8 @@ export const ExogenousPage = () => {
           ))}
         </>
       )}
+
+      <PreviousReturnCard />
 
       <VatQuestion />
 
