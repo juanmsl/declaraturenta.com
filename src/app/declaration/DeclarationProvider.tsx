@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { computeDeclaration } from '@/domain/declaration';
 import { getTaxYear } from '@/domain/tax-years';
 
 import { DeclarationContext } from './declaration-context';
-import { declarationReducer, effectiveData } from './declaration-state';
+import { buildContextValue } from './context-value';
+import { declarationReducer } from './declaration-state';
 import type { DeclarationAction, DeclarationState } from './declaration-state';
 import { loadSelectedYear, loadState, saveSelectedYear, saveState } from './storage';
 import { TaxYearContext } from './tax-year-context';
@@ -46,8 +46,6 @@ export const DeclarationProvider = ({ children, initialState }: DeclarationProvi
 
 const YearDeclaration = ({ children, initialState, year }: DeclarationProviderProps & { year: number }) => {
   const [state, rawDispatch] = useReducer(declarationReducer, initialState, init => init ?? loadState(year));
-  const taxYear = getTaxYear(state.taxYear);
-
   const dispatch = useCallback((action: DeclarationAction) => {
     rawDispatch({ ...action, at: new Date().toISOString() });
   }, []);
@@ -56,21 +54,7 @@ const YearDeclaration = ({ children, initialState, year }: DeclarationProviderPr
     saveState(state);
   }, [state]);
 
-  const value = useMemo(() => {
-    const includeDeductions = state.visitedSteps.includes('deductions');
-    const data = effectiveData(state);
-    return {
-      state,
-      dispatch,
-      result: computeDeclaration(data, { taxYear, filingDeadline: state.taxpayer.filingDeadline }),
-      estimate: computeDeclaration(data, {
-        includeDeductions,
-        taxYear,
-        filingDeadline: state.taxpayer.filingDeadline,
-      }),
-      estimateIncludesDeductions: includeDeductions,
-    };
-  }, [state, dispatch, taxYear]);
+  const value = useMemo(() => buildContextValue(state, dispatch), [state, dispatch]);
 
   return <DeclarationContext value={value}>{children}</DeclarationContext>;
 };

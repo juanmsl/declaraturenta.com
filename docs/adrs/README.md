@@ -52,3 +52,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0044](./0044-form-210-box-colors.md)                           | Colors of the boxes in the Formulario 210 screen                     | Accepted |
 | [0045](./0045-flow-order-and-year-movements.md)                 | Patrimonio before Ingresos, and year movements in «Importar exógena» | Accepted |
 | [0046](./0046-scroll-in-the-form-210-panel.md)                  | The scroll stays put when a box panel opens or closes                | Accepted |
+| [0047](./0047-edit-step-sections-in-the-box-panel.md)           | Boxes filled in a step are edited in their panel too                 | Accepted |

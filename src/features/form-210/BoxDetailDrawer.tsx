@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
 
+import { buildContextValue } from '@/app/declaration/context-value';
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { DraftDeclaration } from '@/app/declaration/DraftDeclaration';
+import { AdjustmentsSections } from '@/features/adjustments/AdjustmentsSections';
+import { CapitalNonLaborExtras } from '@/features/income/CapitalNonLaborExtras';
+import { FeesSection } from '@/features/income/FeesSection';
+import { IndependentIncomeQuestion } from '@/features/income/IndependentIncomeQuestion';
+import { ScheduleSection } from '@/features/income/OtherSchedulesSection';
+import { VoluntaryContributionField } from '@/features/result/FilingSection';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import {
   applyBoxConcepts,
@@ -12,7 +19,8 @@ import {
 } from '@/domain/box-concepts';
 import type { BoxConcept, EditableBox } from '@/domain/box-concepts';
 import type { Form210, Form210Box } from '@/domain/form-210';
-import { findDependentBoxes, scheduleColumnOf } from '@/domain/form-210';
+import { buildForm210, findDependentBoxes, scheduleColumnOf } from '@/domain/form-210';
+import type { AdjustmentId } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared/ui';
@@ -20,48 +28,63 @@ import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared
 import { ConceptsEditor } from './ConceptsEditor';
 import { sectionOf } from './sections';
 
-type ScreenLink = { screen: string; path: string; section: string };
+type SectionKey =
+  'fees' | 'capital-non-labor' | 'pensions' | 'dividends' | 'occasional-gains' | 'voluntary' | AdjustmentId;
 
-const income = (section: string, anchor: string): ScreenLink => ({
-  screen: 'Ingresos',
-  path: `/ingresos#${anchor}`,
-  section,
-});
-const adjustments = (section: string): ScreenLink => ({
-  screen: 'Otros ajustes',
-  path: '/otros-ajustes',
-  section,
-});
+/** Boxes edited with a section of a step, shown whole in the panel (ADRs 0031, 0032, 0038, 0047). */
+const SECTION_BOXES: Partial<Record<number, { key: SectionKey; screen: string }>> = {
+  43: { key: 'fees', screen: 'Ingresos' },
+  44: { key: 'fees', screen: 'Ingresos' },
+  45: { key: 'fees', screen: 'Ingresos' },
+  60: { key: 'capital-non-labor', screen: 'Ingresos' },
+  75: { key: 'capital-non-labor', screen: 'Ingresos' },
+  76: { key: 'capital-non-labor', screen: 'Ingresos' },
+  77: { key: 'capital-non-labor', screen: 'Ingresos' },
+  99: { key: 'pensions', screen: 'Ingresos' },
+  100: { key: 'pensions', screen: 'Ingresos' },
+  104: { key: 'dividends', screen: 'Ingresos' },
+  105: { key: 'dividends', screen: 'Ingresos' },
+  107: { key: 'dividends', screen: 'Ingresos' },
+  108: { key: 'dividends', screen: 'Ingresos' },
+  109: { key: 'dividends', screen: 'Ingresos' },
+  112: { key: 'occasional-gains', screen: 'Ingresos' },
+  113: { key: 'occasional-gains', screen: 'Ingresos' },
+  114: { key: 'occasional-gains', screen: 'Ingresos' },
+  56: { key: 'losses', screen: 'Otros ajustes' },
+  72: { key: 'losses', screen: 'Otros ajustes' },
+  89: { key: 'losses', screen: 'Otros ajustes' },
+  94: { key: 'losses', screen: 'Otros ajustes' },
+  95: { key: 'presumptive-excess', screen: 'Otros ajustes' },
+  96: { key: 'taxable-additions', screen: 'Otros ajustes' },
+  62: { key: 'ece', screen: 'Otros ajustes' },
+  79: { key: 'ece', screen: 'Otros ajustes' },
+  110: { key: 'can-dividends', screen: 'Otros ajustes' },
+  141: { key: 'voluntary', screen: 'Resultado' },
+};
 
-/** Boxes filled from a section of another screen (ADRs 0031, 0032 and 0038). */
-const SCREEN_BOXES: Partial<Record<number, ScreenLink>> = {
-  43: income('Honorarios y servicios', 'fees-title'),
-  44: income('Honorarios y servicios', 'fees-title'),
-  45: income('Honorarios y servicios', 'fees-title'),
-  60: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
-  75: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
-  76: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
-  77: income('Rendimientos financieros y otros ingresos', 'other-income-title'),
-  99: income('Recibí una pensión', 'other-schedules-title'),
-  100: income('Recibí una pensión', 'other-schedules-title'),
-  104: income('Recibí dividendos o participaciones', 'other-schedules-title'),
-  105: income('Recibí dividendos o participaciones', 'other-schedules-title'),
-  107: income('Recibí dividendos o participaciones', 'other-schedules-title'),
-  108: income('Recibí dividendos o participaciones', 'other-schedules-title'),
-  109: income('Recibí dividendos o participaciones', 'other-schedules-title'),
-  112: income('Tuve ganancias ocasionales', 'other-schedules-title'),
-  113: income('Tuve ganancias ocasionales', 'other-schedules-title'),
-  114: income('Tuve ganancias ocasionales', 'other-schedules-title'),
-  56: adjustments('Tengo pérdidas fiscales de años anteriores'),
-  72: adjustments('Tengo pérdidas fiscales de años anteriores'),
-  89: adjustments('Tengo pérdidas fiscales de años anteriores'),
-  94: adjustments('Tengo pérdidas fiscales de años anteriores'),
-  95: adjustments('Tuve excesos de renta presuntiva'),
-  96: adjustments('Debo sumar rentas gravables'),
-  62: adjustments('Tengo rentas pasivas de una sociedad del exterior (ECE)'),
-  79: adjustments('Tengo rentas pasivas de una sociedad del exterior (ECE)'),
-  110: adjustments('Recibí dividendos de un país de la Comunidad Andina'),
-  141: { screen: 'Resultado', path: '/resultado', section: '¿Cuándo vas a presentar?' },
+const SectionFields = ({ sectionKey }: { sectionKey: SectionKey }) => {
+  const { state } = useDeclaration();
+  switch (sectionKey) {
+    case 'fees':
+      return (
+        <>
+          <IndependentIncomeQuestion />
+          {state.data.labor.hasIndependentIncome && <FeesSection />}
+        </>
+      );
+    case 'capital-non-labor':
+      return <CapitalNonLaborExtras alwaysOpen />;
+    case 'pensions':
+      return <ScheduleSection schedule='pensions' />;
+    case 'dividends':
+      return <ScheduleSection schedule='dividends' />;
+    case 'occasional-gains':
+      return <ScheduleSection schedule='occasionalGains' />;
+    case 'voluntary':
+      return <VoluntaryContributionField />;
+    default:
+      return <AdjustmentsSections only={[sectionKey]} />;
+  }
 };
 
 type BoxDetailDrawerProps = {
@@ -152,8 +175,8 @@ const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onC
   }
   if (box.number === 39) return <OtherDeductionsDetail form={form} box={box} onClose={onClose} />;
   if (box.number === 36) return <ExemptDetail form={form} box={box} onClose={onClose} />;
-  const link = SCREEN_BOXES[box.number];
-  if (link) return <ScreenDetail form={form} box={box} link={link} onClose={onClose} />;
+  const section = SECTION_BOXES[box.number];
+  if (section) return <SectionDetail box={box} section={section} onClose={onClose} />;
 
   return (
     <>
@@ -168,36 +191,55 @@ const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onC
   );
 };
 
-const ScreenDetail = ({
-  form,
+/**
+ * The whole section of the step that fills the box, on a copy of the return: the total updates as
+ * you type, «Guardar cambios» applies it and «Cerrar» discards it (ADR 0047).
+ */
+const SectionDetail = ({
   box,
-  link,
+  section,
   onClose,
 }: {
-  form: Form210;
   box: Form210Box;
-  link: ScreenLink;
+  section: { key: SectionKey; screen: string };
   onClose: () => void;
 }) => {
-  const navigate = useNavigate();
+  const { taxYear } = useTaxYear();
+  const { state, dispatch } = useDeclaration();
+  const [initial] = useState(state);
+  const [draft, setDraft] = useState(state);
+  const isDirty =
+    JSON.stringify([draft.data, draft.activeSchedules]) !==
+    JSON.stringify([initial.data, initial.activeSchedules]);
+  const draftValue = buildContextValue(draft, () => undefined);
+  const draftForm = buildForm210(draft.data, draftValue.result, taxYear);
+  const draftBox = draftForm.get(box.number) ?? box;
+
+  const save = () => {
+    dispatch({
+      type: 'updateData',
+      update: () => draft.data,
+    });
+    for (const id of new Set([...initial.activeSchedules, ...draft.activeSchedules])) {
+      if (initial.activeSchedules.includes(id) !== draft.activeSchedules.includes(id)) {
+        dispatch({ type: 'toggleSchedule', scheduleId: id });
+      }
+    }
+    onClose();
+  };
+
   return (
     <>
-      <TotalCard form={form} box={box} total={box.value} />
-      <Alert variant='info' title={`Sale de lo que escribiste en ${link.screen}`}>
-        La llenas en «{link.section}». Allí aplicamos también los límites de la ley.
-      </Alert>
-      <div>
-        <Button
-          variant='secondary'
-          onClick={() => {
-            onClose();
-            void navigate(link.path);
-          }}
-        >
-          Ir a {link.screen}
-        </Button>
-      </div>
-      <Footer onClose={onClose} />
+      <TotalCard form={draftForm} box={draftBox} total={draftBox.value} />
+      <Text variant='note' className='text-fg-muted'>
+        Es la misma sección de {section.screen}: lo que guardes aquí también se ve allá.
+      </Text>
+      <DraftDeclaration draft={draft} setDraft={setDraft}>
+        <div className='flex flex-col gap-5'>
+          <SectionFields sectionKey={section.key} />
+        </div>
+      </DraftDeclaration>
+      <Footer onClose={onClose} onSave={save} canSave={isDirty} />
     </>
   );
 };
