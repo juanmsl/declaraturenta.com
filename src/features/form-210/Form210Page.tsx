@@ -45,17 +45,26 @@ export const Form210Page = () => {
   const selected = form.get(selectedParam)?.kind === 'entered' ? selectedParam : null;
   const focusBox = form.has(selectedParam) ? selectedParam : null;
 
+  // Only a link from another screen (e.g. «Ver en el 210») scrolls to its box, once, on arrival.
+  // Opening or closing a box here keeps the scroll where it is (ADR 0046).
+  const [arrivalBox] = useState(focusBox);
   useEffect(() => {
-    if (focusBox === null) return;
-    document.getElementById(`casilla-${String(focusBox)}`)?.scrollIntoView({ block: 'center' });
-  }, [focusBox]);
+    if (arrivalBox === null) return;
+    // Next frame: after ScrollRestoration has taken a new page to the top (ADR 0043).
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(`casilla-${String(arrivalBox)}`)?.scrollIntoView({ block: 'center' });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [arrivalBox]);
 
   const openBox = (box: Form210Box) => {
-    setSearchParams({ casilla: String(box.number) }, { replace: true });
+    setSearchParams({ casilla: String(box.number) }, { replace: true, preventScrollReset: true });
   };
 
   const closeBox = () => {
-    setSearchParams({}, { replace: true });
+    setSearchParams({}, { replace: true, preventScrollReset: true });
   };
 
   const handleDownload = async () => {
