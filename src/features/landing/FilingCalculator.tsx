@@ -7,7 +7,7 @@ import { quickFilingCheck } from '@/domain/filing-obligation';
 import type { QuickFilingAnswers } from '@/domain/filing-obligation';
 import { DEFAULT_TAX_YEAR, getTaxYear, uvtToPesos } from '@/domain/tax-years';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Alert, Button, Icon, MoneyField, Text, ToggleField } from '@/shared/ui';
+import { Alert, Button, Icon, MoneyField, RevealSection, revealItem, Text, ToggleField } from '@/shared/ui';
 
 type YesNoKey = Exclude<keyof QuickFilingAnswers, 'monthlySalary'>;
 
@@ -66,13 +66,13 @@ export const FilingCalculator = () => {
   const answered = answers.monthlySalary > 0 || check.otherReasons > 0;
 
   return (
-    <section
+    <RevealSection
       id='debo-declarar'
       aria-labelledby='calculator-title'
       className='scroll-mt-4 bg-canvas px-5 py-14 lg:px-0 lg:py-24'
     >
       <div className='mx-auto flex max-w-290 flex-col gap-8 lg:flex-row lg:items-start lg:gap-16'>
-        <div className='flex flex-col gap-4 lg:w-120 lg:shrink-0'>
+        <div {...revealItem(0)} className='reveal-item flex flex-col gap-4 lg:w-120 lg:shrink-0'>
           <Text id='calculator-title' variant='title-l' as='h2'>
             ¿Tienes que declarar renta este año?
           </Text>
@@ -96,7 +96,10 @@ export const FilingCalculator = () => {
           </ul>
         </div>
 
-        <div className='flex min-w-0 flex-1 flex-col gap-5 rounded-lg border border-line bg-surface p-5 lg:p-8'>
+        <div
+          {...revealItem(1)}
+          className='reveal-item flex min-w-0 flex-1 flex-col gap-5 rounded-lg border border-line bg-surface p-5 lg:p-8'
+        >
           <MoneyField
             name='monthlySalary'
             label='¿Cuánto recibías al mes por tu trabajo?'
@@ -150,6 +153,6 @@ export const FilingCalculator = () => {
           </Button>
         </div>
       </div>
-    </section>
+    </RevealSection>
   );
 };

@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
-import { LANDING_PATH, PRIVACY_PATH, TERMS_PATH } from '@/app/flow';
+import { PRIVACY_PATH, TERMS_PATH } from '@/app/flow';
 import { Logo, Text } from '@/shared/ui';
+
+import { SectionLink } from './SectionLink';
 
 export const CONTACT_EMAIL = 'juanmsl.pk@gmail.com';
 
@@ -30,15 +32,15 @@ export const SiteFooter = () => (
           </Text>
         </div>
         <Column title='Producto'>
-          <a href={`${LANDING_PATH}#como-funciona`} className={linkClass}>
+          <SectionLink section='como-funciona' className={linkClass}>
             Cómo funciona
-          </a>
-          <a href={`${LANDING_PATH}#que-cubre`} className={linkClass}>
+          </SectionLink>
+          <SectionLink section='que-cubre' className={linkClass}>
             Qué cubre
-          </a>
-          <a href={`${LANDING_PATH}#preguntas`} className={linkClass}>
+          </SectionLink>
+          <SectionLink section='preguntas' className={linkClass}>
             Preguntas frecuentes
-          </a>
+          </SectionLink>
         </Column>
         <Column title='Legal'>
           <Link to={TERMS_PATH} className={linkClass}>
