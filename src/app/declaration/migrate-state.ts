@@ -1,4 +1,5 @@
 import { createEmptyDeclaration } from '@/domain/declaration';
+import { EMPTY_PREVIOUS_RETURN } from '@/domain/previous-return';
 
 import { STATE_VERSION } from './declaration-state';
 import type { DeclarationState } from './declaration-state';
@@ -20,10 +21,12 @@ const withoutShouldFile = (steps: unknown): DeclarationState['completedSteps'] =
  * - 10 → 11: the app starts empty (ADR 0035). A state still showing the fictional sample taxpayer
  *   is dropped; the others lose `isSample`, get `vatResponsible: false` and forget «should-file».
  * - 11 → 12: adds the new deductions, «Otros ajustes» and the filing data, empty (ADR 0038).
+ * - 12 → 13: adds last year's return, not given (ADR 0048).
  */
 export const migrateState = (value: unknown): DeclarationState | null => {
   if (!isRecord(value) || !isRecord(value.data)) return null;
   if (value.version === STATE_VERSION) return value as DeclarationState;
+  if (value.version === 12) return toVersion13(value);
   if (value.version === 11) return toVersion12(value);
   if (typeof value.version !== 'number' || value.version < 7 || value.version > 10) return null;
   if (!isRecord(value.taxpayer) || value.taxpayer.isSample === true) return null;
@@ -60,14 +63,21 @@ const toVersion12 = (value: Record<string, unknown>): DeclarationState => {
   const state = value as unknown as DeclarationState;
   const empty = createEmptyDeclaration();
   const data = state.data as Partial<DeclarationState['data']>;
-  return {
+  return toVersion13({
     ...state,
-    version: STATE_VERSION,
+    version: 12,
     data: {
       ...state.data,
       deductions: { ...empty.deductions, ...data.deductions },
       adjustments: data.adjustments ?? empty.adjustments,
       filing: data.filing ?? empty.filing,
     },
-  };
+  });
 };
+
+/** Version 13 (ADR 0048): last year's return, not given yet. */
+const toVersion13 = (value: object): DeclarationState => ({
+  ...(value as DeclarationState),
+  version: STATE_VERSION,
+  previousReturn: { ...EMPTY_PREVIOUS_RETURN },
+});

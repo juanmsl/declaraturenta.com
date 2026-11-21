@@ -1,7 +1,14 @@
 import { createEmptyDeclaration } from '@/domain/declaration';
 import type { DeclarationData } from '@/domain/declaration';
-import { applyExogenous, createEmptyExogenousReport } from '@/domain/exogenous';
+import { applyExogenous, createEmptyExogenousReport, reportedTotal } from '@/domain/exogenous';
 import type { ExogenousReport } from '@/domain/exogenous';
+import {
+  applyPreviousReturnValues,
+  carriedBalanceInFavor,
+  EMPTY_PREVIOUS_RETURN,
+  isPreviousReturnGiven,
+} from '@/domain/previous-return';
+import type { PreviousReturnRecord, PreviousReturnValues } from '@/domain/previous-return';
 import { DEFAULT_TAX_YEAR, getTaxYear } from '@/domain/tax-years';
 import type { TaxYearConfig } from '@/domain/tax-years';
 import { EMPTY_TAXPAYER } from '@/domain/taxpayer';
@@ -30,6 +37,8 @@ export type DeclarationState = {
     /** Exogenous items the user explicitly confirmed (e.g. housing interest). */
     confirmedItems: string[];
   };
+  /** Last year's Formulario 210, read from its PDF or typed (ADR 0048). */
+  previousReturn: PreviousReturnRecord;
   /** "Otras cédulas" the user turned on: pensions, dividends, occasional-gains (ADR 0031). */
   activeSchedules: string[];
   /** The user closed the "¿Primera vez aquí?" card in Inicio (ADR 0028). */
@@ -42,7 +51,7 @@ export type DeclarationState = {
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 12;
+export const STATE_VERSION = 13;
 
 /** A new, empty return for a year (ADR 0035). */
 export const createInitialState = (year: TaxYearConfig = getTaxYear(DEFAULT_TAX_YEAR)): DeclarationState => ({
@@ -53,6 +62,7 @@ export const createInitialState = (year: TaxYearConfig = getTaxYear(DEFAULT_TAX_
   completedSteps: [],
   visitedSteps: [],
   exogenous: { fileName: null, confirmedItems: [], report: createEmptyExogenousReport() },
+  previousReturn: { ...EMPTY_PREVIOUS_RETURN },
   activeSchedules: [],
   helpIntroDismissed: false,
   savedAt: null,
@@ -64,6 +74,9 @@ export type DeclarationAction =
   | { type: 'updateData'; update: (data: DeclarationData) => DeclarationData }
   | { type: 'importExogenous'; report: ExogenousReport }
   | { type: 'confirmExogenousItem'; itemId: string }
+  | { type: 'importPreviousReturn'; fileName: string; values: PreviousReturnValues }
+  | { type: 'updatePreviousReturn'; patch: Partial<PreviousReturnRecord> }
+  | { type: 'clearPreviousReturn' }
   | { type: 'setNitDigits'; digits: string }
   | { type: 'toggleSchedule'; scheduleId: string }
   | { type: 'dismissHelpIntro' }
@@ -88,7 +101,11 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
     case 'importExogenous': {
       // The report fills its values and keeps what the user entered by hand.
       const year = getTaxYear(state.taxYear);
-      const data = applyExogenous(state.data, action.report, year);
+      const applied = applyExogenous(state.data, action.report, year);
+      // Last year's return, when given, decides box 131 over the report (ADR 0048).
+      const data = isPreviousReturnGiven(state.previousReturn)
+        ? { ...applied, previousBalanceInFavor: carriedBalanceInFavor(state.previousReturn) }
+        : applied;
       const withData = [
         data.pensions.concepts.length > 0 ? 'pensions' : null,
         data.dividends.concepts.length > 0 ? 'dividends' : null,
@@ -103,6 +120,48 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
         savedAt: action.at,
       };
     }
+    case 'importPreviousReturn': {
+      const previousReturn: PreviousReturnRecord = {
+        fileName: action.fileName,
+        manual: false,
+        read: action.values,
+        balanceInFavor: action.values.balanceInFavor,
+        refundRequested: action.values.balanceInFavor > 0 ? null : false,
+      };
+      return {
+        ...state,
+        previousReturn,
+        data: {
+          ...applyPreviousReturnValues(state.data, action.values),
+          previousBalanceInFavor: carriedBalanceInFavor(previousReturn),
+        },
+        savedAt: action.at,
+      };
+    }
+    case 'updatePreviousReturn': {
+      const previousReturn = { ...state.previousReturn, ...action.patch };
+      return {
+        ...state,
+        previousReturn,
+        data: isPreviousReturnGiven(previousReturn)
+          ? { ...state.data, previousBalanceInFavor: carriedBalanceInFavor(previousReturn) }
+          : state.data,
+        savedAt: action.at,
+      };
+    }
+    case 'clearPreviousReturn':
+      return {
+        ...state,
+        previousReturn: { ...EMPTY_PREVIOUS_RETURN },
+        data: {
+          ...state.data,
+          general: { ...state.data.general, previousYearNetTax: 0 },
+          previousYearAdvance: 0,
+          filing: { ...state.data.filing, previousNetAssets: 0 },
+          previousBalanceInFavor: reportedTotal(state.exogenous.report, 'previous-balance'),
+        },
+        savedAt: action.at,
+      };
     case 'confirmExogenousItem':
       return {
         ...state,
