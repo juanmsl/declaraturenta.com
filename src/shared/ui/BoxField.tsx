@@ -18,19 +18,32 @@ type BoxFieldProps = {
   isCount?: boolean;
 };
 
-const FIELD = {
-  entered: 'border border-line-strong bg-surface',
-  calculated: 'bg-rail',
-  'not-applicable': 'bg-subtle',
-  highlighted: 'border border-line-success bg-mint-soft',
-} as const;
+/** Box with the total amount to pay; the other final result (137) is the balance in favor. */
+const AMOUNT_TO_PAY_BOX = 136;
 
-const NUMBER = {
+/** Figma "Casilla 210" variants. The final result is mint in favor and coral to pay (ADR 0044). */
+type Tone = 'entered' | 'calculated' | 'not-applicable' | 'in-favor' | 'to-pay';
+
+const toneOf = (box: Form210Box): Tone => {
+  if (box.kind !== 'highlighted') return box.kind;
+  return box.number === AMOUNT_TO_PAY_BOX ? 'to-pay' : 'in-favor';
+};
+
+const FIELD: Record<Tone, string> = {
+  entered: 'border border-line-strong bg-surface',
+  calculated: 'border border-line-action bg-rail',
+  'not-applicable': 'bg-subtle',
+  'in-favor': 'border border-line-success bg-mint-soft',
+  'to-pay': 'border border-line-error bg-coral-soft',
+};
+
+const NUMBER: Record<Tone, string> = {
   entered: 'bg-action-soft text-fg-action',
   calculated: 'bg-action text-fg-on-action',
   'not-applicable': 'border border-line bg-subtle text-fg-muted',
-  highlighted: 'bg-mint text-fg',
-} as const;
+  'in-favor': 'bg-mint text-fg',
+  'to-pay': 'bg-coral text-fg',
+};
 
 /** Figma "Casilla 210": a box of the form with its number, value and formula or note. */
 export const BoxField = ({
@@ -41,6 +54,7 @@ export const BoxField = ({
   isCount = false,
 }: BoxFieldProps) => {
   const isInteractive = box.kind === 'entered' && onOpen !== undefined;
+  const tone = toneOf(box);
   const value = isCount ? formatNumber(box.value) : formatCurrency(box.value);
 
   const content = (
@@ -50,7 +64,7 @@ export const BoxField = ({
         variant='caption'
         className={cn(
           'flex h-7.5 shrink-0 items-center rounded-sm px-2 font-bold',
-          isSelected ? 'bg-action text-fg-on-action' : NUMBER[box.kind],
+          isSelected ? 'bg-action text-fg-on-action' : NUMBER[tone],
         )}
       >
         {box.number}
@@ -73,7 +87,7 @@ export const BoxField = ({
 
   const fieldClassName = cn(
     'flex h-11 w-full items-center gap-2.5 rounded-md pr-3 pl-1.5',
-    FIELD[box.kind],
+    FIELD[tone],
     isSelected && 'border-2 border-line-action pr-[calc(0.75rem-1px)] pl-[calc(0.375rem-1px)]',
   );
 

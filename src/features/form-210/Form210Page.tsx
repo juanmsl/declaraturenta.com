@@ -26,9 +26,10 @@ const FILING_COUNT_OPTIONS: readonly { value: FilingCount; label: string }[] = [
 
 const LEGEND = [
   { label: 'Ingresada · abre el detalle', className: 'border border-line-strong bg-surface' },
-  { label: 'Calculada · muestra su fórmula', className: 'bg-rail' },
+  { label: 'Calculada · muestra su fórmula', className: 'border border-line-action bg-rail' },
   { label: 'No aplica en tu caso', className: 'bg-subtle' },
-  { label: 'Resultado final', className: 'border border-line-success bg-mint-soft' },
+  { label: 'Saldo a favor', className: 'border border-line-success bg-mint-soft' },
+  { label: 'Saldo a pagar', className: 'border border-line-error bg-coral-soft' },
 ];
 
 /** Screen 09 · Formulario 210 (Figma node 18:1572) with the box detail of 09b (19:2267). */
