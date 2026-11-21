@@ -1,5 +1,10 @@
 import { createEmptyDeclaration } from '@/domain/declaration';
-import { EMPTY_PREVIOUS_RETURN } from '@/domain/previous-return';
+import {
+  carriedBalanceInFavor,
+  EMPTY_PREVIOUS_RETURN,
+  isPreviousReturnGiven,
+} from '@/domain/previous-return';
+import type { PreviousReturnRecord } from '@/domain/previous-return';
 
 import { STATE_VERSION } from './declaration-state';
 import type { DeclarationState } from './declaration-state';
@@ -26,6 +31,7 @@ const withoutShouldFile = (steps: unknown): DeclarationState['completedSteps'] =
 export const migrateState = (value: unknown): DeclarationState | null => {
   if (!isRecord(value) || !isRecord(value.data)) return null;
   if (value.version === STATE_VERSION) return value as DeclarationState;
+  if (value.version === 13) return toVersion14(value);
   if (value.version === 12) return toVersion13(value);
   if (value.version === 11) return toVersion12(value);
   if (typeof value.version !== 'number' || value.version < 7 || value.version > 10) return null;
@@ -76,8 +82,27 @@ const toVersion12 = (value: Record<string, unknown>): DeclarationState => {
 };
 
 /** Version 13 (ADR 0048): last year's return, not given yet. */
-const toVersion13 = (value: object): DeclarationState => ({
-  ...(value as DeclarationState),
-  version: STATE_VERSION,
-  previousReturn: { ...EMPTY_PREVIOUS_RETURN },
-});
+const toVersion13 = (value: object): DeclarationState =>
+  toVersion14({ ...value, version: 13, previousReturn: { ...EMPTY_PREVIOUS_RETURN } });
+
+/**
+ * Version 14 (ADR 0050): the refund question is a switch that starts as «No», so an unanswered
+ * question (null) becomes «No» and last year's balance in favor goes to box 131.
+ */
+const toVersion14 = (value: object): DeclarationState => {
+  const state = value as Omit<DeclarationState, 'previousReturn'> & {
+    previousReturn: Omit<PreviousReturnRecord, 'refundRequested'> & { refundRequested: boolean | null };
+  };
+  const previousReturn: PreviousReturnRecord = {
+    ...state.previousReturn,
+    refundRequested: state.previousReturn.refundRequested ?? false,
+  };
+  return {
+    ...state,
+    version: STATE_VERSION,
+    previousReturn,
+    data: isPreviousReturnGiven(previousReturn)
+      ? { ...state.data, previousBalanceInFavor: carriedBalanceInFavor(previousReturn) }
+      : state.data,
+  };
+};

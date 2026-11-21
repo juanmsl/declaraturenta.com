@@ -107,8 +107,8 @@ export type PreviousReturnRecord = {
   read: PreviousReturnValues | null;
   /** Box 137 of last year. */
   balanceInFavor: number;
-  /** Whether that balance was asked back (refund or compensation); null until answered. */
-  refundRequested: boolean | null;
+  /** Whether that balance was asked back (refund or compensation). Starts as «No» (ADR 0050). */
+  refundRequested: boolean;
 };
 
 export const EMPTY_PREVIOUS_RETURN: PreviousReturnRecord = {
@@ -116,7 +116,7 @@ export const EMPTY_PREVIOUS_RETURN: PreviousReturnRecord = {
   manual: false,
   read: null,
   balanceInFavor: 0,
-  refundRequested: null,
+  refundRequested: false,
 };
 
 export const isPreviousReturnGiven = (record: PreviousReturnRecord): boolean =>
@@ -124,7 +124,7 @@ export const isPreviousReturnGiven = (record: PreviousReturnRecord): boolean =>
 
 /** This year's box 131: last year's balance in favor, only when it was not asked back. */
 export const carriedBalanceInFavor = (record: PreviousReturnRecord): number =>
-  record.refundRequested === false ? record.balanceInFavor : 0;
+  record.refundRequested ? 0 : record.balanceInFavor;
 
 /**
  * Takes last year's values into this return: net tax for the advance (and it is no longer the

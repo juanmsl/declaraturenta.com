@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { LuPencil, LuTrash2 } from 'react-icons/lu';
+import { LuCalendar, LuLandmark, LuPencil, LuScale, LuTrash2, LuWallet } from 'react-icons/lu';
+import { Switch } from 'polpo/components';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { isPreviousReturnGiven, PreviousReturnError } from '@/domain/previous-return';
 import type { PreviousReturnValues } from '@/domain/previous-return';
-import { formatCurrency } from '@/shared/lib/format';
-import { Button, FileDropzone, MoneyField, OptionCard, Text } from '@/shared/ui';
+import { AmountList, AmountRow, Button, FileDropzone, Text } from '@/shared/ui';
 
 import { readPreviousReturn } from './read-previous-return';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const FROM_RETURN = { variant: 'exogenous', label: 'Desde tu declaración' } as const;
+const FROM_RETURN = 'Desde tu declaración';
 
 /**
  * «Tu declaración del año pasado (opcional)» in «Importar exógena» (ADR 0048): reads last year's
@@ -101,75 +101,79 @@ export const PreviousReturnCard = () => {
       )}
 
       {isPreviousReturnGiven(record) && (
-        <div className='flex flex-col gap-5 border-l-2 border-line pl-5'>
-          <MoneyField
-            name='previousNetTax'
-            label='Impuesto neto de renta (casilla 126)'
-            value={data.general.previousYearNetTax}
-            onChange={previousYearNetTax => {
-              updateData(current => ({ ...current, general: { ...current.general, previousYearNetTax } }));
-            }}
-            origin={fromReturn('netTax', data.general.previousYearNetTax)}
-            hint='Con él calculamos el anticipo de este año, con el promedio de los dos últimos años.'
-          />
-          <MoneyField
-            name='previousAdvance'
-            label='Anticipo renta para el año gravable siguiente (casilla 133)'
-            value={data.previousYearAdvance}
-            onChange={previousYearAdvance => {
-              updateData(current => ({ ...current, previousYearAdvance }));
-            }}
-            origin={fromReturn('advance', data.previousYearAdvance)}
-            hint={`Es el anticipo que ya liquidaste para ${String(taxYear.year)}: va en tu casilla 130 y se descuenta.`}
-          />
-          <MoneyField
-            name='previousBalanceInFavor'
-            label='Total saldo a favor (casilla 137)'
-            value={record.balanceInFavor}
-            onChange={balanceInFavor => {
-              dispatch({ type: 'updatePreviousReturn', patch: { balanceInFavor } });
-            }}
-            origin={fromReturn('balanceInFavor', record.balanceInFavor)}
-          />
-          {record.balanceInFavor > 0 && (
-            <div className='flex flex-col gap-3'>
-              <Text id='refund-question' variant='body-m-strong'>
-                ¿Pediste que la DIAN te devolviera o compensara ese saldo a favor?
-              </Text>
-              <div role='radiogroup' aria-labelledby='refund-question' className='flex items-start gap-3'>
-                <OptionCard
+        <>
+          <AmountList>
+            <AmountRow
+              icon={LuLandmark}
+              label='Total patrimonio líquido (casilla 31)'
+              detail='Solo lo usamos si presentas tarde y no tienes ingresos ni impuesto'
+              name='previousNetAssets'
+              value={data.filing.previousNetAssets}
+              onChange={previousNetAssets => {
+                updateData(current => ({ ...current, filing: { ...current.filing, previousNetAssets } }));
+              }}
+              origin={fromReturn('netAssets', data.filing.previousNetAssets)}
+            />
+            <AmountRow
+              icon={LuScale}
+              label='Impuesto neto de renta (casilla 126)'
+              detail='Con él calculamos el anticipo de este año, con el promedio de los dos últimos años'
+              name='previousNetTax'
+              value={data.general.previousYearNetTax}
+              onChange={previousYearNetTax => {
+                updateData(current => ({ ...current, general: { ...current.general, previousYearNetTax } }));
+              }}
+              origin={fromReturn('netTax', data.general.previousYearNetTax)}
+            />
+            <AmountRow
+              icon={LuCalendar}
+              label='Anticipo renta para el año gravable siguiente (casilla 133)'
+              detail={`Es el anticipo que ya liquidaste para ${String(taxYear.year)}: va en tu casilla 130 y se descuenta`}
+              name='previousAdvance'
+              value={data.previousYearAdvance}
+              onChange={previousYearAdvance => {
+                updateData(current => ({ ...current, previousYearAdvance }));
+              }}
+              origin={fromReturn('advance', data.previousYearAdvance)}
+            />
+            <AmountRow
+              icon={LuWallet}
+              label='Total saldo a favor (casilla 137)'
+              detail={
+                record.refundRequested
+                  ? 'Ya lo usaste, así que no se lleva a tu casilla 131'
+                  : 'Va en tu casilla 131 si no pediste que te lo devolvieran o compensaran'
+              }
+              name='previousBalanceInFavor'
+              value={record.balanceInFavor}
+              onChange={balanceInFavor => {
+                dispatch({ type: 'updatePreviousReturn', patch: { balanceInFavor } });
+              }}
+              origin={fromReturn('balanceInFavor', record.balanceInFavor)}
+            >
+              <div
+                role='group'
+                aria-labelledby='refund-question'
+                className='refund-switch flex flex-col items-start gap-1.5 pt-1.5'
+              >
+                <Text id='refund-question' variant='caption' className='text-fg'>
+                  ¿Pediste que la DIAN te lo devolviera o compensara?
+                </Text>
+                <Switch
                   name='refundRequested'
-                  value='no'
-                  selectedValue={record.refundRequested === null ? '' : record.refundRequested ? 'yes' : 'no'}
-                  onSelect={() => {
-                    dispatch({ type: 'updatePreviousReturn', patch: { refundRequested: false } });
+                  value={record.refundRequested}
+                  setValue={refundRequested => {
+                    dispatch({ type: 'updatePreviousReturn', patch: { refundRequested } });
                   }}
-                  title='No'
-                  description={`Va en tu casilla 131: ${formatCurrency(record.balanceInFavor)} que se descuentan.`}
-                />
-                <OptionCard
-                  name='refundRequested'
-                  value='yes'
-                  selectedValue={record.refundRequested === null ? '' : record.refundRequested ? 'yes' : 'no'}
-                  onSelect={() => {
-                    dispatch({ type: 'updatePreviousReturn', patch: { refundRequested: true } });
-                  }}
-                  title='Sí'
-                  description='Ya lo usaste, así que no se lleva a este año.'
+                  leftLabel='No'
+                  rightLabel='Sí'
+                  size='small'
+                  width='large'
+                  color='primary'
                 />
               </div>
-            </div>
-          )}
-          <MoneyField
-            name='previousNetAssets'
-            label='Total patrimonio líquido (casilla 31)'
-            value={data.filing.previousNetAssets}
-            onChange={previousNetAssets => {
-              updateData(current => ({ ...current, filing: { ...current.filing, previousNetAssets } }));
-            }}
-            origin={fromReturn('netAssets', data.filing.previousNetAssets)}
-            hint='Solo lo usamos si presentas tarde y no tienes ingresos ni impuesto.'
-          />
+            </AmountRow>
+          </AmountList>
           <div>
             <Button
               variant='ghost'
@@ -182,7 +186,7 @@ export const PreviousReturnCard = () => {
               Quitar la declaración del año pasado
             </Button>
           </div>
-        </div>
+        </>
       )}
     </section>
   );

@@ -6,7 +6,7 @@ import { useTaxYear } from '@/app/declaration/tax-year-context';
 import type { DeclarationData } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/tax-years';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Chip, Icon, InlineMoneyField, Text } from '@/shared/ui';
+import { AmountList, AmountRow, Text } from '@/shared/ui';
 
 const EXOGENOUS_LABEL = 'Desde exógena';
 
@@ -71,35 +71,26 @@ export const YearMovementsSection = () => {
           UVT), declaras. Los tomamos de tu exógena; si alguno no cuadra, corrige el monto.
         </Text>
       </div>
-      <ul className='flex flex-col rounded-lg border border-line bg-surface px-5'>
+      <AmountList>
         {rows.map(row => {
           const value = obligation[row.key];
           const fromReport = value > 0 && value === state.exogenous.report.thresholds[REPORT_KEYS[row.key]];
           return (
-            <li
+            <AmountRow
               key={row.key}
-              className='flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0'
-            >
-              <Icon icon={row.icon} size={20} className='text-fg-secondary' />
-              <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-                <Text variant='body-m-strong'>{row.label}</Text>
-                <Text variant='note' className='text-fg-muted'>
-                  {row.detail}
-                </Text>
-              </div>
-              {fromReport && <Chip variant='exogenous'>{EXOGENOUS_LABEL}</Chip>}
-              <InlineMoneyField
-                name={row.key}
-                label={row.label}
-                value={value}
-                onChange={next => {
-                  update({ [row.key]: next });
-                }}
-              />
-            </li>
+              icon={row.icon}
+              label={row.label}
+              detail={row.detail}
+              name={row.key}
+              value={value}
+              onChange={next => {
+                update({ [row.key]: next });
+              }}
+              origin={fromReport ? EXOGENOUS_LABEL : undefined}
+            />
           );
         })}
-      </ul>
+      </AmountList>
     </section>
   );
 };
