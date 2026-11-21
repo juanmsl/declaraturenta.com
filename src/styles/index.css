@@ -8,6 +8,7 @@
 @import './polpo-overrides.css';
 @import '@fontsource-variable/bricolage-grotesque/standard.css';
 @import '@fontsource-variable/figtree/index.css';
+@import './motion.css';
 
 @theme {
   /* ------------------------------------------------------------------
@@ -171,6 +172,15 @@
 @layer base {
   :root {
     color-scheme: light;
+  }
+
+  /*
+   * Polpo turns on smooth scrolling for the whole page, which also animated the jump to the top
+   * when the route changes. Route scrolls are instant; the landing section links scroll smoothly
+   * on their own (ADR 0043).
+   */
+  html {
+    scroll-behavior: auto;
   }
 
   /* Polpo's base styles color the scrollbar with the primary scale; keep it neutral. */

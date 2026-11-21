@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router';
 import { HOME_PATH, LANDING_PATH } from '@/app/flow';
 import { Button, Logo } from '@/shared/ui';
 
+import { SectionLink } from './SectionLink';
+
 const LINKS = [
-  { href: '#debo-declarar', label: '¿Debo declarar?' },
-  { href: '#como-funciona', label: 'Cómo funciona' },
-  { href: '#que-cubre', label: 'Qué cubre' },
-  { href: '#preguntas', label: 'Preguntas frecuentes' },
+  { section: 'debo-declarar', label: '¿Debo declarar?' },
+  { section: 'como-funciona', label: 'Cómo funciona' },
+  { section: 'que-cubre', label: 'Qué cubre' },
+  { section: 'preguntas', label: 'Preguntas frecuentes' },
 ];
 
 /** Landing and legal pages header (Figma 18 «Navegación»). Section links go to the landing. */
@@ -26,13 +28,13 @@ export const SiteHeader = () => {
         <div className='flex-1' />
         <nav aria-label='Secciones' className='hidden items-center gap-8 lg:flex'>
           {LINKS.map(link => (
-            <a
-              key={link.href}
-              href={`${LANDING_PATH}${link.href}`}
+            <SectionLink
+              key={link.section}
+              section={link.section}
               className='rounded-sm type-body-m-strong text-fg hover:text-fg-action focus-visible:ring-2 focus-visible:ring-line-action focus-visible:outline-none'
             >
               {link.label}
-            </a>
+            </SectionLink>
           ))}
         </nav>
         <Button onClick={() => void navigate(HOME_PATH)}>

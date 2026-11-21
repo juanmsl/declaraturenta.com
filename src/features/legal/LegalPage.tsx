@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import { PUBLIC_PAGES } from '@/app/seo/pages';
 import { usePageMeta } from '@/app/seo/use-page-meta';
 import { SiteFooter } from '@/features/landing/SiteFooter';
@@ -20,10 +18,6 @@ export const LegalPage = ({ page }: { page: keyof typeof PAGES }) => {
   const { title, sections } = PAGES[page];
 
   usePageMeta(PUBLIC_PAGES[page]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [title]);
 
   return (
     <div className='min-h-dvh bg-surface'>

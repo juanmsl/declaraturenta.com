@@ -7,6 +7,7 @@ import { useAppPageMeta } from '../seo/use-page-meta';
 import { TermsDialog } from '../terms/TermsDialog';
 
 import { FLOW_STEPS } from '../flow';
+import { PageTransition } from './PageTransition';
 import { SideRail } from './SideRail';
 import { TopBar } from './TopBar';
 import { useFlowProgress } from './useFlowProgress';
@@ -33,7 +34,9 @@ export const AppLayout = () => {
         <div className='flex min-w-0 flex-1 flex-col'>
           <TopBar location={location} steps={steps} />
           <main className='flex flex-1 flex-col'>
-            <Outlet />
+            <PageTransition steps className='flex flex-1 flex-col'>
+              <Outlet />
+            </PageTransition>
           </main>
         </div>
       </div>

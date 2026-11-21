@@ -1,0 +1,88 @@
+/*
+ * Motion (ADR 0043): page transitions and the entrance of the landing sections. Only opacity and
+ * transform animate. With "reduce motion" everything appears without movement.
+ */
+
+@theme {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-page: 220ms;
+  --duration-step: 260ms;
+  --duration-reveal: 560ms;
+  --reveal-stagger: 70ms;
+}
+
+@keyframes page-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes page-slide-forward {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes page-slide-back {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Pages: landing, Inicio, legal pages, Formulario 210… */
+.page-enter-fade {
+  animation: page-fade-up var(--duration-page) var(--ease-out-soft) both;
+}
+
+/* Steps of the flow: towards the side the person moves. */
+.page-enter-forward {
+  animation: page-slide-forward var(--duration-step) var(--ease-out-soft) both;
+}
+
+.page-enter-back {
+  animation: page-slide-back var(--duration-step) var(--ease-out-soft) both;
+}
+
+/* Landing sections: their marked children enter in order when the section scrolls into view. */
+[data-reveal] .reveal-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out-soft),
+    transform var(--duration-reveal) var(--ease-out-soft);
+  transition-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger));
+}
+
+[data-reveal='in'] .reveal-item {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-fade,
+  .page-enter-forward,
+  .page-enter-back {
+    animation: none;
+  }
+
+  [data-reveal] .reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

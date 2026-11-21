@@ -16,41 +16,49 @@ import { NotFoundPage } from '@/features/status/NotFoundPage';
 
 import { FORM_210_PATH, LANDING_PATH, PRIVACY_PATH, TERMS_PATH } from './flow';
 import { AppLayout } from './layout/AppLayout';
+import { RootLayout } from './layout/RootLayout';
 import { DesktopOnly } from './layout/DesktopOnly';
 
 export const router = createBrowserRouter([
-  // The landing page works on any screen (ADR 0036).
-  { path: LANDING_PATH, element: <LandingPage />, errorElement: <ErrorPage /> },
-  { path: TERMS_PATH, element: <LegalPage page='terms' />, errorElement: <ErrorPage /> },
-  { path: PRIVACY_PATH, element: <LegalPage page='privacy' />, errorElement: <ErrorPage /> },
   {
-    element: (
-      <DesktopOnly>
-        <AppLayout />
-      </DesktopOnly>
-    ),
+    // Scroll restoration and page transitions for every route (ADR 0043).
+    element: <RootLayout />,
     errorElement: <ErrorPage />,
     children: [
-      { path: 'inicio', element: <HomePage /> },
-      { path: 'exogena', element: <ExogenousPage /> },
-      { path: 'ingresos', element: <IncomePage /> },
-      { path: 'patrimonio', element: <AssetsPage /> },
-      { path: 'deducciones', element: <DeductionsPage /> },
-      { path: 'otros-ajustes', element: <AdjustmentsPage /> },
-      { path: 'resultado', element: <ResultPage /> },
-      { path: 'borrador-210', element: <DraftPage /> },
+      // The landing page works on any screen (ADR 0036).
+      { path: LANDING_PATH, element: <LandingPage />, errorElement: <ErrorPage /> },
+      { path: TERMS_PATH, element: <LegalPage page='terms' />, errorElement: <ErrorPage /> },
+      { path: PRIVACY_PATH, element: <LegalPage page='privacy' />, errorElement: <ErrorPage /> },
+      {
+        element: (
+          <DesktopOnly>
+            <AppLayout />
+          </DesktopOnly>
+        ),
+        errorElement: <ErrorPage />,
+        children: [
+          { path: 'inicio', element: <HomePage /> },
+          { path: 'exogena', element: <ExogenousPage /> },
+          { path: 'ingresos', element: <IncomePage /> },
+          { path: 'patrimonio', element: <AssetsPage /> },
+          { path: 'deducciones', element: <DeductionsPage /> },
+          { path: 'otros-ajustes', element: <AdjustmentsPage /> },
+          { path: 'resultado', element: <ResultPage /> },
+          { path: 'borrador-210', element: <DraftPage /> },
+        ],
+      },
+      // Screen 09 has its own layout (no side rail).
+      {
+        path: FORM_210_PATH,
+        element: (
+          <DesktopOnly>
+            <Form210Page />
+          </DesktopOnly>
+        ),
+        errorElement: <ErrorPage />,
+      },
+      // Screens 11 and 12 (ADR 0022): unknown paths and unexpected errors.
+      { path: '*', element: <NotFoundPage />, errorElement: <ErrorPage /> },
     ],
   },
-  // Screen 09 has its own layout (no side rail).
-  {
-    path: FORM_210_PATH,
-    element: (
-      <DesktopOnly>
-        <Form210Page />
-      </DesktopOnly>
-    ),
-    errorElement: <ErrorPage />,
-  },
-  // Screens 11 and 12 (ADR 0022): unknown paths and unexpected errors.
-  { path: '*', element: <NotFoundPage />, errorElement: <ErrorPage /> },
 ]);
