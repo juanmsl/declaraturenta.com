@@ -9,11 +9,13 @@ import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { detectZeroSlip } from '@/shared/lib/zero-slip';
-import { Button, CalcRow, Chip, MoneyField, OptionCard, StepHeader, StepLayout, Text } from '@/shared/ui';
+import { Button, CalcRow, Chip, MoneyField, StepHeader, StepLayout, Text } from '@/shared/ui';
 
 import { TaxRows } from '@/features/estimate/TaxRows';
 
+import { CapitalNonLaborExtras } from './CapitalNonLaborExtras';
 import { FeesSection } from './FeesSection';
+import { IndependentIncomeQuestion } from './IndependentIncomeQuestion';
 import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } from './income-concepts';
 import { OtherSchedulesSection } from './OtherSchedulesSection';
 
@@ -146,32 +148,9 @@ export const IncomePage = () => {
         origin={isFromExogenous(nonLabor.concepts) ? EXOGENOUS_ORIGIN : undefined}
         hint='Pagos que no vienen de tu trabajo ni de tus inversiones, por ejemplo reintegros o incentivos de comercios.'
       />
+      <CapitalNonLaborExtras />
 
-      <Text id='independent-question' variant='title-s' as='h2'>
-        ¿Tuviste también ingresos como independiente?
-      </Text>
-      <div role='radiogroup' aria-labelledby='independent-question' className='flex items-start gap-3'>
-        <OptionCard
-          name='hasIndependentIncome'
-          value='no'
-          selectedValue={labor.hasIndependentIncome === null ? '' : labor.hasIndependentIncome ? 'yes' : 'no'}
-          onSelect={() => {
-            updateLabor({ hasIndependentIncome: false });
-          }}
-          title='No, solo tuve empleo'
-          description='No te preguntamos por honorarios.'
-        />
-        <OptionCard
-          name='hasIndependentIncome'
-          value='yes'
-          selectedValue={labor.hasIndependentIncome === null ? '' : labor.hasIndependentIncome ? 'yes' : 'no'}
-          onSelect={() => {
-            updateLabor({ hasIndependentIncome: true });
-          }}
-          title='Sí, honorarios o servicios'
-          description='Te preguntaremos por ellos ahora.'
-        />
-      </div>
+      <IndependentIncomeQuestion />
 
       {labor.hasIndependentIncome && <FeesSection />}
 

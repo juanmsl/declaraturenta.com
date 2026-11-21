@@ -63,12 +63,6 @@ const isSale = (kind: OccasionalGainKind) => kind === 'asset-sale' || kind === '
 
 /** Pensions, dividends and occasional gains, each behind its own switch (ADR 0031). */
 export const OtherSchedulesSection = () => {
-  const { state, dispatch } = useDeclaration();
-  const isActive = (id: string) => state.activeSchedules.includes(id);
-  const toggle = (id: string) => {
-    dispatch({ type: 'toggleSchedule', scheduleId: id });
-  };
-
   return (
     <section className='flex flex-col gap-5' aria-labelledby='other-schedules-title'>
       <div className='flex flex-col gap-1'>
@@ -80,39 +74,52 @@ export const OtherSchedulesSection = () => {
         </Text>
       </div>
 
-      <ToggleField
-        name={SCHEDULE_IDS.pensions}
-        label='Recibí una pensión'
-        description='De jubilación, vejez, invalidez o sobrevivientes, del país o del exterior.'
-        checked={isActive(SCHEDULE_IDS.pensions)}
-        onChange={() => {
-          toggle(SCHEDULE_IDS.pensions);
-        }}
-      />
-      {isActive(SCHEDULE_IDS.pensions) && <PensionFields />}
-
-      <ToggleField
-        name={SCHEDULE_IDS.dividends}
-        label='Recibí dividendos o participaciones'
-        description='Pagos de utilidades de empresas en las que tienes acciones o cuotas.'
-        checked={isActive(SCHEDULE_IDS.dividends)}
-        onChange={() => {
-          toggle(SCHEDULE_IDS.dividends);
-        }}
-      />
-      {isActive(SCHEDULE_IDS.dividends) && <DividendFields />}
-
-      <ToggleField
-        name={SCHEDULE_IDS.occasionalGains}
-        label='Tuve ganancias ocasionales'
-        description='Herencias, donaciones, loterías, seguros de vida o la venta de bienes que tuviste 2 años o más.'
-        checked={isActive(SCHEDULE_IDS.occasionalGains)}
-        onChange={() => {
-          toggle(SCHEDULE_IDS.occasionalGains);
-        }}
-      />
-      {isActive(SCHEDULE_IDS.occasionalGains) && <OccasionalGainsEditor />}
+      <ScheduleSection schedule='pensions' />
+      <ScheduleSection schedule='dividends' />
+      <ScheduleSection schedule='occasionalGains' />
     </section>
+  );
+};
+
+type Schedule = keyof typeof SCHEDULE_IDS;
+
+const SCHEDULES: Record<Schedule, { label: string; description: string }> = {
+  pensions: {
+    label: 'Recibí una pensión',
+    description: 'De jubilación, vejez, invalidez o sobrevivientes, del país o del exterior.',
+  },
+  dividends: {
+    label: 'Recibí dividendos o participaciones',
+    description: 'Pagos de utilidades de empresas en las que tienes acciones o cuotas.',
+  },
+  occasionalGains: {
+    label: 'Tuve ganancias ocasionales',
+    description:
+      'Herencias, donaciones, loterías, seguros de vida o la venta de bienes que tuviste 2 años o más.',
+  },
+};
+
+/** One schedule behind its switch; also used in the box panel of the 210 (ADR 0047). */
+export const ScheduleSection = ({ schedule }: { schedule: Schedule }) => {
+  const { state, dispatch } = useDeclaration();
+  const id = SCHEDULE_IDS[schedule];
+  const isActive = state.activeSchedules.includes(id);
+
+  return (
+    <>
+      <ToggleField
+        name={id}
+        label={SCHEDULES[schedule].label}
+        description={SCHEDULES[schedule].description}
+        checked={isActive}
+        onChange={() => {
+          dispatch({ type: 'toggleSchedule', scheduleId: id });
+        }}
+      />
+      {isActive && schedule === 'pensions' && <PensionFields />}
+      {isActive && schedule === 'dividends' && <DividendFields />}
+      {isActive && schedule === 'occasionalGains' && <OccasionalGainsEditor />}
+    </>
   );
 };
 

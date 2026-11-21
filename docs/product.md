@@ -124,6 +124,8 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | «Importar exógena»: movements on top with a report; VAT always, at the end (ADR 0045).     |
 | 2026-11-21 | Opening or closing a box in the 210 keeps the scroll where it is (ADR 0046).               |
 | 2026-11-21 | Fix: Vercel rewrites private routes to `/app` (not `/app.html`) because of `cleanUrls`.    |
+| 2026-11-21 | The 210 panel edits every box filled in a step, with the step's section (ADR 0047).        |
+| 2026-11-21 | Boxes 60 and 75–77 get fields in Ingresos and in their panel (ADR 0047).                   |
 
 ## Not defined yet
 

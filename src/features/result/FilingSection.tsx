@@ -6,6 +6,28 @@ import type { FilingData } from '@/domain/declaration';
 import { formatCurrency, formatLongDate, formatNumber } from '@/shared/lib/format';
 import { Alert, MoneyField, OptionCard, Text } from '@/shared/ui';
 
+/** Box 141 (art. 244-1 E.T.); also used in the box panel of the 210 (ADR 0047). */
+export const VoluntaryContributionField = () => {
+  const { state, dispatch } = useDeclaration();
+  return (
+    <MoneyField
+      name='voluntaryContribution'
+      label='Aporte voluntario (opcional)'
+      value={state.data.filing.voluntaryContribution.value}
+      onChange={value => {
+        dispatch({
+          type: 'updateData',
+          update: data => ({
+            ...data,
+            filing: { ...data.filing, voluntaryContribution: { mode: 'amount', value } },
+          }),
+        });
+      }}
+      hint='Va a programas sociales (art. 244-1 E.T., casilla 141). No es deducible y se paga aparte, con el formulario 490.'
+    />
+  );
+};
+
 const plural = (count: number, word: string) => `${String(count)} ${word}${count === 1 ? '' : 'es'}`;
 
 /**
@@ -60,15 +82,7 @@ export const FilingSection = () => {
           </Text>
         </div>
         <div className='min-w-0 flex-1'>
-          <MoneyField
-            name='voluntaryContribution'
-            label='Aporte voluntario (opcional)'
-            value={filing.voluntaryContribution.value}
-            onChange={value => {
-              update({ voluntaryContribution: { mode: 'amount', value } });
-            }}
-            hint='Va a programas sociales (art. 244-1 E.T., casilla 141). No es deducible y se paga aparte, con el formulario 490.'
-          />
+          <VoluntaryContributionField />
         </div>
       </div>
 

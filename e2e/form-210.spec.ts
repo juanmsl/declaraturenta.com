@@ -48,3 +48,49 @@ test('a link to a box scrolls to it on arrival', async ({ page }) => {
     )
     .toBe(true);
 });
+
+test('a box filled in a step is edited in its panel on a copy, and saved to the step', async ({ page }) => {
+  await page.goto('/formulario-210?casilla=112');
+  const panel = page.getByRole('dialog');
+  await expect(panel.getByText('Tuve ganancias ocasionales')).toBeVisible();
+
+  await panel
+    .locator('.toggle-field', { hasText: 'Tuve ganancias ocasionales' })
+    .locator('.polpo-switch')
+    .click();
+  await panel.getByRole('button', { name: 'Agregar ganancia ocasional' }).click();
+  await panel.getByLabel('Valor recibido').fill('10000000');
+  // The total of the box follows the copy before saving.
+  await expect(panel.getByText('$ 10.000.000').first()).toBeVisible();
+  // Nothing is applied yet: occasional gains are still off in the return, so the 210 hides them.
+  await expect(page.locator('[aria-label^="Casilla 112,"]')).toHaveCount(0);
+
+  await panel.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(panel).toBeHidden();
+  await expect(page.getByRole('button', { name: /^Casilla 112,/ })).toContainText('$ 10.000.000');
+
+  await page.goto('/ingresos');
+  await expect(page.getByLabel('Valor recibido')).toHaveValue('10.000.000');
+});
+
+test('closing the panel discards what was typed', async ({ page }) => {
+  await page.goto('/formulario-210?casilla=141');
+  const panel = page.getByRole('dialog');
+  await panel.getByLabel('Aporte voluntario (opcional)').fill('500000');
+  await panel.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+  await expect(panel).toBeHidden();
+  await expect(page.getByRole('button', { name: /^Casilla 141,/ })).toContainText('$ 0');
+});
+
+test('boxes 60 and 75–77 are filled in Ingresos and in their panel', async ({ page }) => {
+  await page.goto('/ingresos');
+  await page.getByRole('button', { name: 'Tengo costos, devoluciones o aportes en estas rentas' }).click();
+  await page.getByLabel('Costos y gastos de tus rentas de capital (casilla 60)').fill('200000');
+
+  await page.goto('/formulario-210');
+  await expect(page.getByRole('button', { name: /^Casilla 60,/ })).toContainText('$ 200.000');
+  await page.getByRole('button', { name: /^Casilla 77,/ }).click();
+  await expect(
+    page.getByRole('dialog').getByLabel('Costos y gastos de tus otros ingresos (casilla 77)'),
+  ).toBeVisible();
+});
