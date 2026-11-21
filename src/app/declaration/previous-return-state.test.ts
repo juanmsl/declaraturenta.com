@@ -30,13 +30,11 @@ describe("last year's return", () => {
     expect(data.general.previousYearNetTax).toBe(7_500_000);
     expect(data.general.filingCount).toBe('second');
     expect(data.filing.previousNetAssets).toBe(195_000_000);
-    expect(previousReturn).toMatchObject({ fileName: 'declaracion-2024.pdf', refundRequested: null });
+    expect(previousReturn).toMatchObject({ fileName: 'declaracion-2024.pdf', refundRequested: false });
   });
 
-  it('carries the balance in favor to box 131 only when no refund was asked', () => {
+  it('carries the balance in favor to box 131 unless a refund was asked', () => {
     let state = imported();
-    expect(state.data.previousBalanceInFavor).toBe(0);
-    state = declarationReducer(state, { type: 'updatePreviousReturn', patch: { refundRequested: false } });
     expect(state.data.previousBalanceInFavor).toBe(1_200_000);
     state = declarationReducer(state, { type: 'updatePreviousReturn', patch: { refundRequested: true } });
     expect(state.data.previousBalanceInFavor).toBe(0);
@@ -67,7 +65,20 @@ describe("last year's return", () => {
       manual: false,
       read: null,
       balanceInFavor: 0,
-      refundRequested: null,
+      refundRequested: false,
     });
+  });
+
+  it('turns an unanswered refund question of a version 13 state into «No»', () => {
+    const v13 = imported();
+    const old = {
+      ...v13,
+      version: 13,
+      previousReturn: { ...v13.previousReturn, refundRequested: null },
+      data: { ...v13.data, previousBalanceInFavor: 0 },
+    };
+    const migrated = migrateState(old);
+    expect(migrated?.previousReturn.refundRequested).toBe(false);
+    expect(migrated?.data.previousBalanceInFavor).toBe(1_200_000);
   });
 });

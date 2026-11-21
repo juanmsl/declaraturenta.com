@@ -51,7 +51,7 @@ export type DeclarationState = {
  * Bump when `DeclarationState` changes shape and add the step to `migrateState`; states that cannot
  * be migrated fall back to the initial one.
  */
-export const STATE_VERSION = 13;
+export const STATE_VERSION = 14;
 
 /** A new, empty return for a year (ADR 0035). */
 export const createInitialState = (year: TaxYearConfig = getTaxYear(DEFAULT_TAX_YEAR)): DeclarationState => ({
@@ -126,7 +126,7 @@ export const declarationReducer = (state: DeclarationState, action: TimedAction)
         manual: false,
         read: action.values,
         balanceInFavor: action.values.balanceInFavor,
-        refundRequested: action.values.balanceInFavor > 0 ? null : false,
+        refundRequested: false,
       };
       return {
         ...state,
