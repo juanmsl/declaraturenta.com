@@ -38,6 +38,12 @@ test("reads last year's return and takes its values to this year's boxes", async
   await expect(card.getByText('Ya lo usaste, así que no se lleva a tu casilla 131')).toBeVisible();
   await page.goto('/formulario-210');
   await expect(page.getByRole('button', { name: /^Casilla 131,/ })).toContainText('$ 0');
+
+  // Without a balance in favor there is nothing to ask.
+  await page.goto('/exogena');
+  await card.getByLabel('Total saldo a favor (casilla 137)').fill('0');
+  await card.getByLabel('Total saldo a favor (casilla 137)').blur();
+  await expect(card.getByRole('group', { name: /devolviera o compensara/ })).toBeHidden();
 });
 
 test('rejects a PDF that is not a 210 and lets the values be typed by hand', async ({ page }) => {

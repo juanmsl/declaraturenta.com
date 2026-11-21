@@ -140,7 +140,7 @@ export const PreviousReturnCard = () => {
               icon={LuWallet}
               label='Total saldo a favor (casilla 137)'
               detail={
-                record.refundRequested
+                record.balanceInFavor > 0 && record.refundRequested
                   ? 'Ya lo usaste, así que no se lleva a tu casilla 131'
                   : 'Va en tu casilla 131 si no pediste que te lo devolvieran o compensaran'
               }
@@ -151,27 +151,30 @@ export const PreviousReturnCard = () => {
               }}
               origin={fromReturn('balanceInFavor', record.balanceInFavor)}
             >
-              <div
-                role='group'
-                aria-labelledby='refund-question'
-                className='refund-switch flex flex-col items-start gap-1.5 pt-1.5'
-              >
-                <Text id='refund-question' variant='caption' className='text-fg'>
-                  ¿Pediste que la DIAN te lo devolviera o compensara?
-                </Text>
-                <Switch
-                  name='refundRequested'
-                  value={record.refundRequested}
-                  setValue={refundRequested => {
-                    dispatch({ type: 'updatePreviousReturn', patch: { refundRequested } });
-                  }}
-                  leftLabel='No'
-                  rightLabel='Sí'
-                  size='small'
-                  width='large'
-                  color='primary'
-                />
-              </div>
+              {/* Only asked when there is a balance in favor to carry (ADR 0050). */}
+              {record.balanceInFavor > 0 && (
+                <div
+                  role='group'
+                  aria-labelledby='refund-question'
+                  className='refund-switch flex flex-col items-start gap-1.5 pt-1.5'
+                >
+                  <Text id='refund-question' variant='caption' className='text-fg'>
+                    ¿Pediste que la DIAN te lo devolviera o compensara?
+                  </Text>
+                  <Switch
+                    name='refundRequested'
+                    value={record.refundRequested}
+                    setValue={refundRequested => {
+                      dispatch({ type: 'updatePreviousReturn', patch: { refundRequested } });
+                    }}
+                    leftLabel='No'
+                    rightLabel='Sí'
+                    size='small'
+                    width='large'
+                    color='primary'
+                  />
+                </div>
+              )}
             </AmountRow>
           </AmountList>
           <div>

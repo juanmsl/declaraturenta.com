@@ -19,7 +19,8 @@ Owner's choices, reviewed in Figma (03c and 03e):
 - **Order 31, 126, 133, 137**, as they appear in the 210. Icons: bank, scale, calendar and wallet.
 - **The refund question goes inside the box 137 row** («¿Pediste que la DIAN te lo devolviera o
   compensara?»), with a Polpo `Switch` between «No» and «Sí», `size='small'` and `width='large'`.
-  The row's second line says what happens with the answer.
+  The row's second line says what happens with the answer. The question only shows while the
+  balance in favor is above zero.
 - **The switch starts at «No»**: a switch has no unanswered state, so the balance in favor goes to
   box 131 as soon as the PDF is read, until the person switches to «Sí». This replaces the
   «unanswered until chosen» rule of ADR 0048.
