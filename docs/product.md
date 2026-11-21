@@ -118,6 +118,7 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-20 | The app is deployed on Vercel at app.declaraturenta.com.                                   |
 | 2026-11-20 | New pages start at the top; «Atrás» restores the previous position (ADR 0043).             |
 | 2026-11-20 | Pages fade in; flow steps slide by direction; landing sections enter on scroll (ADR 0043). |
+| 2026-11-20 | Formulario 210: calculated boxes with a violet border; box 136 to pay in coral (ADR 0044). |
 
 ## Not defined yet
 

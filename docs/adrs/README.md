@@ -49,3 +49,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0041](./0041-seo-and-link-previews.md)                         | SEO and link previews                                            | Accepted |
 | [0042](./0042-ci-and-end-to-end-tests.md)                       | Continuous integration and end-to-end tests                      | Accepted |
 | [0043](./0043-scroll-and-motion.md)                             | Scroll and motion                                                | Accepted |
+| [0044](./0044-form-210-box-colors.md)                           | Colors of the boxes in the Formulario 210 screen                 | Accepted |
