@@ -122,6 +122,8 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-20 | Formulario 210: calculated boxes with a violet border; box 136 to pay in coral (ADR 0044). |
 | 2026-11-20 | Flow order follows the 210: Patrimonio before Ingresos (ADR 0045).                         |
 | 2026-11-21 | «Importar exógena»: movements on top with a report; VAT always, at the end (ADR 0045).     |
+| 2026-11-21 | Opening or closing a box in the 210 keeps the scroll where it is (ADR 0046).               |
+| 2026-11-21 | Fix: Vercel rewrites private routes to `/app` (not `/app.html`) because of `cleanUrls`.    |
 
 ## Not defined yet
 

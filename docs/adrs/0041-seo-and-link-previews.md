@@ -40,3 +40,9 @@ All choices below are the owner's.
 - Changing a title or description means changing `pages.ts`; the OG images are changed in Figma and
   exported again.
 - The structured data says the service is free. It must change if the business model adds a price.
+
+## Correction (2026-11-21)
+
+With `cleanUrls: true`, Vercel also drops `.html` from rewrite destinations: the rewrite to
+`/app.html` found no file and every private route loaded directly (e.g. `/inicio`) answered
+Vercel's 404. The destination is now `/app`, which Vercel serves from `app.html`.

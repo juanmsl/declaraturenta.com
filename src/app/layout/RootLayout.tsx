@@ -18,7 +18,11 @@ export const RootLayout = () => {
       <PageTransition transitionKey={SHELL_PATHS.has(pathname) ? 'app' : pathname} animateOnMount>
         <Outlet />
       </PageTransition>
-      <ScrollRestoration />
+      {/* On a full page load every location has the key "default", which would restore the scroll
+          of another page; the path tells them apart (ADR 0046). */}
+      <ScrollRestoration
+        getKey={location => (location.key === 'default' ? location.pathname : location.key)}
+      />
     </>
   );
 };
