@@ -21,6 +21,7 @@ export const FilingObligationCard = () => {
   const { state, result } = useDeclaration();
   const { tests, exceededCount, vatResponsible, mustFile } = result.obligation;
   const deadline = state.taxpayer.filingDeadline;
+  const imported = state.exogenous.fileName !== null;
 
   const reason =
     exceededCount > 0
@@ -37,6 +38,12 @@ export const FilingObligationCard = () => {
           Lo revisamos con todos tus datos y los topes del año gravable {taxYear.year}. Con superar uno, o si
           eras responsable de IVA, debes declarar.
         </Text>
+        {!imported && (
+          <Text variant='note' className='text-fg-muted'>
+            Sin tu exógena no tenemos tus compras, consumos ni consignaciones del año. Si alguno pasó su tope,
+            o eras responsable de IVA, también debes declarar.
+          </Text>
+        )}
         {mustFile ? (
           <Alert variant='warning' title='Sí tienes que declarar'>
             {reason}{' '}
@@ -71,7 +78,9 @@ export const FilingObligationCard = () => {
           <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
             <Text variant='body-m-strong'>Responsable de IVA</Text>
             <Text variant='note' className='text-fg-muted'>
-              Lo respondiste en Patrimonio
+              {imported
+                ? 'Lo respondiste en Importar exógena'
+                : 'Sin exógena no lo preguntamos; lo tomamos como «no»'}
             </Text>
           </div>
           {vatResponsible ? <Chip variant='cap'>Sí eras</Chip> : <Chip variant='exogenous'>No eras</Chip>}

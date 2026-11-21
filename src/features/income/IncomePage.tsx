@@ -17,8 +17,8 @@ import { FeesSection } from './FeesSection';
 import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } from './income-concepts';
 import { OtherSchedulesSection } from './OtherSchedulesSection';
 
-const exogenousStep = getStep('exogenous');
 const assetsStep = getStep('assets');
+const deductionsStep = getStep('deductions');
 /** Screen 04 · Ingresos (Figma node 9:783). */
 export const IncomePage = () => {
   const { taxYear } = useTaxYear();
@@ -44,7 +44,7 @@ export const IncomePage = () => {
 
   const handleContinue = () => {
     dispatch({ type: 'completeStep', step: 'income' });
-    void navigate(assetsStep.path);
+    void navigate(deductionsStep.path);
   };
 
   return (
@@ -178,7 +178,7 @@ export const IncomePage = () => {
       <OtherSchedulesSection />
 
       <div className='flex items-start justify-between'>
-        <Button variant='ghost' onClick={() => void navigate(exogenousStep.path)}>
+        <Button variant='ghost' onClick={() => void navigate(assetsStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>

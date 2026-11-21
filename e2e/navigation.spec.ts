@@ -33,12 +33,12 @@ test('section links on the landing scroll to their section', async ({ page }) =>
 
 test('steps of the flow slide forward and back; other pages fade in', async ({ page }) => {
   await acceptTermsBeforeLoad(page);
-  await page.goto('/ingresos');
+  await page.goto('/patrimonio');
   const content = page.locator('main > div').first();
 
-  await page.getByRole('link', { name: 'Patrimonio' }).click();
-  await expect(content).toHaveClass(/page-enter-forward/);
   await page.getByRole('link', { name: 'Ingresos' }).click();
+  await expect(content).toHaveClass(/page-enter-forward/);
+  await page.getByRole('link', { name: 'Patrimonio' }).click();
   await expect(content).toHaveClass(/page-enter-back/);
   await page
     .getByRole('link', { name: /Inicio|Declara tu renta/ })

@@ -13,10 +13,9 @@ import { Alert, Button, CalcRow, Chip, Icon, NoteBox, StepHeader, StepLayout, Te
 
 import { HoldingDrawer } from './HoldingDrawer';
 import type { HoldingDraft } from './HoldingDrawer';
-import { YearMovementsSection } from './YearMovementsSection';
 
+const exogenousStep = getStep('exogenous');
 const incomeStep = getStep('income');
-const deductionsStep = getStep('deductions');
 
 const KIND_ICONS: Record<AssetKind, IconType> = {
   'real-estate': LuHouse,
@@ -97,7 +96,7 @@ export const AssetsPage = () => {
 
   const handleContinue = () => {
     dispatch({ type: 'completeStep', step: 'assets' });
-    void navigate(deductionsStep.path);
+    void navigate(incomeStep.path);
   };
 
   return (
@@ -163,8 +162,6 @@ export const AssetsPage = () => {
         <Summary label='Patrimonio líquido' value={result.netAssets} highlight />
       </div>
 
-      <YearMovementsSection />
-
       {firstRealEstate && (
         <Alert
           variant='info'
@@ -180,7 +177,7 @@ export const AssetsPage = () => {
       )}
 
       <div className='flex items-start justify-between'>
-        <Button variant='ghost' onClick={() => void navigate(incomeStep.path)}>
+        <Button variant='ghost' onClick={() => void navigate(exogenousStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
@@ -306,7 +303,7 @@ const AssetsEstimate = () => {
       note={
         estimateIncludesDeductions
           ? 'Tu patrimonio no cambia este valor.'
-          : 'Tu patrimonio no cambia este valor. Lo que viene, tus deducciones, sí.'
+          : 'Tu patrimonio no cambia este valor. Lo que viene, tus ingresos y tus deducciones, sí.'
       }
       footer={
         <NoteBox withIcon>

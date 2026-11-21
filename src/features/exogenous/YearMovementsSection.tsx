@@ -18,15 +18,15 @@ const REPORT_KEYS = {
 } as const satisfies Record<AmountKey, string>;
 
 /**
- * "Tus movimientos en el año" (Figma 05e): the values only used to know whether the person had to
- * file, plus the VAT question. They moved here from «¿Debo declarar?» (ADR 0035).
+ * "Tus movimientos en el año": the values only used to know whether the person had to file, plus
+ * the VAT question. Shown in «Importar exógena» once the report is read (ADR 0045; before, in
+ * Patrimonio).
  */
 export const YearMovementsSection = () => {
   const { taxYear } = useTaxYear();
   const { state, dispatch } = useDeclaration();
   const { obligation } = state.data;
   const limit = formatCurrency(uvtToPesos(taxYear.filingTestsUvt.creditCardPurchases, taxYear));
-  const imported = state.exogenous.fileName !== null;
 
   const update = (change: Partial<Obligation>) => {
     dispatch({
@@ -60,8 +60,7 @@ export const YearMovementsSection = () => {
           Tus movimientos en {taxYear.year}
         </Text>
         <Text variant='body-m' className='text-fg-secondary'>
-          La DIAN los usa para saber si debes declarar. Si vienen en tu exógena, ya están llenos; corrige lo
-          que no cuadre.
+          La DIAN los usa para saber si debes declarar. Los tomamos de tu exógena; corrige lo que no cuadre.
         </Text>
       </div>
       {fields.map(field => (
@@ -74,7 +73,6 @@ export const YearMovementsSection = () => {
             update({ [field.key]: value });
           }}
           origin={
-            imported &&
             obligation[field.key] > 0 &&
             obligation[field.key] === state.exogenous.report.thresholds[REPORT_KEYS[field.key]]
               ? EXOGENOUS_ORIGIN

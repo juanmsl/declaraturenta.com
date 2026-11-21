@@ -1,5 +1,6 @@
 /**
- * The sections of the declaration flow, in order (ADR 0035: «¿Debo declarar?» moved to the landing). Single source of truth for
+ * The sections of the declaration flow, in the order of the Formulario 210 (patrimonio before
+ * ingresos, ADR 0045) (ADR 0035: «¿Debo declarar?» moved to the landing). Single source of truth for
  * the side rail, the top bar braid, the home journey list and the routes.
  * Paths are user-facing, so they are in Spanish.
  */
@@ -29,20 +30,20 @@ export const FLOW_STEPS = [
     minutes: 3,
   },
   {
-    id: 'income',
-    path: '/ingresos',
-    title: 'Ingresos',
-    railLabel: 'Ingresos',
-    summary: 'Confirmas salarios, honorarios y otros ingresos.',
-    minutes: 5,
-  },
-  {
     id: 'assets',
     path: '/patrimonio',
     title: 'Patrimonio',
     railLabel: 'Patrimonio',
     summary: 'Bienes, cuentas y deudas al 31 de diciembre.',
     minutes: 4,
+  },
+  {
+    id: 'income',
+    path: '/ingresos',
+    title: 'Ingresos',
+    railLabel: 'Ingresos',
+    summary: 'Confirmas salarios, honorarios y otros ingresos.',
+    minutes: 5,
   },
   {
     id: 'deductions',

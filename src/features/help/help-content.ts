@@ -6,15 +6,15 @@
 export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
   {
     title: 'Importar exógena',
-    text: 'Sube el Excel de información exógena que descargas del portal de la DIAN. Lo leemos en tu navegador y llevamos cada dato a su casilla; tú confirmas lo marcado.',
+    text: 'Sube el Excel de información exógena que descargas del portal de la DIAN. Lo leemos en tu navegador y llevamos cada dato a su casilla; tú confirmas lo marcado y revisas tus movimientos del año.',
+  },
+  {
+    title: 'Patrimonio',
+    text: 'Lo que tenías y lo que debías al 31 de diciembre. Agrega, edita o quita bienes y deudas.',
   },
   {
     title: 'Ingresos',
     text: 'Revisa lo que recibiste por tu trabajo, tus rendimientos financieros y otros ingresos. Corrige si tus certificados dicen otra cosa.',
-  },
-  {
-    title: 'Patrimonio',
-    text: 'Lo que tenías y lo que debías al 31 de diciembre, y tus movimientos del año. Agrega, edita o quita bienes y deudas.',
   },
   {
     title: 'Deducciones',
