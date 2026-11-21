@@ -27,5 +27,5 @@ export const importFictionalExogenous = async (page: Page) => {
   // The «Copia» menu has its own hidden file input (.json); this is the .xlsx one.
   await page.locator('input[type=file]:not([accept*=json])').setInputFiles(FICTIONAL_EXOGENOUS);
   await page.getByRole('button', { name: 'Usar estos datos' }).click();
-  await page.waitForURL('**/ingresos');
+  await page.waitForURL('**/patrimonio');
 };

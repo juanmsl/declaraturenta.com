@@ -3,7 +3,7 @@ import { useTaxYear } from '@/app/declaration/tax-year-context';
 import type { DeclarationData } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/tax-years';
 import { formatCurrency } from '@/shared/lib/format';
-import { MoneyField, OptionCard, Text } from '@/shared/ui';
+import { MoneyField, Text } from '@/shared/ui';
 
 const EXOGENOUS_ORIGIN = { variant: 'exogenous', label: 'Desde exógena' } as const;
 
@@ -18,15 +18,14 @@ const REPORT_KEYS = {
 } as const satisfies Record<AmountKey, string>;
 
 /**
- * "Tus movimientos en el año" (Figma 05e): the values only used to know whether the person had to
- * file, plus the VAT question. They moved here from «¿Debo declarar?» (ADR 0035).
+ * "Tus movimientos en el año": the values only used to know whether the person had to file. Shown
+ * in «Importar exógena», right below «Esto encontramos», once the report is read (ADR 0045).
  */
 export const YearMovementsSection = () => {
   const { taxYear } = useTaxYear();
   const { state, dispatch } = useDeclaration();
   const { obligation } = state.data;
   const limit = formatCurrency(uvtToPesos(taxYear.filingTestsUvt.creditCardPurchases, taxYear));
-  const imported = state.exogenous.fileName !== null;
 
   const update = (change: Partial<Obligation>) => {
     dispatch({
@@ -60,8 +59,7 @@ export const YearMovementsSection = () => {
           Tus movimientos en {taxYear.year}
         </Text>
         <Text variant='body-m' className='text-fg-secondary'>
-          La DIAN los usa para saber si debes declarar. Si vienen en tu exógena, ya están llenos; corrige lo
-          que no cuadre.
+          La DIAN los usa para saber si debes declarar. Los tomamos de tu exógena; corrige lo que no cuadre.
         </Text>
       </div>
       {fields.map(field => (
@@ -74,7 +72,6 @@ export const YearMovementsSection = () => {
             update({ [field.key]: value });
           }}
           origin={
-            imported &&
             obligation[field.key] > 0 &&
             obligation[field.key] === state.exogenous.report.thresholds[REPORT_KEYS[field.key]]
               ? EXOGENOUS_ORIGIN
@@ -83,38 +80,6 @@ export const YearMovementsSection = () => {
           hint={field.hint}
         />
       ))}
-
-      <div className='flex flex-col gap-1'>
-        <Text id='vat-question' variant='title-s' as='h2'>
-          ¿Eras responsable de IVA en {taxYear.year}?
-        </Text>
-        <Text variant='body-m' className='text-fg-secondary'>
-          Es decir, si debías cobrar IVA en lo que vendías o en tus servicios. En ese caso declaras renta
-          aunque no superes ningún tope.
-        </Text>
-      </div>
-      <div role='radiogroup' aria-labelledby='vat-question' className='flex items-start gap-3'>
-        <OptionCard
-          name='vatResponsible'
-          value='no'
-          selectedValue={obligation.vatResponsible ? 'yes' : 'no'}
-          onSelect={() => {
-            update({ vatResponsible: false });
-          }}
-          title='No'
-          description='No cobraba IVA.'
-        />
-        <OptionCard
-          name='vatResponsible'
-          value='yes'
-          selectedValue={obligation.vatResponsible ? 'yes' : 'no'}
-          onSelect={() => {
-            update({ vatResponsible: true });
-          }}
-          title='Sí'
-          description='Estaba inscrito en el RUT como responsable de IVA.'
-        />
-      </div>
     </section>
   );
 };

@@ -13,16 +13,20 @@ test('from the exogenous report to the draft of the 210', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Subir mi exógena' }).click();
   await expect(page).toHaveURL(/\/exogena$/);
+  // VAT is asked with or without the report; the year movements only come with it (ADR 0045).
+  await expect(page.getByRole('heading', { name: '¿Eras responsable de IVA en 2025?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tus movimientos en 2025' })).toBeHidden();
   await page.locator('input[type=file]:not([accept*=json])').setInputFiles(FICTIONAL_EXOGENOUS);
   await expect(page.getByText('Empresa Andina S.A.S.').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tus movimientos en 2025' })).toBeVisible();
   await page.getByRole('button', { name: 'Usar estos datos' }).click();
-
-  await expect(page).toHaveURL(/\/ingresos$/);
-  await expect(page.getByLabel('Salarios y pagos laborales')).toHaveValue('180.000.000');
-  await page.getByRole('button', { name: 'Guardar y seguir' }).click();
 
   await expect(page).toHaveURL(/\/patrimonio$/);
   await expect(page.getByText('Banco Cordillera S.A.').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar y seguir' }).click();
+
+  await expect(page).toHaveURL(/\/ingresos$/);
+  await expect(page.getByLabel('Salarios y pagos laborales')).toHaveValue('180.000.000');
   await page.getByRole('button', { name: 'Guardar y seguir' }).click();
 
   await expect(page).toHaveURL(/\/deducciones$/);

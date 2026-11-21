@@ -22,7 +22,7 @@ describe('exogenous report', () => {
   });
 
   it('clears every reported value but keeps what the user entered', () => {
-    const cleared = clearExogenous(sampleDeclaration);
+    const cleared = clearExogenous(sampleDeclaration, sampleExogenous);
     expect(cleared.labor.salaries).toBe(0);
     expect(cleared.withholdings).toBe(0);
     expect(cleared.assets.map(asset => asset.id)).toEqual(['apartment']);
@@ -30,8 +30,31 @@ describe('exogenous report', () => {
     expect(computeDeclaration(cleared).grossAssets).toBe(310_000_000);
   });
 
+  it('clears only the year movements that still match the report', () => {
+    const { thresholds } = sampleExogenous;
+    const data = {
+      ...sampleDeclaration,
+      obligation: {
+        ...sampleDeclaration.obligation,
+        creditCardPurchases: thresholds.cardSpending,
+        totalPurchases: thresholds.purchases + 1_000,
+        deposits: thresholds.deposits,
+        vatResponsible: true,
+      },
+    };
+    const cleared = clearExogenous(data, sampleExogenous).obligation;
+    expect(cleared.creditCardPurchases).toBe(0);
+    expect(cleared.totalPurchases).toBe(thresholds.purchases + 1_000);
+    expect(cleared.deposits).toBe(0);
+    expect(cleared.vatResponsible).toBe(true);
+  });
+
   it('refills from the report after clearing, using the reported concepts', () => {
-    const refilled = applyExogenous(clearExogenous(sampleDeclaration), sampleExogenous, AG_2025);
+    const refilled = applyExogenous(
+      clearExogenous(sampleDeclaration, sampleExogenous),
+      sampleExogenous,
+      AG_2025,
+    );
     expect(refilled.labor.salaries).toBe(179_600_000);
     expect(refilled.withholdings).toBe(11_240_000);
   });
@@ -109,7 +132,7 @@ describe('capital and non-labor from the report', () => {
   });
 
   it('clears reported capital and non-labor income', () => {
-    const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report, AG_2025));
+    const cleared = clearExogenous(applyExogenous(createEmptyDeclaration(), report, AG_2025), report);
     expect(cleared.capital.concepts).toEqual([]);
     expect(cleared.nonLabor.concepts).toEqual([]);
   });

@@ -47,10 +47,11 @@ Inicio is the summary before the flow: the steps, the filing deadline (asks the 
 digits when there is no exogenous report) and a single action, «Subir mi exógena» (ADR 0035).
 
 1. Importar exógena — upload the DIAN report (.xlsx), read in the browser, or fill in by hand.
-2. Ingresos — salaries, fees, financial yields, other income, pensions, dividends and occasional
+   Once read, it shows the year's movements (credit card, purchases, deposits) below «Esto
+   encontramos»; whether the person was responsible for VAT is always asked at the end (ADR 0045).
+2. Patrimonio — assets, accounts and debts at December 31.
+3. Ingresos — salaries, fees, financial yields, other income, pensions, dividends and occasional
    gains.
-3. Patrimonio — assets, accounts and debts at December 31, plus the year's movements (credit card,
-   purchases, deposits) and whether the person was responsible for VAT.
 4. Deducciones y exentas — housing, dependents, prepaid health, severance pay, AFC/FVP/AVC, GMF,
    ICETEX, independent severance contributions, other exempt income (with and without the 40 %
    cap), the 25 % and donations.
@@ -119,6 +120,8 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-20 | New pages start at the top; «Atrás» restores the previous position (ADR 0043).             |
 | 2026-11-20 | Pages fade in; flow steps slide by direction; landing sections enter on scroll (ADR 0043). |
 | 2026-11-20 | Formulario 210: calculated boxes with a violet border; box 136 to pay in coral (ADR 0044). |
+| 2026-11-20 | Flow order follows the 210: Patrimonio before Ingresos (ADR 0045).                         |
+| 2026-11-21 | «Importar exógena»: movements on top with a report; VAT always, at the end (ADR 0045).     |
 
 ## Not defined yet
 

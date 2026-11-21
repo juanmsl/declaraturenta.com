@@ -24,9 +24,12 @@ import { parseExogenousSheet } from '@/domain/exogenous-file';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
+import { VatQuestion } from './VatQuestion';
+import { YearMovementsSection } from './YearMovementsSection';
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-const incomeStep = getStep('income');
+const assetsStep = getStep('assets');
 
 /** Sections of "Esto encontramos", in order, with the kinds they show. */
 const GROUPS: readonly { title: string; kinds: readonly ExogenousItemKind[] }[] = [
@@ -109,7 +112,6 @@ export const ExogenousPage = () => {
   const [isReading, setIsReading] = useState(false);
 
   const visibleItems = report.items.filter(item => item.kind !== 'informative' && item.amount > 0);
-  const informativeCount = report.items.filter(item => item.kind === 'informative').length;
   const isConfirmed = (item: ExogenousItem) => !item.review || exogenous.confirmedItems.includes(item.id);
   const pendingItems = visibleItems.filter(item => !isConfirmed(item));
 
@@ -140,13 +142,13 @@ export const ExogenousPage = () => {
       dispatch({ type: 'confirmExogenousItem', itemId: item.id });
     });
     dispatch({ type: 'completeStep', step: 'exogenous' });
-    void navigate(incomeStep.path);
+    void navigate(assetsStep.path);
   };
 
   const handleSkip = () => {
-    dispatch({ type: 'updateData', update: clearExogenous });
+    dispatch({ type: 'updateData', update: data => clearExogenous(data, report) });
     dispatch({ type: 'completeStep', step: 'exogenous' });
-    void navigate(incomeStep.path);
+    void navigate(assetsStep.path);
   };
 
   const reviews = [...new Set(pendingItems.map(item => item.review).filter(review => review !== undefined))];
@@ -183,6 +185,7 @@ export const ExogenousPage = () => {
           <Text variant='title-m' as='h2'>
             Esto encontramos
           </Text>
+          <YearMovementsSection />
           {GROUPS.map(group => {
             const items = groupItems(visibleItems.filter(item => group.kinds.includes(item.kind))).sort(
               (a, b) => group.kinds.indexOf(a.kind) - group.kinds.indexOf(b.kind),
@@ -224,12 +227,6 @@ export const ExogenousPage = () => {
               </section>
             );
           })}
-          {informativeCount > 0 && (
-            <Text variant='note' className='text-fg-muted'>
-              También leímos {informativeCount} datos informativos (movimientos, consumos con tarjeta e
-              inversiones del año) que solo cuentan para saber si debes declarar.
-            </Text>
-          )}
           {reviews.map(review => (
             <Alert key={review} variant='info' title='Revisa este dato'>
               {REVIEW_TEXT[review]}
@@ -237,6 +234,8 @@ export const ExogenousPage = () => {
           ))}
         </>
       )}
+
+      <VatQuestion />
 
       <div className='flex items-center gap-3'>
         <Button variant='ghost' onClick={() => void navigate(HOME_PATH)}>

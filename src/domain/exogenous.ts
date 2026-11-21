@@ -402,10 +402,20 @@ export const applyExogenous = (
 };
 
 /** Removes every value that would come from the report ("Llenar sin exógena"). */
-export const clearExogenous = (data: DeclarationData): DeclarationData => ({
+/** The value without what came from the report: zero if it is still the report's value. */
+const keepTyped = (value: number, fromReport: number) => (value === fromReport ? 0 : value);
+
+export const clearExogenous = (data: DeclarationData, report: ExogenousReport): DeclarationData => ({
   ...data,
   general: { ...data.general, electronicInvoicePurchases: 0 },
-  obligation: { ...data.obligation, creditCardPurchases: 0, totalPurchases: 0, deposits: 0 },
+  // Year movements: only the values that still match the report; what the person typed stays, and
+  // so does the VAT answer (ADR 0045).
+  obligation: {
+    ...data.obligation,
+    creditCardPurchases: keepTyped(data.obligation.creditCardPurchases, report.thresholds.cardSpending),
+    totalPurchases: keepTyped(data.obligation.totalPurchases, report.thresholds.purchases),
+    deposits: keepTyped(data.obligation.deposits, report.thresholds.deposits),
+  },
   labor: { ...data.labor, concepts: [], salaries: 0, nonTaxableIncome: 0, voluntaryContributions: 0 },
   fees: { ...data.fees, concepts: data.fees.concepts.filter(c => c.origin === 'user'), nonTaxableIncome: 0 },
   pensions: { ...data.pensions, concepts: data.pensions.concepts.filter(c => c.origin === 'user') },

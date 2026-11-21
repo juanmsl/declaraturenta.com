@@ -20,7 +20,7 @@ import type { CapSegment } from './CapMeter';
 import { DeductionDrawer } from './DeductionDrawer';
 import type { DeductionId } from './DeductionDrawer';
 
-const assetsStep = getStep('assets');
+const incomeStep = getStep('income');
 const resultStep = getStep('adjustments');
 
 type Origin = 'exogenous' | 'calculated' | 'user' | 'box123';
@@ -235,7 +235,7 @@ export const DeductionsPage = () => {
       )}
 
       <div className='flex items-start justify-between'>
-        <Button variant='ghost' onClick={() => void navigate(assetsStep.path)}>
+        <Button variant='ghost' onClick={() => void navigate(incomeStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
