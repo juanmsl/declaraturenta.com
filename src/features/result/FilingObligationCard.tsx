@@ -78,9 +78,7 @@ export const FilingObligationCard = () => {
           <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
             <Text variant='body-m-strong'>Responsable de IVA</Text>
             <Text variant='note' className='text-fg-muted'>
-              {imported
-                ? 'Lo respondiste en Importar exógena'
-                : 'Sin exógena no lo preguntamos; lo tomamos como «no»'}
+              Lo respondiste en Importar exógena
             </Text>
           </div>
           {vatResponsible ? <Chip variant='cap'>Sí eras</Chip> : <Chip variant='exogenous'>No eras</Chip>}

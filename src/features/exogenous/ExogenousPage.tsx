@@ -24,6 +24,7 @@ import { parseExogenousSheet } from '@/domain/exogenous-file';
 import { formatCurrency } from '@/shared/lib/format';
 import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
 
+import { VatQuestion } from './VatQuestion';
 import { YearMovementsSection } from './YearMovementsSection';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -184,6 +185,7 @@ export const ExogenousPage = () => {
           <Text variant='title-m' as='h2'>
             Esto encontramos
           </Text>
+          <YearMovementsSection />
           {GROUPS.map(group => {
             const items = groupItems(visibleItems.filter(item => group.kinds.includes(item.kind))).sort(
               (a, b) => group.kinds.indexOf(a.kind) - group.kinds.indexOf(b.kind),
@@ -230,9 +232,10 @@ export const ExogenousPage = () => {
               {REVIEW_TEXT[review]}
             </Alert>
           ))}
-          <YearMovementsSection />
         </>
       )}
+
+      <VatQuestion />
 
       <div className='flex items-center gap-3'>
         <Button variant='ghost' onClick={() => void navigate(HOME_PATH)}>

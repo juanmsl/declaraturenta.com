@@ -3,7 +3,7 @@ import { useTaxYear } from '@/app/declaration/tax-year-context';
 import type { DeclarationData } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/tax-years';
 import { formatCurrency } from '@/shared/lib/format';
-import { MoneyField, OptionCard, Text } from '@/shared/ui';
+import { MoneyField, Text } from '@/shared/ui';
 
 const EXOGENOUS_ORIGIN = { variant: 'exogenous', label: 'Desde exógena' } as const;
 
@@ -18,9 +18,8 @@ const REPORT_KEYS = {
 } as const satisfies Record<AmountKey, string>;
 
 /**
- * "Tus movimientos en el año": the values only used to know whether the person had to file, plus
- * the VAT question. Shown in «Importar exógena» once the report is read (ADR 0045; before, in
- * Patrimonio).
+ * "Tus movimientos en el año": the values only used to know whether the person had to file. Shown
+ * in «Importar exógena», right below «Esto encontramos», once the report is read (ADR 0045).
  */
 export const YearMovementsSection = () => {
   const { taxYear } = useTaxYear();
@@ -81,38 +80,6 @@ export const YearMovementsSection = () => {
           hint={field.hint}
         />
       ))}
-
-      <div className='flex flex-col gap-1'>
-        <Text id='vat-question' variant='title-s' as='h2'>
-          ¿Eras responsable de IVA en {taxYear.year}?
-        </Text>
-        <Text variant='body-m' className='text-fg-secondary'>
-          Es decir, si debías cobrar IVA en lo que vendías o en tus servicios. En ese caso declaras renta
-          aunque no superes ningún tope.
-        </Text>
-      </div>
-      <div role='radiogroup' aria-labelledby='vat-question' className='flex items-start gap-3'>
-        <OptionCard
-          name='vatResponsible'
-          value='no'
-          selectedValue={obligation.vatResponsible ? 'yes' : 'no'}
-          onSelect={() => {
-            update({ vatResponsible: false });
-          }}
-          title='No'
-          description='No cobraba IVA.'
-        />
-        <OptionCard
-          name='vatResponsible'
-          value='yes'
-          selectedValue={obligation.vatResponsible ? 'yes' : 'no'}
-          onSelect={() => {
-            update({ vatResponsible: true });
-          }}
-          title='Sí'
-          description='Estaba inscrito en el RUT como responsable de IVA.'
-        />
-      </div>
     </section>
   );
 };

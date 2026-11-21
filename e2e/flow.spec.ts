@@ -13,11 +13,12 @@ test('from the exogenous report to the draft of the 210', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Subir mi exógena' }).click();
   await expect(page).toHaveURL(/\/exogena$/);
+  // VAT is asked with or without the report; the year movements only come with it (ADR 0045).
+  await expect(page.getByRole('heading', { name: '¿Eras responsable de IVA en 2025?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tus movimientos en 2025' })).toBeHidden();
   await page.locator('input[type=file]:not([accept*=json])').setInputFiles(FICTIONAL_EXOGENOUS);
   await expect(page.getByText('Empresa Andina S.A.S.').first()).toBeVisible();
-  // The year movements and the VAT question come with the report (ADR 0045).
   await expect(page.getByRole('heading', { name: 'Tus movimientos en 2025' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '¿Eras responsable de IVA en 2025?' })).toBeVisible();
   await page.getByRole('button', { name: 'Usar estos datos' }).click();
 
   await expect(page).toHaveURL(/\/patrimonio$/);
