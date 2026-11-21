@@ -56,3 +56,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0048](./0048-previous-year-return.md)                          | Last year's return is read from its PDF in «Importar exógena»              | Accepted |
 | [0049](./0049-year-movements-as-a-list.md)                      | The year movements are a list, with the amount edited in the row           | Accepted |
 | [0050](./0050-previous-return-as-a-list.md)                     | Last year's return values are a list, with the refund question as a switch | Accepted |
+| [0051](./0051-my-data-menu.md)                                  | «Copia» becomes «Mis datos», with help texts                               | Accepted |

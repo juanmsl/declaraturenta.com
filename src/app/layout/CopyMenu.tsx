@@ -16,16 +16,26 @@ import { useDeclaration } from '../declaration/declaration-context';
 
 type Pending = { state: DeclarationState; createdAt: string };
 
+/** Menu option with a small help line under its name. */
+const MenuLabel = ({ title, help }: { title: string; help: string }) => (
+  <span className='flex flex-col items-start gap-0.5 text-left'>
+    <span>{title}</span>
+    <Text as='span' variant='note' className='text-fg-muted'>
+      {help}
+    </Text>
+  </span>
+);
+
 const ERRORS = {
   'not-a-backup':
-    'Ese archivo no es una copia de Declara tu renta. Elige el .json que descargaste con «Descargar copia».',
-  outdated: 'Esa copia es de una versión anterior de la plataforma y ya no se puede abrir.',
-  'other-year': 'Esa copia es de otro año gravable.',
+    'Ese archivo no es de Declara tu renta. Elige el .json que descargaste con «Descargar datos».',
+  outdated: 'Ese archivo es de una versión anterior de la plataforma y ya no se puede cargar.',
+  'other-year': 'Ese archivo es de otro año gravable.',
 } as const;
 
 /**
- * "Copia" in the top bar: download the declaration as a .json file, open one (ADR 0027) or delete
- * the open year from this browser (ADR 0040).
+ * «Mis datos» in the top bar: download the declaration as a .json file, load one (ADR 0027) or
+ * reset the open year in this browser (ADR 0040). Names and help texts in ADR 0051.
  */
 export const CopyMenu = () => {
   const { state, dispatch } = useDeclaration();
@@ -46,7 +56,7 @@ export const CopyMenu = () => {
     } catch (caught) {
       if (caught instanceof BackupError && caught.reason === 'other-year' && caught.year !== null) {
         setError(
-          `Esa copia es del año gravable ${String(caught.year)}. Cambia el año en «Año gravable» y ábrela de nuevo.`,
+          `Ese archivo es del año gravable ${String(caught.year)}. Cambia el año en «Año gravable» y cárgalo de nuevo.`,
         );
       } else {
         setError(caught instanceof BackupError ? ERRORS[caught.reason] : ERRORS['not-a-backup']);
@@ -64,7 +74,7 @@ export const CopyMenu = () => {
         onClick={openModal}
         className='shrink-0'
       >
-        Copia
+        Mis datos
       </Button>
       <Menu
         id='copy-menu'
@@ -76,7 +86,12 @@ export const CopyMenu = () => {
       >
         <Menu.Option
           icon={LuDownload}
-          label='Descargar copia'
+          label={
+            <MenuLabel
+              title='Descargar datos'
+              help='Guarda un archivo para seguir después o en otro computador'
+            />
+          }
           onClick={() => {
             downloadBackup(state);
             closeModal();
@@ -84,7 +99,9 @@ export const CopyMenu = () => {
         />
         <Menu.Option
           icon={LuUpload}
-          label='Abrir copia'
+          label={
+            <MenuLabel title='Cargar datos' help='Abre un archivo que descargaste antes y sigue donde ibas' />
+          }
           onClick={() => {
             closeModal();
             inputRef.current?.click();
@@ -93,7 +110,7 @@ export const CopyMenu = () => {
         <Menu.Divider />
         <Menu.Option
           icon={LuTrash2}
-          label='Borrar mis datos'
+          label='Reiniciar formulario'
           className='text-fg-error'
           onClick={() => {
             closeModal();
@@ -115,7 +132,7 @@ export const CopyMenu = () => {
         onClose={() => {
           setPending(null);
         }}
-        title='¿Reemplazar tus datos con la copia?'
+        title='¿Reemplazar tus datos con los del archivo?'
         confirmLabel='Reemplazar'
         cancelLabel='Cancelar'
         onConfirm={() => {
@@ -124,9 +141,9 @@ export const CopyMenu = () => {
         }}
       >
         <Text variant='body-m' className='text-fg-secondary'>
-          Lo que tienes ahora en este navegador se cambia por la copia
+          Lo que tienes ahora en este navegador se cambia por los datos del archivo
           {pending?.createdAt ? ` del ${formatLongDate(pending.createdAt.slice(0, 10))}` : ''}. Si quieres
-          conservarlo, descarga primero una copia.
+          conservarlo, descarga primero tus datos.
         </Text>
       </Dialog>
 
@@ -135,8 +152,8 @@ export const CopyMenu = () => {
         onClose={() => {
           setConfirmingReset(false);
         }}
-        title='¿Borrar tus datos de este navegador?'
-        confirmLabel='Borrar mis datos'
+        title='¿Reiniciar el formulario?'
+        confirmLabel='Reiniciar formulario'
         cancelLabel='Cancelar'
         onConfirm={() => {
           dispatch({ type: 'reset' });
@@ -145,8 +162,8 @@ export const CopyMenu = () => {
         }}
       >
         <Text variant='body-m' className='text-fg-secondary'>
-          Se borra tu declaración del año gravable {String(taxYear.year)} guardada aquí y vuelves a empezar
-          desde cero. Si quieres conservarla, descarga una copia antes. No se puede deshacer.
+          Se borra tu declaración del año gravable {String(taxYear.year)} guardada en este navegador y vuelves
+          a empezar desde cero. Si quieres conservarla, descarga tus datos antes. No se puede deshacer.
         </Text>
       </Dialog>
 
@@ -155,7 +172,7 @@ export const CopyMenu = () => {
         onClose={() => {
           setError(null);
         }}
-        title='No pudimos abrir esa copia'
+        title='No pudimos cargar ese archivo'
         confirmLabel='Entendido'
         onConfirm={() => {
           setError(null);
