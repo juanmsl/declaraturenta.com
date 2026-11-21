@@ -54,3 +54,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0046](./0046-scroll-in-the-form-210-panel.md)                  | The scroll stays put when a box panel opens or closes                | Accepted |
 | [0047](./0047-edit-step-sections-in-the-box-panel.md)           | Boxes filled in a step are edited in their panel too                 | Accepted |
 | [0048](./0048-previous-year-return.md)                          | Last year's return is read from its PDF in «Importar exógena»        | Accepted |
+| [0049](./0049-year-movements-as-a-list.md)                      | The year movements are a list, with the amount edited in the row     | Accepted |

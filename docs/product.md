@@ -48,7 +48,7 @@ digits when there is no exogenous report) and a single action, «Subir mi exóge
 
 1. Importar exógena — upload the DIAN report (.xlsx), read in the browser, or fill in by hand.
    Once read, it shows the year's movements (credit card, purchases, deposits) below «Esto
-   encontramos»; whether the person was responsible for VAT is always asked at the end (ADR 0045).
+   encontramos», as a list with the amount edited in the row (ADR 0049); whether the person was responsible for VAT is always asked at the end (ADR 0045).
    An optional card takes last year's return (PDF read in the browser, or typed): boxes 126, 133,
    137 and 31 fill the previous net tax, boxes 130 and 131 and the previous net assets (ADR 0048).
 2. Patrimonio — assets, accounts and debts at December 31.
@@ -130,6 +130,7 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | Boxes 60 and 75–77 get fields in Ingresos and in their panel (ADR 0047).                   |
 | 2026-11-21 | Last year's return: optional PDF card below the exogenous upload, or typed (ADR 0048).     |
 | 2026-11-21 | Box 137 goes to box 131 only if no refund or compensation was asked (ADR 0048).            |
+| 2026-11-21 | Year movements as a list like the report's sections; amount edited in the row (ADR 0049).  |
 
 ## Not defined yet
 

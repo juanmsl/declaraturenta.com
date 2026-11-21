@@ -103,3 +103,36 @@ export const MoneyField = ({
     </div>
   );
 };
+
+type InlineMoneyFieldProps = {
+  name: string;
+  /** Accessible name; not shown (the row already shows it). */
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+};
+
+const InlinePesoSign: IconType = ({ className }: IconBaseProps) => (
+  <span className={cn('type-figure-m text-fg', className)}>$</span>
+);
+
+/**
+ * Amount edited inside a list row (Figma 03c and 03d, "Monto editable"): no border at rest, a subtle
+ * background and border on hover, the violet border while typing. Right aligned, Cifra/M.
+ */
+export const InlineMoneyField = ({ name, label, value, onChange, className }: InlineMoneyFieldProps) => (
+  <div className={cn('inline-money-field w-37.5 shrink-0', className)}>
+    <InputNumber
+      name={name}
+      label={label}
+      value={value}
+      setValue={next => {
+        onChange(Math.max(0, Math.round(next)));
+      }}
+      format={PESO_FORMAT}
+      decimalSeparator=','
+      leftIcon={InlinePesoSign}
+    />
+  </div>
+);
