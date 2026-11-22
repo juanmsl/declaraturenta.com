@@ -4,7 +4,6 @@ import { buildContextValue } from '@/app/declaration/context-value';
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { DraftDeclaration } from '@/app/declaration/DraftDeclaration';
 import { AdjustmentsSections } from '@/features/adjustments/AdjustmentsSections';
-import { CapitalNonLaborExtras } from '@/features/income/CapitalNonLaborExtras';
 import { FeesSection } from '@/features/income/FeesSection';
 import { IndependentIncomeQuestion } from '@/features/income/IndependentIncomeQuestion';
 import { ScheduleSection } from '@/features/income/OtherSchedulesSection';
@@ -28,18 +27,13 @@ import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared
 import { ConceptsEditor } from './ConceptsEditor';
 import { sectionOf } from './sections';
 
-type SectionKey =
-  'fees' | 'capital-non-labor' | 'pensions' | 'dividends' | 'occasional-gains' | 'voluntary' | AdjustmentId;
+type SectionKey = 'fees' | 'pensions' | 'dividends' | 'occasional-gains' | 'voluntary' | AdjustmentId;
 
 /** Boxes edited with a section of a step, shown whole in the panel (ADRs 0031, 0032, 0038, 0047). */
 const SECTION_BOXES: Partial<Record<number, { key: SectionKey; screen: string }>> = {
   43: { key: 'fees', screen: 'Ingresos' },
   44: { key: 'fees', screen: 'Ingresos' },
   45: { key: 'fees', screen: 'Ingresos' },
-  60: { key: 'capital-non-labor', screen: 'Ingresos' },
-  75: { key: 'capital-non-labor', screen: 'Ingresos' },
-  76: { key: 'capital-non-labor', screen: 'Ingresos' },
-  77: { key: 'capital-non-labor', screen: 'Ingresos' },
   99: { key: 'pensions', screen: 'Ingresos' },
   100: { key: 'pensions', screen: 'Ingresos' },
   104: { key: 'dividends', screen: 'Ingresos' },
@@ -72,8 +66,6 @@ const SectionFields = ({ sectionKey }: { sectionKey: SectionKey }) => {
           {state.data.labor.hasIndependentIncome && <FeesSection />}
         </>
       );
-    case 'capital-non-labor':
-      return <CapitalNonLaborExtras alwaysOpen />;
     case 'pensions':
       return <ScheduleSection schedule='pensions' />;
     case 'dividends':

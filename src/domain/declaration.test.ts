@@ -73,7 +73,7 @@ describe('capital and non-labor income', () => {
         { id: 'rent', label: 'Otro', entity: 'X', amount: 2_000_000, origin: 'user' as const },
       ],
       independentContributions: 1_000,
-      costs: 0,
+      costConcepts: [],
     },
     nonLabor: {
       concepts: [
@@ -85,9 +85,9 @@ describe('capital and non-labor income', () => {
           origin: 'exogenous' as const,
         },
       ],
-      returns: 0,
-      independentContributions: 0,
-      costs: 500_000,
+      returnConcepts: [],
+      contributionConcepts: [],
+      costConcepts: [{ id: 'cost', label: 'Costos', entity: '', amount: 500_000, origin: 'user' as const }],
     },
   };
 

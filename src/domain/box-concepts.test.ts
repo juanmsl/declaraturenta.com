@@ -35,4 +35,24 @@ describe('box concepts', () => {
     ]);
     expect(data.withholdings).toBe(12_000_000);
   });
+
+  it('adds concepts to boxes 60, 75, 76 and 77, each with its own total (ADR 0052)', () => {
+    const concept = (id: string, amount: number) => ({
+      id,
+      label: id,
+      detail: '',
+      amount,
+      origin: 'user' as const,
+    });
+    let data = applyBoxConcepts(60, sampleDeclaration, [concept('a', 100_000), concept('b', 50_000)]);
+    data = applyBoxConcepts(75, data, [concept('c', 20_000)]);
+    data = applyBoxConcepts(76, data, [concept('d', 30_000)]);
+    data = applyBoxConcepts(77, data, [concept('e', 40_000), concept('f', 5_000)]);
+    expect(getBoxConcepts(60, data).map(item => item.amount)).toEqual([100_000, 50_000]);
+    expect(data.nonLabor.returnConcepts).toHaveLength(1);
+    expect(data.nonLabor.contributionConcepts[0]?.amount).toBe(30_000);
+    expect(getBoxConcepts(77, data)).toHaveLength(2);
+    // Box 74 is not touched by its sibling boxes.
+    expect(data.nonLabor.concepts).toEqual(sampleDeclaration.nonLabor.concepts);
+  });
 });

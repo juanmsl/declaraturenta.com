@@ -111,18 +111,21 @@ export type DeclarationData = {
     concepts: IncomeConcept[];
     /** Mandatory pension paid as an independent contributor, assigned to this schedule (box 59). */
     independentContributions: number;
-    /** Box 60. */
-    costs: number;
+    /** Box 60: costs and expenses, concept by concept (ADR 0052). */
+    costConcepts: IncomeConcept[];
   };
   /** Rentas no laborales (boxes 74–90): other income. */
   nonLabor: {
     concepts: IncomeConcept[];
-    /** Box 75. */
-    returns: number;
-    /** Mandatory pension paid as an independent contributor, assigned to this schedule (box 76). */
-    independentContributions: number;
-    /** Box 77. */
-    costs: number;
+    /** Box 75: returns, rebates and discounts, concept by concept (ADR 0052). */
+    returnConcepts: IncomeConcept[];
+    /**
+     * Box 76: mandatory pension paid as an independent contributor, assigned to this schedule. The
+     * exogenous report's contributions come in as concepts; more can be added (ADR 0052).
+     */
+    contributionConcepts: IncomeConcept[];
+    /** Box 77: costs and expenses, concept by concept (ADR 0052). */
+    costConcepts: IncomeConcept[];
   };
   /** Cédula de pensiones (boxes 99–103). */
   pensions: PensionData;
@@ -410,7 +413,7 @@ export const computeCapitalIncome = (
       year.general.inflationComponentRate,
   );
   const nonTaxableIncome = inflationComponent + Math.max(0, capital.independentContributions);
-  const costs = Math.max(0, capital.costs);
+  const costs = conceptsTotal(capital.costConcepts);
   return {
     grossIncome,
     inflationComponent,
@@ -422,9 +425,9 @@ export const computeCapitalIncome = (
 
 export const computeNonLaborIncome = (nonLabor: DeclarationData['nonLabor']): NonLaborIncomeResult => {
   const grossIncome = conceptsTotal(nonLabor.concepts);
-  const returns = Math.max(0, nonLabor.returns);
-  const nonTaxableIncome = Math.max(0, nonLabor.independentContributions);
-  const costs = Math.max(0, nonLabor.costs);
+  const returns = conceptsTotal(nonLabor.returnConcepts);
+  const nonTaxableIncome = conceptsTotal(nonLabor.contributionConcepts);
+  const costs = conceptsTotal(nonLabor.costConcepts);
   return {
     grossIncome,
     returns,
@@ -814,8 +817,8 @@ export const createEmptyDeclaration = (): DeclarationData => ({
     hasIndependentIncome: false,
   },
   fees: { concepts: [], nonTaxableIncome: 0, costs: 0, option: null },
-  capital: { concepts: [], independentContributions: 0, costs: 0 },
-  nonLabor: { concepts: [], returns: 0, independentContributions: 0, costs: 0 },
+  capital: { concepts: [], independentContributions: 0, costConcepts: [] },
+  nonLabor: { concepts: [], returnConcepts: [], contributionConcepts: [], costConcepts: [] },
   pensions: { concepts: [], nonTaxableIncome: 0, months: 12 },
   dividends: { concepts: [] },
   occasionalGains: { concepts: [] },

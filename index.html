@@ -9,9 +9,145 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#f7f7fb" />
     <!-- seo -->
+    <style>
+      /* Initial loader (ADR 0053, Figma «00 · Carga inicial»): shown until React renders into #root.
+         Inline because the app CSS is not loaded yet; colors are the theme tokens. */
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        background: #f7f7fb;
+        opacity: 0;
+        animation: boot-in 200ms ease-out 150ms forwards;
+      }
+      .boot-logo {
+        width: 56px;
+        height: 56px;
+      }
+      .boot-braid {
+        display: flex;
+        align-items: center;
+      }
+      .boot-thread {
+        width: 16px;
+        height: 2px;
+        background: #e4e3ee;
+      }
+      .boot-diamond {
+        width: 12px;
+        height: 12px;
+        fill: transparent;
+        stroke: #b9b8cc;
+        stroke-width: 1.5;
+        animation: boot-step 1.4s ease-in-out infinite;
+      }
+      .boot-diamond:nth-of-type(2) {
+        animation-delay: 0.1s;
+      }
+      .boot-diamond:nth-of-type(3) {
+        animation-delay: 0.2s;
+      }
+      .boot-diamond:nth-of-type(4) {
+        animation-delay: 0.3s;
+      }
+      .boot-diamond:nth-of-type(5) {
+        animation-delay: 0.4s;
+      }
+      .boot-diamond:nth-of-type(6) {
+        animation-delay: 0.5s;
+      }
+      .boot-diamond:nth-of-type(7) {
+        animation-delay: 0.6s;
+      }
+      @keyframes boot-in {
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes boot-step {
+        0%,
+        15% {
+          fill: transparent;
+          stroke: #b9b8cc;
+        }
+        35%,
+        60% {
+          fill: #5b47f0;
+          stroke: #5b47f0;
+        }
+        85%,
+        100% {
+          fill: transparent;
+          stroke: #b9b8cc;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot {
+          animation: none;
+          opacity: 1;
+        }
+        .boot-diamond {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status" aria-label="Cargando Declara tu renta">
+        <svg class="boot-logo" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M5 18.75L10 23.75L5 28.75L0 23.75L5 18.75Z" fill="#E4E3EE" />
+          <path d="M11.25 25L16.25 30L11.25 35L6.25 30L11.25 25Z" fill="#5B47F0" />
+          <path d="M17.5 31.25L22.5 36.25L17.5 41.25L12.5 36.25L17.5 31.25Z" fill="#5B47F0" />
+          <path d="M23.75 37.5L28.75 42.5L23.75 47.5L18.75 42.5L23.75 37.5Z" fill="#E4E3EE" />
+          <path d="M11.25 12.5L16.25 17.5L11.25 22.5L6.25 17.5L11.25 12.5Z" fill="#E4E3EE" />
+          <path d="M17.5 18.75L22.5 23.75L17.5 28.75L12.5 23.75L17.5 18.75Z" fill="#E4E3EE" />
+          <path d="M23.75 25L28.75 30L23.75 35L18.75 30L23.75 25Z" fill="#5B47F0" />
+          <path d="M30 31.25L35 36.25L30 41.25L25 36.25L30 31.25Z" fill="#E4E3EE" />
+          <path d="M17.5 6.25L22.5 11.25L17.5 16.25L12.5 11.25L17.5 6.25Z" fill="#E4E3EE" />
+          <path d="M23.75 12.5L28.75 17.5L23.75 22.5L18.75 17.5L23.75 12.5Z" fill="#E4E3EE" />
+          <path d="M30 18.75L35 23.75L30 28.75L25 23.75L30 18.75Z" fill="#5B47F0" />
+          <path d="M36.25 25L41.25 30L36.25 35L31.25 30L36.25 25Z" fill="#E4E3EE" />
+          <path d="M23.75 0L28.75 5L23.75 10L18.75 5L23.75 0Z" fill="#E4E3EE" />
+          <path d="M30 6.25L35 11.25L30 16.25L25 11.25L30 6.25Z" fill="#E4E3EE" />
+          <path d="M36.25 12.5L41.25 17.5L36.25 22.5L31.25 17.5L36.25 12.5Z" fill="#5B47F0" />
+          <path d="M42.5 18.75L47.5 23.75L42.5 28.75L37.5 23.75L42.5 18.75Z" fill="#E4E3EE" />
+        </svg>
+        <div class="boot-braid">
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+          <span class="boot-thread" aria-hidden="true"></span>
+          <svg class="boot-diamond" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M6 1.06 10.94 6 6 10.94 1.06 6Z" />
+          </svg>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

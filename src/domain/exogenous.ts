@@ -332,7 +332,10 @@ export const applyExogenous = (
     nonLabor: {
       ...data.nonLabor,
       concepts: nonLaborConcepts,
-      independentContributions: toNonLabor ? independentContributions : 0,
+      contributionConcepts: [
+        ...data.nonLabor.contributionConcepts.filter(concept => concept.origin === 'user'),
+        ...(toNonLabor ? conceptsOf(items, 'other-non-taxable') : []),
+      ],
     },
     pensions: {
       ...data.pensions,
@@ -429,7 +432,7 @@ export const clearExogenous = (data: DeclarationData, report: ExogenousReport): 
   nonLabor: {
     ...data.nonLabor,
     concepts: data.nonLabor.concepts.filter(c => c.origin === 'user'),
-    independentContributions: 0,
+    contributionConcepts: data.nonLabor.contributionConcepts.filter(c => c.origin === 'user'),
   },
   assets: data.assets.filter(asset => asset.origin === 'user'),
   debts: data.debts.filter(debt => debt.origin === 'user'),

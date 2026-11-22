@@ -16,7 +16,9 @@ export type BoxConcept = {
 };
 
 /** Boxes whose concepts the user can add, edit and remove. */
-export const EDITABLE_BOXES = [28, 29, 30, 32, 33, 35, 38, 58, 74, 130, 131, 132, 138] as const;
+export const EDITABLE_BOXES = [
+  28, 29, 30, 32, 33, 35, 38, 58, 60, 74, 75, 76, 77, 130, 131, 132, 138,
+] as const;
 export type EditableBox = (typeof EDITABLE_BOXES)[number];
 
 export const isEditableBox = (box: number): box is EditableBox =>
@@ -75,6 +77,14 @@ export const getBoxConcepts = (box: EditableBox, data: DeclarationData): BoxConc
       return fromIncomeConcepts(data.capital.concepts);
     case 74:
       return fromIncomeConcepts(data.nonLabor.concepts);
+    case 60:
+      return fromIncomeConcepts(data.capital.costConcepts);
+    case 75:
+      return fromIncomeConcepts(data.nonLabor.returnConcepts);
+    case 76:
+      return fromIncomeConcepts(data.nonLabor.contributionConcepts);
+    case 77:
+      return fromIncomeConcepts(data.nonLabor.costConcepts);
     case 28:
       return single(
         'electronic-invoice',
@@ -203,6 +213,38 @@ export const applyBoxConcepts = (
         ...data,
         nonLabor: { ...data.nonLabor, concepts: toIncomeConcepts(concepts, data.nonLabor.concepts, false) },
       };
+    case 60:
+      return {
+        ...data,
+        capital: {
+          ...data.capital,
+          costConcepts: toIncomeConcepts(concepts, data.capital.costConcepts, false),
+        },
+      };
+    case 75:
+      return {
+        ...data,
+        nonLabor: {
+          ...data.nonLabor,
+          returnConcepts: toIncomeConcepts(concepts, data.nonLabor.returnConcepts, false),
+        },
+      };
+    case 76:
+      return {
+        ...data,
+        nonLabor: {
+          ...data.nonLabor,
+          contributionConcepts: toIncomeConcepts(concepts, data.nonLabor.contributionConcepts, false),
+        },
+      };
+    case 77:
+      return {
+        ...data,
+        nonLabor: {
+          ...data.nonLabor,
+          costConcepts: toIncomeConcepts(concepts, data.nonLabor.costConcepts, false),
+        },
+      };
     case 29:
       return {
         ...data,
@@ -294,6 +336,10 @@ export const boxDescription = (box: number, year: TaxYearConfig): string | undef
     38: `Intereses que pagaste por el crédito de vivienda. La casilla toma hasta ${uvt(year.labor.housingInterestUvt)} UVT al año.`,
     58: `Intereses y rendimientos financieros: cuentas, CDT y fondos de inversión. El ${percent(year.general.inflationComponentRate)} de ellos no es renta (casilla 59).`,
     74: 'Otros ingresos que no vienen de tu trabajo ni de tus inversiones.',
+    60: 'Costos y gastos de tus rentas de capital: solo los que tengan relación con esos ingresos y estén soportados.',
+    75: 'Devoluciones, rebajas y descuentos sobre tus otros ingresos (casilla 74).',
+    76: 'Aportes obligatorios a pensión que pagaste como independiente sobre tus otros ingresos. No pagan impuesto.',
+    77: 'Costos y gastos de tus otros ingresos: solo los que tengan relación con esos ingresos y estén soportados.',
     39: 'Dependiente económico y medicina prepagada, cada uno con su tope.',
     130: 'El anticipo que liquidaste en tu declaración del año pasado.',
     131: 'El saldo a favor de tu declaración anterior que no pediste en devolución.',

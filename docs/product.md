@@ -133,6 +133,8 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | Year movements as a list like the report's sections; amount edited in the row (ADR 0049).            |
 | 2026-11-21 | Last year's return: list 31, 126, 133, 137; refund switch in row 137, starts at «No» (ADR 0050).     |
 | 2026-11-21 | «Copia» is now «Mis datos»: «Descargar datos», «Cargar datos» and «Reiniciar formulario» (ADR 0051). |
+| 2026-11-21 | Boxes 60 and 75–77 are lists of concepts in their 210 panel; they leave Ingresos (ADR 0052).         |
+| 2026-11-21 | Every page shows the isotype and the braid lighting up while it first loads (ADR 0053).              |
 
 ## Not defined yet
 
