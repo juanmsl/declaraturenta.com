@@ -200,7 +200,14 @@ export const Form210Page = () => {
                   className='toggle-field flex flex-col gap-3 rounded-lg border border-line bg-surface px-5 py-4'
                 >
                   <div className='flex items-center gap-4'>
-                    <Switch name={schedule.id} value={isActive} setValue={toggle} />
+                    <Switch
+                      name={schedule.id}
+                      value={isActive}
+                      setValue={toggle}
+                      color='primary'
+                      size='small'
+                      width='large'
+                    />
                     <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
                       <Text variant='body-m-strong'>{schedule.title}</Text>
                       <Text variant='note' className='text-fg-muted'>
