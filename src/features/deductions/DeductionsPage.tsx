@@ -12,7 +12,17 @@ import { uvtToPesos } from '@/domain/uvt';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Alert, Button, CalcRow, Chip, StepHeader, StepLayout, Text } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  CalcRow,
+  Chip,
+  RowContent,
+  StepHeader,
+  StepLayout,
+  Text,
+  StepActions,
+} from '@/shared/ui';
 import { TaxRows } from '@/features/estimate/TaxRows';
 
 import { CapMeter } from './CapMeter';
@@ -192,23 +202,23 @@ export const DeductionsPage = () => {
                 setEditing(row.id);
               }}
               aria-label={`${row.id === 'exempt-25' ? 'Ver' : 'Editar'} ${row.label}`}
-              className='-mx-5 flex w-[calc(100%+2.5rem)] cursor-pointer items-center gap-3.5 px-5 py-3.25 text-left transition-colors hover:bg-canvas focus-visible:bg-canvas focus-visible:outline-none'
+              className='-mx-5 flex w-[calc(100%+2.5rem)] cursor-pointer items-center gap-3.5 px-5 py-3.25 text-left transition-colors hover:bg-canvas focus-visible:bg-canvas focus-visible:outline-none max-xl:py-3.5'
             >
-              <span aria-hidden className={cn('size-3 shrink-0 rounded-[3px]', row.colorClass)} />
-              <span className='flex min-w-0 flex-1 flex-col gap-0.5'>
-                <Text as='span' variant='body-m-strong'>
-                  {row.label}
-                </Text>
-                <Text as='span' variant='note' className='text-fg-muted'>
-                  {row.note}
-                </Text>
-              </span>
-              {row.origin && (
-                <Chip variant={ORIGIN_CHIPS[row.origin].variant}>{ORIGIN_CHIPS[row.origin].label}</Chip>
-              )}
-              <Text as='span' variant='figure-m' className='w-32.5 shrink-0 text-right'>
-                {formatCurrency(row.amount)}
-              </Text>
+              <RowContent
+                icon={<span aria-hidden className={cn('size-3 shrink-0 rounded-[3px]', row.colorClass)} />}
+                title={row.label}
+                detail={row.note}
+                badge={
+                  row.origin && (
+                    <Chip variant={ORIGIN_CHIPS[row.origin].variant}>{ORIGIN_CHIPS[row.origin].label}</Chip>
+                  )
+                }
+                value={
+                  <Text as='span' variant='figure-m' className='w-32.5 shrink-0 text-right max-xl:w-auto'>
+                    {formatCurrency(row.amount)}
+                  </Text>
+                }
+              />
             </button>
           </li>
         ))}
@@ -234,14 +244,14 @@ export const DeductionsPage = () => {
         </Alert>
       )}
 
-      <div className='flex items-start justify-between'>
+      <StepActions>
         <Button variant='ghost' onClick={() => void navigate(incomeStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
           Seguir con otros ajustes
         </Button>
-      </div>
+      </StepActions>
 
       <DeductionDrawer
         deduction={editing}

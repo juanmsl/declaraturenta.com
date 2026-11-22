@@ -29,7 +29,11 @@ export const VatQuestion = () => {
           aunque no superes ningún tope.
         </Text>
       </div>
-      <div role='radiogroup' aria-labelledby='vat-question' className='flex items-start gap-3'>
+      <div
+        role='radiogroup'
+        aria-labelledby='vat-question'
+        className='flex items-start gap-3 max-md:flex-col max-md:items-stretch'
+      >
         <OptionCard
           name='vatResponsible'
           value='no'

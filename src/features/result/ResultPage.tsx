@@ -6,7 +6,8 @@ import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import { getStep } from '@/app/flow';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Button, CalcRow, Icon, OptionCard, Text } from '@/shared/ui';
+import { useIsCompact } from '@/shared/lib/use-compact';
+import { Button, CalcRow, Icon, OptionCard, Text, StepActions } from '@/shared/ui';
 import { TaxRows } from '@/features/estimate/TaxRows';
 
 import { FilingObligationCard } from './FilingObligationCard';
@@ -15,7 +16,7 @@ import { FilingSection } from './FilingSection';
 const firstStep = getStep('exogenous');
 const draftStep = getStep('draft-210');
 
-/** Screen 07 · Resultado (Figma node 10:1188). */
+/** Screen 07 · Resultado (Figma node 10:1188; phones and tablets M07, ADR 0060). */
 export const ResultPage = () => {
   const { taxYear } = useTaxYear();
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export const ResultPage = () => {
   const inFavor = result.amountInFavor > 0;
   const toPay = result.amountToPay > 0;
   const { bracket } = tableTax;
+  const isCompact = useIsCompact();
 
   const handleContinue = () => {
     dispatch({ type: 'completeStep', step: 'result' });
@@ -31,10 +33,10 @@ export const ResultPage = () => {
   };
 
   return (
-    <div className='flex flex-col gap-8 px-14 py-11'>
+    <div className='flex flex-col gap-8 px-14 py-11 max-xl:mx-auto max-xl:w-full max-xl:max-w-180 max-xl:gap-6 max-xl:px-4 max-xl:pt-4 max-xl:pb-8 md:max-xl:px-8 md:max-xl:pt-8'>
       <section
         className={cn(
-          'flex items-center gap-10 rounded-lg px-10 py-8',
+          'flex items-center gap-10 rounded-lg px-10 py-8 max-xl:flex-col max-xl:items-stretch max-xl:gap-5 max-xl:p-6',
           toPay ? 'bg-coral-soft' : inFavor ? 'bg-mint-soft' : 'bg-subtle',
         )}
       >
@@ -45,10 +47,10 @@ export const ResultPage = () => {
               {toPay ? 'Tienes saldo a pagar' : inFavor ? 'Tienes saldo a favor' : 'No tienes saldo a pagar'}
             </Text>
           </div>
-          <Text variant='figure-hero'>
+          <Text variant={isCompact ? 'figure-xl' : 'figure-hero'}>
             {formatCurrency(toPay ? result.amountToPay : result.amountInFavor)}
           </Text>
-          <Text variant='body-l' className='text-fg-secondary'>
+          <Text variant={isCompact ? 'body-m' : 'body-l'} className='text-fg-secondary'>
             {toPay
               ? 'Te corresponde pagar más de lo que te retuvieron. Lo pagas al presentar tu declaración, a más tardar en tu fecha límite.'
               : inFavor
@@ -60,7 +62,7 @@ export const ResultPage = () => {
           <div
             role='radiogroup'
             aria-label='Qué hacer con tu saldo a favor'
-            className='flex w-80 shrink-0 flex-col gap-3'
+            className='flex w-80 shrink-0 flex-col gap-3 max-xl:w-full'
           >
             <OptionCard
               name='refundPreference'
@@ -91,8 +93,8 @@ export const ResultPage = () => {
 
       <FilingSection />
 
-      <div className='flex items-start gap-8'>
-        <section className='flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-line bg-surface p-6'>
+      <div className='flex items-start gap-8 max-xl:flex-col max-xl:items-stretch max-xl:gap-6'>
+        <section className='flex min-w-0 flex-1 flex-col gap-3 rounded-lg border border-line bg-surface p-6 max-xl:p-5'>
           <Text variant='title-m' as='h2'>
             Cómo llegamos aquí
           </Text>
@@ -121,7 +123,7 @@ export const ResultPage = () => {
           </div>
         </section>
 
-        <section className='flex w-105 shrink-0 flex-col gap-3 rounded-lg border border-line bg-surface p-6'>
+        <section className='flex w-105 shrink-0 flex-col gap-3 rounded-lg border border-line bg-surface p-6 max-xl:w-full max-xl:p-5'>
           <Text variant='title-m' as='h2'>
             Tu tarifa
           </Text>
@@ -194,14 +196,14 @@ export const ResultPage = () => {
 
       <FilingObligationCard />
 
-      <div className='flex items-start justify-between'>
-        <Button variant='secondary' onClick={() => void navigate(firstStep.path)}>
+      <StepActions>
+        <Button variant={isCompact ? 'ghost' : 'secondary'} onClick={() => void navigate(firstStep.path)}>
           Revisar mis respuestas
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
           Ver borrador del 210
         </Button>
-      </div>
+      </StepActions>
     </div>
   );
 };

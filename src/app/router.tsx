@@ -31,11 +31,8 @@ export const router = createBrowserRouter([
       { path: TERMS_PATH, element: <LegalPage page='terms' />, errorElement: <ErrorPage /> },
       { path: PRIVACY_PATH, element: <LegalPage page='privacy' />, errorElement: <ErrorPage /> },
       {
-        element: (
-          <DesktopOnly>
-            <AppLayout />
-          </DesktopOnly>
-        ),
+        // Phones and tablets get the compact layout (ADR 0060).
+        element: <AppLayout />,
         errorElement: <ErrorPage />,
         children: [
           { path: 'inicio', element: <HomePage /> },
@@ -48,7 +45,7 @@ export const router = createBrowserRouter([
           { path: 'borrador-210', element: <DraftPage /> },
         ],
       },
-      // Screen 09 has its own layout (no side rail).
+      // Screen 09 has its own layout (no side rail) and still needs a computer (ADR 0060).
       {
         path: FORM_210_PATH,
         element: (

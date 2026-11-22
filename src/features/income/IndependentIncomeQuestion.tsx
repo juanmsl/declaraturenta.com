@@ -19,7 +19,11 @@ export const IndependentIncomeQuestion = () => {
       <Text id='independent-question' variant='title-s' as='h2'>
         ¿Tuviste también ingresos como independiente?
       </Text>
-      <div role='radiogroup' aria-labelledby='independent-question' className='flex items-start gap-3'>
+      <div
+        role='radiogroup'
+        aria-labelledby='independent-question'
+        className='flex items-start gap-3 max-md:flex-col max-md:items-stretch'
+      >
         <OptionCard
           name='hasIndependentIncome'
           value='no'

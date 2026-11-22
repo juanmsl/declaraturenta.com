@@ -82,11 +82,11 @@ export const FileDropzone = ({
   return (
     <div className='flex flex-col gap-2'>
       {selected ? (
-        <div className='flex items-center gap-4 rounded-lg border-[1.5px] border-dashed border-line-strong bg-surface p-5'>
+        <div className='flex items-center gap-4 rounded-lg border-[1.5px] border-dashed border-line-strong bg-surface p-5 max-md:flex-wrap max-md:gap-y-1'>
           <span className='flex size-12 shrink-0 items-center justify-center rounded-md bg-mint-soft text-fg-success'>
             <Icon icon={LuFileText} size={22} />
           </span>
-          <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
+          <div className='flex min-w-0 flex-1 flex-col gap-0.5 max-md:basis-[calc(100%-4rem)]'>
             <Text variant='body-m-strong' nowrap>
               {selected.name}
             </Text>
@@ -95,7 +95,13 @@ export const FileDropzone = ({
             </Text>
           </div>
           {input}
-          <Button variant='ghost' type='button' onClick={() => inputRef.current?.click()}>
+          {/* Phones: under the name, aligned with it (Figma M03). */}
+          <Button
+            variant='ghost'
+            type='button'
+            className='max-md:ml-16 max-md:px-0 max-md:py-1'
+            onClick={() => inputRef.current?.click()}
+          >
             Cambiar archivo
           </Button>
         </div>

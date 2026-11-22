@@ -5,7 +5,7 @@ import { useDeclaration } from '@/app/declaration/declaration-context';
 import { getStep } from '@/app/flow';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { TaxRows } from '@/features/estimate/TaxRows';
-import { Alert, Button, CalcRow, StepHeader, StepLayout } from '@/shared/ui';
+import { Alert, Button, CalcRow, StepHeader, StepLayout, StepActions } from '@/shared/ui';
 
 import { AdjustmentsSections } from './AdjustmentsSections';
 
@@ -35,14 +35,14 @@ export const AdjustmentsPage = () => {
         Desde 2021 su tarifa es 0 %, así que la casilla 98 queda en $ 0.
       </Alert>
 
-      <div className='flex items-start justify-between'>
+      <StepActions>
         <Button variant='ghost' onClick={() => void navigate(deductionsStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
           Ver mi resultado
         </Button>
-      </div>
+      </StepActions>
     </StepLayout>
   );
 };

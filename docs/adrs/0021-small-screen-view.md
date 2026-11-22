@@ -1,6 +1,6 @@
 # 0021. Small-screen view: "Usa un computador" below 1280 px
 
-- Status: Accepted
+- Status: Accepted; the small-screen part is superseded by [ADR 0060](./0060-steps-on-phones-and-tablets.md)
 - Date: 2026-11-19
 
 ## Context

@@ -9,7 +9,20 @@ import { getStep } from '@/app/flow';
 import type { AssetKind, ValueOrigin } from '@/domain/declaration';
 import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { formatCurrency } from '@/shared/lib/format';
-import { Alert, Button, CalcRow, Chip, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
+import { useIsCompact } from '@/shared/lib/use-compact';
+import {
+  Alert,
+  Button,
+  CalcRow,
+  Chip,
+  Icon,
+  NoteBox,
+  StepHeader,
+  StepLayout,
+  Text,
+  StepActions,
+  RowContent,
+} from '@/shared/ui';
 
 import { HoldingDrawer } from './HoldingDrawer';
 import type { HoldingDraft } from './HoldingDrawer';
@@ -37,6 +50,7 @@ const newDraft = (): HoldingDraft => ({
 
 /** Screen 05 · Patrimonio (Figma node 14:1386). */
 export const AssetsPage = () => {
+  const isCompact = useIsCompact();
   const { taxYear } = useTaxYear();
   const navigate = useNavigate();
   const { state, dispatch, result } = useDeclaration();
@@ -154,13 +168,22 @@ export const AssetsPage = () => {
         }))}
       />
 
-      <div className='flex items-center gap-5 rounded-lg bg-rail px-6 py-4.5'>
-        <Summary label='Patrimonio bruto' value={result.grossAssets} />
-        <Operator symbol='−' />
-        <Summary label='Deudas' value={result.totalDebts} />
-        <Operator symbol='=' />
-        <Summary label='Patrimonio líquido' value={result.netAssets} highlight />
-      </div>
+      {isCompact ? (
+        // Figma M05: one line per figure, with the operator in the name.
+        <div className='flex flex-col gap-2.5 rounded-lg bg-rail px-5 py-4'>
+          <SummaryLine label='Patrimonio bruto' value={result.grossAssets} />
+          <SummaryLine label='− Deudas' value={result.totalDebts} />
+          <SummaryLine label='= Patrimonio líquido' value={result.netAssets} highlight />
+        </div>
+      ) : (
+        <div className='flex items-center gap-5 rounded-lg bg-rail px-6 py-4.5'>
+          <Summary label='Patrimonio bruto' value={result.grossAssets} />
+          <Operator symbol='−' />
+          <Summary label='Deudas' value={result.totalDebts} />
+          <Operator symbol='=' />
+          <Summary label='Patrimonio líquido' value={result.netAssets} highlight />
+        </div>
+      )}
 
       {firstRealEstate && (
         <Alert
@@ -176,14 +199,14 @@ export const AssetsPage = () => {
         </Alert>
       )}
 
-      <div className='flex items-start justify-between'>
+      <StepActions>
         <Button variant='ghost' onClick={() => void navigate(exogenousStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
           Guardar y seguir
         </Button>
-      </div>
+      </StepActions>
 
       <HoldingDrawer
         type={editing?.type ?? 'asset'}
@@ -244,27 +267,27 @@ const HoldingSection = ({
             type='button'
             onClick={item.onEdit}
             aria-label={`Editar ${item.label}`}
-            className='-mx-5 flex w-[calc(100%+2.5rem)] cursor-pointer items-center gap-3.5 px-5 py-3.25 text-left transition-colors hover:bg-canvas focus-visible:bg-canvas focus-visible:outline-none'
+            className='-mx-5 flex w-[calc(100%+2.5rem)] cursor-pointer items-center gap-3.5 px-5 py-3.25 text-left transition-colors hover:bg-canvas focus-visible:bg-canvas focus-visible:outline-none max-xl:py-3.5'
           >
-            <Icon icon={item.icon} size={20} className='text-fg-secondary' />
-            <span className='flex min-w-0 flex-1 flex-col gap-0.5'>
-              <Text as='span' variant='body-m-strong'>
-                {item.label}
-              </Text>
-              <Text as='span' variant='note' className='text-fg-muted'>
-                {item.detail}
-              </Text>
-            </span>
-            {item.needsReview ? (
-              <Chip variant='review'>Revisar</Chip>
-            ) : item.origin === 'exogenous' ? (
-              <Chip variant='exogenous'>Desde exógena</Chip>
-            ) : (
-              <Chip variant='box'>Lo ingresaste tú</Chip>
-            )}
-            <Text as='span' variant='figure-m' className='w-32.5 shrink-0 text-right'>
-              {formatCurrency(item.amount)}
-            </Text>
+            <RowContent
+              icon={<Icon icon={item.icon} size={20} className='shrink-0 text-fg-secondary' />}
+              title={item.label}
+              detail={item.detail}
+              badge={
+                item.needsReview ? (
+                  <Chip variant='review'>Revisar</Chip>
+                ) : item.origin === 'exogenous' ? (
+                  <Chip variant='exogenous'>Desde exógena</Chip>
+                ) : (
+                  <Chip variant='box'>Lo ingresaste tú</Chip>
+                )
+              }
+              value={
+                <Text as='span' variant='figure-m' className='w-32.5 shrink-0 text-right max-xl:w-auto'>
+                  {formatCurrency(item.amount)}
+                </Text>
+              }
+            />
           </button>
         </li>
       ))}
@@ -282,6 +305,23 @@ const Summary = ({
   highlight?: boolean;
 }) => (
   <div className='flex flex-col gap-0.5'>
+    <Text variant='note' className={highlight ? 'text-fg-action' : 'text-fg-muted'}>
+      {label}
+    </Text>
+    <Text variant={highlight ? 'figure-l' : 'figure-m'}>{formatCurrency(value)}</Text>
+  </div>
+);
+
+const SummaryLine = ({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: number;
+  highlight?: boolean;
+}) => (
+  <div className='flex items-center justify-between gap-3'>
     <Text variant='note' className={highlight ? 'text-fg-action' : 'text-fg-muted'}>
       {label}
     </Text>

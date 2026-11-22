@@ -2,7 +2,7 @@ import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
 import type { FilingTestId } from '@/domain/filing-obligation';
 import { formatCurrency, formatLongDate, formatNumber } from '@/shared/lib/format';
-import { Alert, Chip, Text } from '@/shared/ui';
+import { Alert, Chip, RowContent, Text } from '@/shared/ui';
 
 const TEST_LABELS: Record<FilingTestId, string> = {
   grossAssets: 'Patrimonio bruto al 31 de diciembre',
@@ -29,8 +29,11 @@ export const FilingObligationCard = () => {
       : 'Eras responsable de IVA, y eso basta aunque no superes ningún tope.';
 
   return (
-    <section aria-labelledby='obligation-title' className='flex items-start gap-6'>
-      <div className='flex w-90 shrink-0 flex-col gap-3'>
+    <section
+      aria-labelledby='obligation-title'
+      className='flex items-start gap-6 max-xl:flex-col max-xl:items-stretch'
+    >
+      <div className='flex w-90 shrink-0 flex-col gap-3 max-xl:w-full'>
         <Text id='obligation-title' variant='title-m' as='h2'>
           ¿Tenías que declarar?
         </Text>
@@ -59,29 +62,31 @@ export const FilingObligationCard = () => {
         )}
       </div>
 
-      <ul className='flex min-w-0 flex-1 flex-col rounded-lg border border-line bg-surface px-6'>
+      <ul className='flex min-w-0 flex-1 flex-col rounded-lg border border-line bg-surface px-6 max-xl:px-5'>
         {tests.map(test => (
-          <li key={test.id} className='flex items-center gap-4 border-b border-line py-4'>
-            <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-              <Text variant='body-m-strong'>{TEST_LABELS[test.id]}</Text>
-              <Text variant='note' className='text-fg-muted'>
-                Tope: {formatNumber(test.limitUvt)} UVT · {formatCurrency(test.limit)}
-              </Text>
-            </div>
-            {test.exceeds ? <Chip variant='cap'>Supera</Chip> : <Chip variant='exogenous'>No supera</Chip>}
-            <Text variant='figure-m' className='w-32.5 shrink-0 text-right'>
-              {formatCurrency(test.value)}
-            </Text>
+          <li key={test.id} className='flex border-b border-line py-4 max-xl:py-3.5'>
+            <RowContent
+              title={TEST_LABELS[test.id]}
+              detail={`Tope: ${formatNumber(test.limitUvt)} UVT · ${formatCurrency(test.limit)}`}
+              badge={
+                test.exceeds ? <Chip variant='cap'>Supera</Chip> : <Chip variant='exogenous'>No supera</Chip>
+              }
+              value={
+                <Text variant='figure-m' className='w-32.5 shrink-0 text-right max-xl:w-auto'>
+                  {formatCurrency(test.value)}
+                </Text>
+              }
+            />
           </li>
         ))}
-        <li className='flex items-center gap-4 py-4'>
-          <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-            <Text variant='body-m-strong'>Responsable de IVA</Text>
-            <Text variant='note' className='text-fg-muted'>
-              Lo respondiste en Importar exógena
-            </Text>
-          </div>
-          {vatResponsible ? <Chip variant='cap'>Sí eras</Chip> : <Chip variant='exogenous'>No eras</Chip>}
+        <li className='flex py-4 max-xl:py-3.5'>
+          <RowContent
+            title='Responsable de IVA'
+            detail='Lo respondiste en Importar exógena'
+            badge={
+              vatResponsible ? <Chip variant='cap'>Sí eras</Chip> : <Chip variant='exogenous'>No eras</Chip>
+            }
+          />
         </li>
       </ul>
     </section>

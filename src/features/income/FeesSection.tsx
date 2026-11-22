@@ -71,7 +71,11 @@ export const FeesSection = () => {
             La ley te deja elegir una de las dos, no ambas. Calculamos las dos por ti
             {fees.option ? '.' : ' y, mientras eliges, usamos la que te deja menos impuesto.'}
           </Text>
-          <div role='radiogroup' aria-labelledby='fees-option' className='flex items-start gap-3'>
+          <div
+            role='radiogroup'
+            aria-labelledby='fees-option'
+            className='flex items-start gap-3 max-md:flex-col max-md:items-stretch'
+          >
             <OptionCard
               name='feesOption'
               value='exempt'

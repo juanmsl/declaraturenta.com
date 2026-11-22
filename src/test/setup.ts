@@ -10,3 +10,20 @@ if (!('ResizeObserver' in globalThis)) {
     },
   });
 }
+
+// jsdom has no matchMedia; tests render the computer layout unless they mock it (ADR 0060).
+if (typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }),
+  });
+}

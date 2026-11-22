@@ -23,7 +23,7 @@ rail and the isotype. No flags or stereotypes.
 | 08 · Borrador 210                     | `11:1213`  | `/borrador-210`   | Built  |
 | 09 · Formulario 210                   | `18:1572`  | `/formulario-210` | Built  |
 | 09b · Detalle casilla 32              | `19:2267`  | `?casilla=N`      | Built  |
-| 10 · Móvil · Usa un computador        | `23:3012`  | < 1280 px         | Built  |
+| 10 · Móvil · Usa un computador        | `23:3012`  | 210 < 1280 px     | Built  |
 | 11 · Página no encontrada             | `61:7844`  | `*`               | Built  |
 | 12 · Error inesperado                 | `61:7890`  | error element     | Built  |
 | 05d · Vehículo por revisar            | `71:8118`  | `/patrimonio`     | Built  |
@@ -34,6 +34,26 @@ rail and the isotype. No flags or stereotypes.
 | 14b · Ayuda · Preguntas frecuentes    | `77:9282`  | help panel        | Built  |
 | 04b · Ingresos · Honorarios           | `53:3433`  | `/ingresos`       | Built  |
 | 04e · Ingresos · Otras cédulas        | `86:8801`  | `/ingresos`       | Built  |
+
+Phones and tablets (ADR 0060), on the «Flujo · AG 2025» page:
+
+| Screen                        | Figma node  | Route            | Status |
+| ----------------------------- | ----------- | ---------------- | ------ |
+| M01 · Inicio                  | `199:13568` | `/inicio`        | Built  |
+| M03 · Importar exógena        | `203:13925` | `/exogena`       | Built  |
+| M04 · Ingresos                | `200:13604` | `/ingresos`      | Built  |
+| M04a · Hoja de pasos          | `201:13724` | top bar          | Built  |
+| M04b · Menú                   | `201:13797` | top bar          | Built  |
+| M04c · Resumen abierto        | `201:13891` | summary bar      | Built  |
+| M04d · Aviso Formulario 210   | `201:13979` | view switcher    | Built  |
+| M05 · Patrimonio              | `203:14321` | `/patrimonio`    | Built  |
+| M06 · Deducciones             | `203:14483` | `/deducciones`   | Built  |
+| M15 · Otros ajustes           | `203:14646` | `/otros-ajustes` | Built  |
+| M07 · Resultado               | `204:14439` | `/resultado`     | Built  |
+| M08 · Borrador                | `204:14683` | `/borrador-210`  | Built  |
+| T04 · Ingresos · Tablet (834) | `213:14621` | `/ingresos`      | Built  |
+
+Component «Barra superior · Móvil»: `199:13535`.
 
 The board "Opciones por decidir" (`78:9346`) holds the favicon, compact braid and section
 marker options waiting for the owner's choice.

@@ -31,7 +31,8 @@ the business model comes last, after the platform is fully functional.
 - Data stays in the browser, with a downloadable/uploadable local copy (.json).
 - Brand: compact braid with one diamond per step, violet plate favicon and the diamond as
   section marker (ADR 0029).
-- Domain: declaraturenta.com. Screens between 480 and 1280 px keep the 480 px column.
+- Domain: declaraturenta.com.
+- The steps work on phones and tablets; the full Formulario 210 needs a computer (ADR 0060).
 
 ## Known gaps and open questions
 

@@ -59,12 +59,12 @@ export const FilingSection = () => {
   return (
     <section
       aria-labelledby='filing-title'
-      className='flex flex-col gap-5 rounded-lg border border-line bg-surface p-6'
+      className='flex flex-col gap-5 rounded-lg border border-line bg-surface p-6 max-xl:p-5'
     >
       <Text id='filing-title' variant='title-m' as='h2'>
         ¿Cuándo vas a presentar?
       </Text>
-      <div className='flex items-start gap-6'>
+      <div className='flex items-start gap-6 max-md:flex-col max-md:items-stretch max-md:gap-5'>
         <div className='text-field flex min-w-0 flex-1 flex-col gap-2'>
           <DatePicker
             name='filingDate'
@@ -92,7 +92,11 @@ export const FilingSection = () => {
             <Text id='prior-late-question' variant='title-s' as='h3'>
               ¿Declaraste tarde alguna vez en los últimos dos años?
             </Text>
-            <div role='radiogroup' aria-labelledby='prior-late-question' className='flex items-start gap-3'>
+            <div
+              role='radiogroup'
+              aria-labelledby='prior-late-question'
+              className='flex items-start gap-3 max-md:flex-col max-md:items-stretch'
+            >
               <OptionCard
                 name='priorLateFiling'
                 value='none'
@@ -129,7 +133,11 @@ export const FilingSection = () => {
             <Text id='summoned-question' variant='title-s' as='h3'>
               ¿La DIAN te envió un emplazamiento para declarar?
             </Text>
-            <div role='radiogroup' aria-labelledby='summoned-question' className='flex items-start gap-3'>
+            <div
+              role='radiogroup'
+              aria-labelledby='summoned-question'
+              className='flex items-start gap-3 max-md:flex-col max-md:items-stretch'
+            >
               <OptionCard
                 name='summoned'
                 value='no'
