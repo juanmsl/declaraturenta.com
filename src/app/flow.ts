@@ -1,7 +1,7 @@
 /**
  * The sections of the declaration flow, in the order of the Formulario 210 (patrimonio before
  * ingresos, ADR 0045) (ADR 0035: «¿Debo declarar?» moved to the landing). Single source of truth for
- * the side rail, the top bar braid, the home journey list and the routes.
+ * the side rail, the home journey list and the routes.
  * Paths are user-facing, so they are in Spanish.
  */
 export type FlowStepId =
