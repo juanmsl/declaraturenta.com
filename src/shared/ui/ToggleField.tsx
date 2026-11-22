@@ -12,7 +12,7 @@ type ToggleFieldProps = {
   onChange: (checked: boolean) => void;
 };
 
-/** Yes/no setting with a Polpo Switch styled as the Figma "Interruptor". */
+/** Yes/no setting with the Polpo Switch as it comes (theme `primary`, small, large width; ADR 0054). */
 export const ToggleField = ({ name, label, description, checked, onChange }: ToggleFieldProps) => {
   const descriptionId = useId();
 
@@ -26,7 +26,7 @@ export const ToggleField = ({ name, label, description, checked, onChange }: Tog
           </Text>
         )}
       </div>
-      <Switch name={name} value={checked} setValue={onChange} />
+      <Switch name={name} value={checked} setValue={onChange} color='primary' size='small' width='large' />
     </div>
   );
 };

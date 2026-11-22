@@ -156,7 +156,7 @@ export const PreviousReturnCard = () => {
                 <div
                   role='group'
                   aria-labelledby='refund-question'
-                  className='refund-switch flex flex-col items-start gap-1.5 pt-1.5'
+                  className='flex flex-col items-start gap-1.5 pt-1.5'
                 >
                   <Text id='refund-question' variant='caption' className='text-fg'>
                     ¿Pediste que la DIAN te lo devolviera o compensara?

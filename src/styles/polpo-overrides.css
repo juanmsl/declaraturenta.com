@@ -165,36 +165,13 @@
     }
   }
 
-  /* Refund question in the box 137 row (Figma 03c): Polpo Switch, size small and width large */
-  .refund-switch .polpo-switch-container {
-    gap: 0.5rem;
-
-    .polpo-switch-label {
-      margin: 0;
-      font-family: var(--font-main);
-      font-size: var(--text-caption);
-      line-height: var(--text-caption--line-height);
-      color: var(--color-fg-secondary);
-    }
-
-    .polpo-switch {
-      border: 1px solid var(--color-line-strong);
-      background: var(--color-subtle);
-
-      .polpo-switch-dot {
-        background: var(--color-white);
-        box-shadow: 0 1px 2px rgb(23 22 43 / 0.2);
-      }
-
-      &.is-checked {
-        border-color: var(--color-action);
-        background: var(--color-action);
-      }
-
-      &:has(input:focus-visible) {
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-action) 30%, transparent);
-      }
-    }
+  /*
+   * Polpo Switch (ADR 0054): used as it comes, with color='primary'. Only the theme token of its
+   * off track is set here: --color-background-paper is bg/superficie (white) in this theme, the same
+   * as the cards the switches sit on, so inside the switch it becomes bg/sutil.
+   */
+  .polpo-switch-container {
+    --color-background-paper: var(--color-subtle);
   }
 
   /* OptionCard: Polpo Radio inside a card (Figma "Opción") */
@@ -253,40 +230,6 @@
     .polpo-aside-modal-content {
       height: 100%;
       padding: 0;
-    }
-  }
-}
-
-@layer components {
-  /* ToggleField: Polpo Switch (Figma "Interruptor": 40 × 24, 18 px dot) */
-  .toggle-field .polpo-switch-container .polpo-switch {
-    width: 2.5rem;
-    height: 1.5rem;
-    padding: 2px;
-    border: 1px solid var(--color-line-strong);
-    background: var(--color-subtle);
-
-    .polpo-switch-dot,
-    &:hover .polpo-switch-dot {
-      width: 1.125rem;
-      height: 1.125rem;
-      margin-left: 0;
-      background: var(--color-white);
-      box-shadow: 0 1px 2px rgb(23 22 43 / 0.2);
-    }
-
-    &.is-checked {
-      border-color: var(--color-action);
-      background: var(--color-action);
-
-      .polpo-switch-dot {
-        margin-left: 1rem;
-        background: var(--color-white);
-      }
-    }
-
-    &:has(input:focus-visible) {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-action) 30%, transparent);
     }
   }
 }
