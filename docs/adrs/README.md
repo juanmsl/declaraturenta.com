@@ -58,3 +58,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0050](./0050-previous-return-as-a-list.md)                     | Last year's return values are a list, with the refund question as a switch | Accepted |
 | [0051](./0051-my-data-menu.md)                                  | «Copia» becomes «Mis datos», with help texts                               | Accepted |
 | [0052](./0052-concepts-in-boxes-60-and-75-77.md)                | Boxes 60, 75, 76 and 77 add up their own concepts in their panel           | Accepted |
+| [0053](./0053-initial-loader.md)                                | A loader while the page loads for the first time                           | Accepted |
