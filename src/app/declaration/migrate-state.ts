@@ -1,4 +1,6 @@
 import { createEmptyDeclaration } from '@/domain/declaration';
+import type { IncomeConcept, ValueOrigin } from '@/domain/declaration';
+import { reportedTotal } from '@/domain/exogenous';
 import {
   carriedBalanceInFavor,
   EMPTY_PREVIOUS_RETURN,
@@ -27,10 +29,13 @@ const withoutShouldFile = (steps: unknown): DeclarationState['completedSteps'] =
  *   is dropped; the others lose `isSample`, get `vatResponsible: false` and forget «should-file».
  * - 11 → 12: adds the new deductions, «Otros ajustes» and the filing data, empty (ADR 0038).
  * - 12 → 13: adds last year's return, not given (ADR 0048).
+ * - 13 → 14: the refund question of last year's return starts as «No» (ADR 0050).
+ * - 14 → 15: boxes 60, 75, 76 and 77 become lists of concepts (ADR 0052).
  */
 export const migrateState = (value: unknown): DeclarationState | null => {
   if (!isRecord(value) || !isRecord(value.data)) return null;
   if (value.version === STATE_VERSION) return value as DeclarationState;
+  if (value.version === 14) return toVersion15(value);
   if (value.version === 13) return toVersion14(value);
   if (value.version === 12) return toVersion13(value);
   if (value.version === 11) return toVersion12(value);
@@ -97,12 +102,68 @@ const toVersion14 = (value: object): DeclarationState => {
     ...state.previousReturn,
     refundRequested: state.previousReturn.refundRequested ?? false,
   };
-  return {
+  return toVersion15({
     ...state,
-    version: STATE_VERSION,
+    version: 14,
     previousReturn,
     data: isPreviousReturnGiven(previousReturn)
       ? { ...state.data, previousBalanceInFavor: carriedBalanceInFavor(previousReturn) }
       : state.data,
+  });
+};
+
+type Version14Data = Omit<DeclarationState['data'], 'capital' | 'nonLabor'> & {
+  capital: Omit<DeclarationState['data']['capital'], 'costConcepts'> & { costs?: number };
+  nonLabor: Pick<DeclarationState['data']['nonLabor'], 'concepts'> & {
+    returns?: number;
+    independentContributions?: number;
+    costs?: number;
+  };
+};
+
+/** One concept with the amount a box had before it became a list; none when it was zero. */
+const asConcepts = (
+  id: string,
+  label: string,
+  amount: number | undefined,
+  origin: ValueOrigin,
+): IncomeConcept[] => (amount && amount > 0 ? [{ id, label, entity: '', amount, origin }] : []);
+
+/**
+ * Version 15 (ADR 0052): boxes 60, 75, 76 and 77 are lists of concepts. Each amount becomes one
+ * concept; box 76 keeps the exogenous origin when it still matches the report.
+ */
+const toVersion15 = (value: object): DeclarationState => {
+  const state = value as Omit<DeclarationState, 'data'> & { data: Version14Data };
+  const { capital, nonLabor } = state.data;
+  const { costs: capitalCosts, ...capitalRest } = capital;
+  const { returns, independentContributions, costs, ...nonLaborRest } = nonLabor;
+  const reported = reportedTotal(state.exogenous.report, 'other-non-taxable');
+  return {
+    ...state,
+    version: STATE_VERSION,
+    data: {
+      ...state.data,
+      capital: {
+        ...capitalRest,
+        costConcepts: asConcepts('capital-costs', 'Costos y gastos', capitalCosts, 'user'),
+      },
+      nonLabor: {
+        ...nonLaborRest,
+        returnConcepts: asConcepts(
+          'non-labor-returns',
+          'Devoluciones, rebajas y descuentos',
+          returns,
+          'user',
+        ),
+        contributionConcepts: asConcepts(
+          'non-labor-contributions',
+          'Aportes obligatorios a pensión',
+          independentContributions,
+          independentContributions === reported ? 'exogenous' : 'user',
+        ),
+        costConcepts: asConcepts('non-labor-costs', 'Costos y gastos', costs, 'user'),
+      },
+    },
   };
 };

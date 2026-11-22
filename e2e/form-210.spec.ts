@@ -82,15 +82,25 @@ test('closing the panel discards what was typed', async ({ page }) => {
   await expect(page.getByRole('button', { name: /^Casilla 141,/ })).toContainText('$ 0');
 });
 
-test('boxes 60 and 75–77 are filled in Ingresos and in their panel', async ({ page }) => {
+test('boxes 60 and 75–77 add up their own concepts in their panel (ADR 0052)', async ({ page }) => {
   await page.goto('/ingresos');
-  await page.getByRole('button', { name: 'Tengo costos, devoluciones o aportes en estas rentas' }).click();
-  await page.getByLabel('Costos y gastos de tus rentas de capital (casilla 60)').fill('200000');
+  await expect(page.getByText('Tengo costos, devoluciones o aportes en estas rentas')).toHaveCount(0);
 
-  await page.goto('/formulario-210');
-  await expect(page.getByRole('button', { name: /^Casilla 60,/ })).toContainText('$ 200.000');
-  await page.getByRole('button', { name: /^Casilla 77,/ }).click();
-  await expect(
-    page.getByRole('dialog').getByLabel('Costos y gastos de tus otros ingresos (casilla 77)'),
-  ).toBeVisible();
+  await page.goto('/formulario-210?casilla=77');
+  const panel = page.getByRole('dialog');
+  for (const [label, amount] of [
+    ['Arriendo del local', '300000'],
+    ['Servicios públicos', '50000'],
+  ] as const) {
+    await panel.getByRole('button', { name: 'Agregar concepto' }).click();
+    await panel.getByLabel('Concepto', { exact: true }).fill(label);
+    await panel.getByLabel('Valor', { exact: true }).fill(amount);
+    await panel.getByRole('button', { name: 'Listo' }).click();
+  }
+  await expect(panel.getByText('2 conceptos sumados')).toBeVisible();
+  await panel.getByRole('button', { name: 'Guardar cambios' }).click();
+
+  await expect(page.getByRole('button', { name: /^Casilla 77,/ })).toContainText('$ 350.000');
+  await expect(page.getByRole('button', { name: /^Casilla 60,/ })).toContainText('$ 0');
+  await expect(page.getByRole('button', { name: /^Casilla 75,/ })).toContainText('$ 0');
 });

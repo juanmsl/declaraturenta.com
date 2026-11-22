@@ -13,7 +13,6 @@ import { Button, CalcRow, Chip, MoneyField, StepHeader, StepLayout, Text } from 
 
 import { TaxRows } from '@/features/estimate/TaxRows';
 
-import { CapitalNonLaborExtras } from './CapitalNonLaborExtras';
 import { FeesSection } from './FeesSection';
 import { IndependentIncomeQuestion } from './IndependentIncomeQuestion';
 import { ADJUSTMENT, EXOGENOUS_ORIGIN, isFromExogenous, totalOf, withTotal } from './income-concepts';
@@ -148,8 +147,6 @@ export const IncomePage = () => {
         origin={isFromExogenous(nonLabor.concepts) ? EXOGENOUS_ORIGIN : undefined}
         hint='Pagos que no vienen de tu trabajo ni de tus inversiones, por ejemplo reintegros o incentivos de comercios.'
       />
-      <CapitalNonLaborExtras />
-
       <IndependentIncomeQuestion />
 
       {labor.hasIndependentIncome && <FeesSection />}

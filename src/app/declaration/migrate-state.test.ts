@@ -60,4 +60,19 @@ describe('migrateState', () => {
     expect(migrateState({ ...createInitialState(), version: 6 })).toBeNull();
     expect(migrateState('hola')).toBeNull();
   });
+
+  it('turns boxes 60, 75, 76 and 77 of a version 14 state into concepts', () => {
+    const data = {
+      ...sampleDeclaration,
+      capital: { concepts: [], independentContributions: 0, costs: 200_000 },
+      nonLabor: { concepts: [], returns: 0, independentContributions: 90_000, costs: 40_000 },
+    };
+    const migrated = migrateState(oldState(14, data));
+    expect(migrated?.version).toBe(STATE_VERSION);
+    expect(migrated?.data.capital.costConcepts.map(concept => concept.amount)).toEqual([200_000]);
+    expect(migrated?.data.nonLabor.returnConcepts).toEqual([]);
+    expect(migrated?.data.nonLabor.contributionConcepts[0]).toMatchObject({ amount: 90_000, origin: 'user' });
+    expect(migrated?.data.nonLabor.costConcepts[0]?.amount).toBe(40_000);
+    expect(migrated?.data.nonLabor).not.toHaveProperty('costs');
+  });
 });
