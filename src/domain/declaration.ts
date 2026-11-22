@@ -178,23 +178,24 @@ export type DeclarationData = {
 };
 
 /** Switches of «Otros ajustes» (Figma 15). */
-export type AdjustmentId =
-  | 'losses'
-  | 'presumptive-excess'
-  | 'taxable-additions'
-  | 'ece'
-  | 'foreign-taxes'
-  | 'can-dividends'
-  | 'other-discounts';
+export type AdjustmentId = 'ece' | 'foreign-taxes' | 'can-dividends' | 'other-discounts';
 
 export type Adjustments = {
   enabled: AdjustmentId[];
-  /** Losses of earlier years compensated in each column (56, 72, 89) and from 2018 or before (94). */
-  losses: { fees: number; capital: number; nonLabor: number; until2018: number };
-  /** Box 95: excess of renta presuntiva of earlier years. */
-  presumptiveExcess: number;
-  /** Box 96: omitted assets, nonexistent debts, recovered deductions, unjustified net worth. */
-  taxableAdditions: number;
+  /**
+   * Losses of earlier years to compensate in each column (56, 72, 89) and from 2018 or before (94),
+   * concept by concept, filled in the box panel of the 210 (ADR 0055).
+   */
+  losses: {
+    fees: IncomeConcept[];
+    capital: IncomeConcept[];
+    nonLabor: IncomeConcept[];
+    until2018: IncomeConcept[];
+  };
+  /** Box 95: excess of renta presuntiva of earlier years, concept by concept (ADR 0055). */
+  presumptiveExcessConcepts: IncomeConcept[];
+  /** Box 96: omitted assets, nonexistent debts, recovered deductions, unjustified net worth (ADR 0055). */
+  taxableAdditionConcepts: IncomeConcept[];
   /** Passive income of controlled foreign entities (62 and 79, and hidden boxes 268–269). */
   ece: { capitalIncome: number; capitalCosts: number; nonLaborIncome: number; nonLaborCosts: number };
   /** Box 122: income tax paid abroad, and the net foreign income it was paid on. */
@@ -635,15 +636,12 @@ const computeWithFeesOption = (
   };
 
   // Losses of earlier years (56, 72, 89), never over each column's ordinary income (54, 70, 87).
-  const lossesOn = isOn('losses');
   const feesOrdinaryBefore = positive(fees.netIncome - limitedBenefits.fees);
   const capitalOrdinaryBefore = positive(capitalNetIncome - limitedBenefits.capital);
   const nonLaborOrdinaryBefore = positive(nonLaborNetIncome - limitedBenefits.nonLabor);
-  const feesLosses = lossesOn ? Math.min(positive(adjustments.losses.fees), feesOrdinaryBefore) : 0;
-  const capitalLosses = lossesOn ? Math.min(positive(adjustments.losses.capital), capitalOrdinaryBefore) : 0;
-  const nonLaborLosses = lossesOn
-    ? Math.min(positive(adjustments.losses.nonLabor), nonLaborOrdinaryBefore)
-    : 0;
+  const feesLosses = Math.min(conceptsTotal(adjustments.losses.fees), feesOrdinaryBefore);
+  const capitalLosses = Math.min(conceptsTotal(adjustments.losses.capital), capitalOrdinaryBefore);
+  const nonLaborLosses = Math.min(conceptsTotal(adjustments.losses.nonLabor), nonLaborOrdinaryBefore);
   const laborOrdinaryIncome = labor.ordinaryNetIncome;
   const feesOrdinaryIncome = feesOrdinaryBefore - feesLosses;
   const capitalOrdinaryIncome = capitalOrdinaryBefore - capitalLosses;
@@ -671,17 +669,16 @@ const computeWithFeesOption = (
   const generalIncomeAfterLosses = generalNetIncome - feesLosses - capitalLosses - nonLaborLosses;
   const ordinaryIncome = positive(generalIncomeAfterLosses - totalBenefits);
   // Box 94 (2018 and before) cannot touch labor income; 95 up to what is left of 93.
-  const until2018 = lossesOn
-    ? Math.min(
-        positive(adjustments.losses.until2018),
-        ordinaryIncome,
-        capitalOrdinaryIncome + nonLaborOrdinaryIncome,
-      )
-    : 0;
-  const presumptiveExcess = isOn('presumptive-excess')
-    ? Math.min(positive(adjustments.presumptiveExcess), ordinaryIncome - until2018)
-    : 0;
-  const taxableAdditions = isOn('taxable-additions') ? positive(adjustments.taxableAdditions) : 0;
+  const until2018 = Math.min(
+    conceptsTotal(adjustments.losses.until2018),
+    ordinaryIncome,
+    capitalOrdinaryIncome + nonLaborOrdinaryIncome,
+  );
+  const presumptiveExcess = Math.min(
+    conceptsTotal(adjustments.presumptiveExcessConcepts),
+    ordinaryIncome - until2018,
+  );
+  const taxableAdditions = conceptsTotal(adjustments.taxableAdditionConcepts);
   const taxableIncome = positive(ordinaryIncome + taxableAdditions - until2018 - presumptiveExcess);
 
   // Renta presuntiva is 0 % since 2021, so 111 always takes box 97.
@@ -854,9 +851,9 @@ export const createEmptyDeclaration = (): DeclarationData => ({
 /** «Otros ajustes» with every switch off. */
 export const createEmptyAdjustments = (): Adjustments => ({
   enabled: [],
-  losses: { fees: 0, capital: 0, nonLabor: 0, until2018: 0 },
-  presumptiveExcess: 0,
-  taxableAdditions: 0,
+  losses: { fees: [], capital: [], nonLabor: [], until2018: [] },
+  presumptiveExcessConcepts: [],
+  taxableAdditionConcepts: [],
   ece: { capitalIncome: 0, capitalCosts: 0, nonLaborIncome: 0, nonLaborCosts: 0 },
   foreignTax: { paid: 0, foreignIncome: 0 },
   occasionalForeignTax: 0,

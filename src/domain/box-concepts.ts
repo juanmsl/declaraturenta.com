@@ -17,12 +17,15 @@ export type BoxConcept = {
 
 /** Boxes whose concepts the user can add, edit and remove. */
 export const EDITABLE_BOXES = [
-  28, 29, 30, 32, 33, 35, 38, 58, 60, 74, 75, 76, 77, 130, 131, 132, 138,
+  28, 29, 30, 32, 33, 35, 38, 56, 58, 60, 72, 74, 75, 76, 77, 89, 94, 95, 96, 130, 131, 132, 138,
 ] as const;
 export type EditableBox = (typeof EDITABLE_BOXES)[number];
 
 export const isEditableBox = (box: number): box is EditableBox =>
   (EDITABLE_BOXES as readonly number[]).includes(box);
+
+/** Column of the losses of earlier years behind each loss box (ADR 0055). */
+const LOSS_COLUMNS = { 56: 'fees', 72: 'capital', 89: 'nonLabor', 94: 'until2018' } as const;
 
 /** Box 138 holds a count of people, not pesos. */
 export const isCountBox = (box: number): boolean => box === 138;
@@ -85,6 +88,18 @@ export const getBoxConcepts = (box: EditableBox, data: DeclarationData): BoxConc
       return fromIncomeConcepts(data.nonLabor.contributionConcepts);
     case 77:
       return fromIncomeConcepts(data.nonLabor.costConcepts);
+    case 56:
+      return fromIncomeConcepts(data.adjustments.losses.fees);
+    case 72:
+      return fromIncomeConcepts(data.adjustments.losses.capital);
+    case 89:
+      return fromIncomeConcepts(data.adjustments.losses.nonLabor);
+    case 94:
+      return fromIncomeConcepts(data.adjustments.losses.until2018);
+    case 95:
+      return fromIncomeConcepts(data.adjustments.presumptiveExcessConcepts);
+    case 96:
+      return fromIncomeConcepts(data.adjustments.taxableAdditionConcepts);
     case 28:
       return single(
         'electronic-invoice',
@@ -245,6 +260,44 @@ export const applyBoxConcepts = (
           costConcepts: toIncomeConcepts(concepts, data.nonLabor.costConcepts, false),
         },
       };
+    case 56:
+    case 72:
+    case 89:
+    case 94: {
+      const column = LOSS_COLUMNS[box];
+      const { losses } = data.adjustments;
+      return {
+        ...data,
+        adjustments: {
+          ...data.adjustments,
+          losses: { ...losses, [column]: toIncomeConcepts(concepts, losses[column], false) },
+        },
+      };
+    }
+    case 95:
+      return {
+        ...data,
+        adjustments: {
+          ...data.adjustments,
+          presumptiveExcessConcepts: toIncomeConcepts(
+            concepts,
+            data.adjustments.presumptiveExcessConcepts,
+            false,
+          ),
+        },
+      };
+    case 96:
+      return {
+        ...data,
+        adjustments: {
+          ...data.adjustments,
+          taxableAdditionConcepts: toIncomeConcepts(
+            concepts,
+            data.adjustments.taxableAdditionConcepts,
+            false,
+          ),
+        },
+      };
     case 29:
       return {
         ...data,
@@ -340,6 +393,12 @@ export const boxDescription = (box: number, year: TaxYearConfig): string | undef
     75: 'Devoluciones, rebajas y descuentos sobre tus otros ingresos (casilla 74).',
     76: 'Aportes obligatorios a pensión que pagaste como independiente sobre tus otros ingresos. No pagan impuesto.',
     77: 'Costos y gastos de tus otros ingresos: solo los que tengan relación con esos ingresos y estén soportados.',
+    56: 'Pérdidas fiscales de años anteriores que compensas contra tus honorarios con costos. La casilla toma hasta tu renta líquida ordinaria de honorarios.',
+    72: 'Pérdidas fiscales de años anteriores que compensas contra tus rentas de capital. La casilla toma hasta su renta líquida ordinaria.',
+    89: 'Pérdidas fiscales de años anteriores que compensas contra tus rentas no laborales. La casilla toma hasta su renta líquida ordinaria.',
+    94: 'Pérdidas de 2018 y años anteriores. Se restan de la cédula general sin tocar tus rentas de trabajo; la casilla toma hasta tus rentas de capital y no laborales.',
+    95: 'Excesos de renta presuntiva de años anteriores que aún puedes compensar. La casilla toma hasta tu renta líquida ordinaria (art. 189 E.T.).',
+    96: 'Activos omitidos, pasivos inexistentes, deducciones que recuperaste o renta por comparación patrimonial. No admite rentas exentas ni deducciones.',
     39: 'Dependiente económico y medicina prepagada, cada uno con su tope.',
     130: 'El anticipo que liquidaste en tu declaración del año pasado.',
     131: 'El saldo a favor de tu declaración anterior que no pediste en devolución.',

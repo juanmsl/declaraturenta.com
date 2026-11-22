@@ -31,10 +31,13 @@ const withoutShouldFile = (steps: unknown): DeclarationState['completedSteps'] =
  * - 12 → 13: adds last year's return, not given (ADR 0048).
  * - 13 → 14: the refund question of last year's return starts as «No» (ADR 0050).
  * - 14 → 15: boxes 60, 75, 76 and 77 become lists of concepts (ADR 0052).
+ * - 15 → 16: boxes 56, 72, 89, 94, 95 and 96 become lists of concepts and leave «Otros ajustes»
+ *   (ADR 0055).
  */
 export const migrateState = (value: unknown): DeclarationState | null => {
   if (!isRecord(value) || !isRecord(value.data)) return null;
   if (value.version === STATE_VERSION) return value as DeclarationState;
+  if (value.version === 15) return toVersion16(value);
   if (value.version === 14) return toVersion15(value);
   if (value.version === 13) return toVersion14(value);
   if (value.version === 12) return toVersion13(value);
@@ -139,9 +142,9 @@ const toVersion15 = (value: object): DeclarationState => {
   const { costs: capitalCosts, ...capitalRest } = capital;
   const { returns, independentContributions, costs, ...nonLaborRest } = nonLabor;
   const reported = reportedTotal(state.exogenous.report, 'other-non-taxable');
-  return {
+  return toVersion16({
     ...state,
-    version: STATE_VERSION,
+    version: 15,
     data: {
       ...state.data,
       capital: {
@@ -163,6 +166,68 @@ const toVersion15 = (value: object): DeclarationState => {
           independentContributions === reported ? 'exogenous' : 'user',
         ),
         costConcepts: asConcepts('non-labor-costs', 'Costos y gastos', costs, 'user'),
+      },
+    },
+  });
+};
+
+type Version15Adjustments = Omit<
+  DeclarationState['data']['adjustments'],
+  'losses' | 'presumptiveExcessConcepts' | 'taxableAdditionConcepts' | 'enabled'
+> & {
+  enabled: string[];
+  losses: Record<'fees' | 'capital' | 'nonLabor' | 'until2018', number | IncomeConcept[]>;
+  presumptiveExcess?: number;
+  taxableAdditions?: number;
+  presumptiveExcessConcepts?: IncomeConcept[];
+  taxableAdditionConcepts?: IncomeConcept[];
+};
+
+/** Removed «Otros ajustes» switches (ADR 0055). */
+const REMOVED_SWITCHES = ['losses', 'presumptive-excess', 'taxable-additions'];
+
+/**
+ * Version 16 (ADR 0055): boxes 56, 72, 89, 94, 95 and 96 are lists of concepts filled in the 210,
+ * without a switch. Each amount whose switch was on becomes one concept; amounts behind a switch
+ * that was off did not count, so they are dropped.
+ */
+const toVersion16 = (value: object): DeclarationState => {
+  const state = value as Omit<DeclarationState, 'data'> & {
+    data: Omit<DeclarationState['data'], 'adjustments'> & { adjustments: Version15Adjustments };
+  };
+  const { enabled, losses, presumptiveExcess, taxableAdditions, ...rest } = state.data.adjustments;
+  const on = (id: string) => enabled.includes(id);
+  const lossConcepts = (column: keyof typeof losses, label: string): IncomeConcept[] => {
+    const current = losses[column];
+    if (Array.isArray(current)) return current;
+    return on('losses') ? asConcepts(`losses-${column}`, label, current, 'user') : [];
+  };
+  return {
+    ...state,
+    version: STATE_VERSION,
+    data: {
+      ...state.data,
+      adjustments: {
+        ...rest,
+        enabled: enabled.filter(
+          id => !REMOVED_SWITCHES.includes(id),
+        ) as DeclarationState['data']['adjustments']['enabled'],
+        losses: {
+          fees: lossConcepts('fees', 'Pérdidas de años anteriores'),
+          capital: lossConcepts('capital', 'Pérdidas de años anteriores'),
+          nonLabor: lossConcepts('nonLabor', 'Pérdidas de años anteriores'),
+          until2018: lossConcepts('until2018', 'Pérdidas de 2018 y antes'),
+        },
+        presumptiveExcessConcepts:
+          rest.presumptiveExcessConcepts ??
+          (on('presumptive-excess')
+            ? asConcepts('presumptive-excess', 'Exceso de renta presuntiva', presumptiveExcess, 'user')
+            : []),
+        taxableAdditionConcepts:
+          rest.taxableAdditionConcepts ??
+          (on('taxable-additions')
+            ? asConcepts('taxable-additions', 'Rentas gravables', taxableAdditions, 'user')
+            : []),
       },
     },
   };

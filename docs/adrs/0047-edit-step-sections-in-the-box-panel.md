@@ -1,6 +1,6 @@
 # 0047. Boxes filled in a step are edited in their panel too
 
-- Status: Accepted; boxes 60 and 75–77 changed by [ADR 0052](./0052-concepts-in-boxes-60-and-75-77.md)
+- Status: Accepted; boxes 60 and 75–77 changed by [ADR 0052](./0052-concepts-in-boxes-60-and-75-77.md); boxes 56, 72, 89 and 94–96 by [ADR 0055](./0055-concepts-in-loss-and-adjustment-boxes.md)
 - Date: 2026-11-21
 
 ## Context

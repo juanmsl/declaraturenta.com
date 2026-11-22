@@ -22,7 +22,7 @@ export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
   },
   {
     title: 'Otros ajustes',
-    text: 'Casos poco comunes: pérdidas de años anteriores, rentas gravables, sociedades del exterior, impuestos pagados en otro país y otros descuentos. Si no te aplican, sigue de largo.',
+    text: 'Casos poco comunes: sociedades del exterior, impuestos pagados en otro país, dividendos de la Comunidad Andina y otros descuentos. Si no te aplican, sigue de largo.',
   },
   {
     title: 'Resultado',
@@ -73,7 +73,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: 'La plataforma',
     question: '¿Calculan todas las casillas del 210?',
     answer:
-      'Sí, de la 28 a la 141. Algunas dependen de datos que solo tú tienes, como pérdidas de años anteriores, impuestos pagados en el exterior o rentas de sociedades del exterior: los preguntamos en «Otros ajustes». Lo que no sale de la exógena hay que escribirlo con tus certificados.',
+      'Sí, de la 28 a la 141. Algunas dependen de datos que solo tú tienes, como impuestos pagados en el exterior o rentas de sociedades del exterior: los preguntamos en «Otros ajustes». Las pérdidas de años anteriores, los excesos de renta presuntiva y las rentas gravables se agregan en su casilla del Formulario 210 (56, 72, 89, 94, 95 y 96). Lo que no sale de la exógena hay que escribirlo con tus certificados.',
     keywords: 'casillas calculan todas compensaciones pérdidas renta presuntiva donaciones exterior',
   },
   {

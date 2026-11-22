@@ -1,6 +1,6 @@
 # 0038. Every box of the Formulario 210
 
-- Status: Accepted
+- Status: Accepted; boxes 56, 72, 89, 94, 95 and 96 changed by [ADR 0055](./0055-concepts-in-loss-and-adjustment-boxes.md)
 - Date: 2026-11-20
 
 ## Context
