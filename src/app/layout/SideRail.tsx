@@ -1,13 +1,14 @@
 import { Link } from 'react-router';
 
-import { HOME_PATH, PRIVACY_PATH, TERMS_PATH } from '../flow';
+import { PRIVACY_PATH, TERMS_PATH } from '../flow';
 import { LuCalendar } from 'react-icons/lu';
 
 import { useDeclaration } from '../declaration/declaration-context';
 import { getInitials } from '@/domain/taxpayer';
 import { formatLongDate } from '@/shared/lib/format';
-import { Icon, Logo, Text } from '@/shared/ui';
+import { Icon, Text } from '@/shared/ui';
 
+import { BrandLink } from './BrandLink';
 import { SideRailItem } from './SideRailItem';
 import { YearSelector } from './YearSelector';
 import type { StepProgress } from './useFlowProgress';
@@ -22,15 +23,7 @@ export const SideRail = ({ steps }: SideRailProps) => {
 
   return (
     <aside className='sticky top-0 flex h-dvh w-70 shrink-0 flex-col gap-7 overflow-y-auto border-r border-line bg-rail px-6 pt-7 pb-6'>
-      <Link
-        to={HOME_PATH}
-        className='flex items-center gap-2.5 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-line-action'
-      >
-        <Logo version='isotype' size={28} decorative />
-        <Text as='span' variant='title-m'>
-          Declara tu renta
-        </Text>
-      </Link>
+      <BrandLink />
 
       <YearSelector />
 

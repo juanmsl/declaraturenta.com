@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { Switch } from 'polpo/components';
 
+import { BrandLink } from '@/app/layout/BrandLink';
+import { CopyMenu } from '@/app/layout/CopyMenu';
+import { HelpButton } from '@/app/layout/HelpButton';
 import { ViewSwitcher } from '@/app/layout/ViewSwitcher';
 import { cn } from 'polpo/helpers';
 
@@ -95,7 +98,8 @@ export const Form210Page = () => {
 
   return (
     <div className='min-h-dvh min-w-7xl bg-canvas'>
-      <header className='sticky top-0 z-10 flex h-18 items-center gap-4 border-b border-line bg-surface pr-30 pl-26'>
+      <header className='sticky top-0 z-10 flex h-18 items-center gap-6 border-b border-line bg-surface pr-8 pl-10'>
+        <BrandLink />
         <ViewSwitcher view='form-210' />
         <div className='flex-1' />
         <Text variant='note' className='text-fg-muted'>
@@ -104,6 +108,8 @@ export const Form210Page = () => {
         <Button variant='secondary' onClick={() => void handleDownload()} isLoading={isDownloading}>
           Descargar PDF
         </Button>
+        <CopyMenu />
+        <HelpButton />
       </header>
 
       <main className='mx-auto flex max-w-300 flex-col gap-12 pt-12 pb-24'>

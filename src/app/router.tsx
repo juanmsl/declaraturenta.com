@@ -15,6 +15,7 @@ import { ErrorPage } from '@/features/status/ErrorPage';
 import { NotFoundPage } from '@/features/status/NotFoundPage';
 
 import { FORM_210_PATH, LANDING_PATH, PRIVACY_PATH, TERMS_PATH } from './flow';
+import { HelpProvider } from './help/HelpProvider';
 import { AppLayout } from './layout/AppLayout';
 import { RootLayout } from './layout/RootLayout';
 import { DesktopOnly } from './layout/DesktopOnly';
@@ -52,7 +53,9 @@ export const router = createBrowserRouter([
         path: FORM_210_PATH,
         element: (
           <DesktopOnly>
-            <Form210Page />
+            <HelpProvider>
+              <Form210Page />
+            </HelpProvider>
           </DesktopOnly>
         ),
         errorElement: <ErrorPage />,

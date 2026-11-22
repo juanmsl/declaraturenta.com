@@ -30,4 +30,6 @@ Figma: component «Selector de vista», used in the «Barra superior» component
 ## Consequences
 
 - The 210 is one click away from every step, and back.
-- The 210 bar still has no side rail, «Mis datos» or «Ayuda».
+- The 210 bar also has the logo (isotype and «Declara tu renta», linking to Inicio), «Mis datos»
+  and «Ayuda», as the owner asked; it still has no side rail. `BrandLink` and `HelpButton` are
+  shared with the side rail and the steps' top bar.
