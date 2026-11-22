@@ -1,6 +1,6 @@
 import { cn } from 'polpo/helpers';
 
-/** Progress state shared by the rail, the braid and the journey list. */
+/** Progress state shared by the rail and the journey list. */
 export type ProgressState = 'done' | 'current' | 'pending';
 
 type DiamondProps = {
@@ -10,7 +10,7 @@ type DiamondProps = {
 };
 
 /**
- * The caña flecha diamond ("rombo"). Only used for progress: the braid, the side rail
+ * The caña flecha diamond ("rombo"). Only used for progress: the side rail, the journey list
  * and the isotype. Never as decoration elsewhere.
  */
 export const Diamond = ({ state, size = 12, className }: DiamondProps) => (

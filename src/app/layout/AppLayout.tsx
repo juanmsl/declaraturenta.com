@@ -32,7 +32,7 @@ export const AppLayout = () => {
       <div className='flex min-h-dvh min-w-7xl bg-canvas'>
         <SideRail steps={steps} />
         <div className='flex min-w-0 flex-1 flex-col'>
-          <TopBar location={location} steps={steps} />
+          <TopBar location={location} />
           <main className='flex flex-1 flex-col'>
             <PageTransition steps className='flex flex-1 flex-col'>
               <Outlet />
