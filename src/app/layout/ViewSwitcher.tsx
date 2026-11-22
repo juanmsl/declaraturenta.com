@@ -65,6 +65,7 @@ export const ViewSwitcher = ({ view }: { view: View }) => {
             variant={isActive ? 'flat' : 'text'}
             size='small'
             aria-current={isActive ? 'page' : undefined}
+            className={isActive ? 'bg-action-soft' : undefined}
             onClick={() => {
               go(item.id);
             }}

@@ -20,7 +20,8 @@ Owner's choices, reviewed in Figma first:
 - **«Pasos» goes back to where the person was**: the steps remember their page for this browser tab
   (`sessionStorage`); without it, «Pasos» goes to the step to resume.
 - **In code it is two Polpo `Button`s** (`color='primary'`, `size='small'`; the active one `flat`,
-  the other `text`, with `aria-current='page'`), inside a `nav` named «Cómo llenar tu
+  the other `text`, with `aria-current='page'`). The active one only changes its background to
+  bg/acento-suave (`bg-action-soft`), lighter than Polpo's flat background, as in Figma, inside a `nav` named «Cómo llenar tu
   declaración». Polpo `Tabs` was tried first, but in the top bar it kept the page from changing
   when the route changed.
 
