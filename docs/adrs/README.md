@@ -64,3 +64,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0056](./0056-steps-or-form-210-switcher.md)                    | A switcher between the steps and the Formulario 210                        | Accepted |
 | [0057](./0057-home-two-columns-from-the-top.md)                 | Inicio: the title goes in the left column                                  | Accepted |
 | [0058](./0058-no-braid-in-the-top-bar.md)                       | The braid and the step leave the top bar                                   | Accepted |
+| [0059](./0059-pdf-with-the-210-table.md)                        | The draft PDF also has the 210 in table format                             | Accepted |

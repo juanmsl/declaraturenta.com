@@ -5,6 +5,7 @@ import figtree500 from '@fontsource/figtree/files/figtree-latin-500-normal.woff?
 import figtree600 from '@fontsource/figtree/files/figtree-latin-600-normal.woff?url';
 import figtree700 from '@fontsource/figtree/files/figtree-latin-700-normal.woff?url';
 
+import { SCHEDULE_COLUMNS, SCHEDULE_ROWS } from '@/domain/form-210';
 import type { Form210Box } from '@/domain/form-210';
 import type { Taxpayer } from '@/domain/taxpayer';
 import { formatCurrency, formatLongDate, formatNumber } from '@/shared/lib/format';
@@ -63,6 +64,59 @@ const s = StyleSheet.create({
   formula: { color: C.muted, fontSize: 8, marginTop: 1 },
   value: { width: 110, textAlign: 'right', fontWeight: 600 },
   h2: { fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 15, marginTop: 22 },
+  h2Note: { color: C.muted, marginTop: 4 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', borderBottomWidth: 1, borderBottomColor: C.line },
+  cell: {
+    width: '50%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: C.line,
+  },
+  cellLabel: { flex: 1, fontSize: 8.5 },
+  cellValue: { width: 82, textAlign: 'right', fontWeight: 600, fontSize: 9 },
+  badge: {
+    minWidth: 22,
+    paddingVertical: 1.5,
+    paddingHorizontal: 3,
+    borderRadius: 4,
+    backgroundColor: C.actionSoft,
+    color: C.action,
+    fontWeight: 700,
+    fontSize: 7.5,
+    textAlign: 'center',
+  },
+  matrixHead: {
+    flexDirection: 'row',
+    backgroundColor: C.subtle,
+    borderBottomWidth: 1,
+    borderBottomColor: C.line,
+  },
+  matrixRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: C.line },
+  matrixLabel: { width: 132, paddingVertical: 5, paddingHorizontal: 8, fontSize: 8 },
+  matrixGroup: { color: C.muted, fontSize: 7, paddingTop: 5, paddingHorizontal: 8 },
+  matrixCol: {
+    flex: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
+    fontSize: 7.5,
+    color: C.secondary,
+    fontWeight: 500,
+  },
+  matrixCell: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
+    borderLeftWidth: 1,
+    borderLeftColor: C.line,
+  },
+  matrixValue: { flex: 1, textAlign: 'right', fontWeight: 600, fontSize: 8 },
   footer: {
     position: 'absolute',
     bottom: 22,
@@ -109,8 +163,110 @@ const FORM_SECTIONS: { title: string; from: number; to: number }[] = [
   { title: 'Otras cédulas e impuesto sobre la renta', from: 99, to: 121 },
   { title: 'Descuentos tributarios', from: 122, to: 125 },
   { title: 'Liquidación privada', from: 126, to: 133 },
-  { title: 'Saldo', from: 134, to: 139 },
+  { title: 'Saldo', from: 134, to: 141 },
 ];
+
+/** Box 138 is a count of people and box 140 a mark (X), not pesos. */
+const boxValue = (box: Form210Box) => {
+  if (box.number === 138) return formatNumber(box.value);
+  if (box.number === 140) return box.value > 0 ? 'X' : '—';
+  return formatCurrency(box.value);
+};
+
+/** One box of the table format: number, label and value. */
+const BoxCell = ({ box }: { box: Form210Box }) => (
+  <View style={s.cell} wrap={false}>
+    <Text style={s.badge}>{box.number}</Text>
+    <Text style={s.cellLabel}>{box.label}</Text>
+    <Text style={[s.cellValue, box.kind === 'not-applicable' ? { color: C.muted } : {}]}>
+      {boxValue(box)}
+    </Text>
+  </View>
+);
+
+/** Cédula general as in the 210: one row per concept and one column per kind of income. */
+const ScheduleMatrix = ({ byNumber }: { byNumber: Map<number, Form210Box> }) => (
+  <View>
+    <View style={s.matrixHead} wrap={false}>
+      <Text style={s.matrixLabel} />
+      {SCHEDULE_COLUMNS.map(column => (
+        <Text key={column} style={s.matrixCol}>
+          {column}
+        </Text>
+      ))}
+    </View>
+    {SCHEDULE_ROWS.map((row, index) => {
+      const showGroup = row.group !== undefined && row.group !== SCHEDULE_ROWS[index - 1]?.group;
+      return (
+        <View key={row.label} wrap={false}>
+          {showGroup && <Text style={s.matrixGroup}>{row.group}</Text>}
+          <View style={s.matrixRow}>
+            <Text style={s.matrixLabel}>{row.label}</Text>
+            {row.boxes.map((number, column) => {
+              const box = number === null ? undefined : byNumber.get(number);
+              return (
+                <View key={column} style={s.matrixCell}>
+                  {box && (
+                    <>
+                      <Text style={s.badge}>{box.number}</Text>
+                      <Text style={s.matrixValue}>{formatCurrency(box.value)}</Text>
+                    </>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      );
+    })}
+  </View>
+);
+
+/**
+ * The 210 in table format, like the Formulario 210 screen (09): each section as a grid of boxes and
+ * the cédula general as a matrix (ADR 0059).
+ */
+const Form210Table = ({ boxes }: { boxes: Form210Box[] }) => {
+  const byNumber = new Map(boxes.map(box => [box.number, box]));
+  return (
+    <View style={s.table}>
+      {FORM_SECTIONS.map(section => (
+        <View key={section.title}>
+          {/* Keeps a section title from ending a page alone. */}
+          <View style={s.section} wrap={false} minPresenceAhead={60}>
+            <Text style={s.sectionText}>{section.title}</Text>
+          </View>
+          {section.from === 32 ? (
+            <ScheduleMatrix byNumber={byNumber} />
+          ) : (
+            <View style={s.grid}>
+              {boxes
+                .filter(box => box.number >= section.from && box.number <= section.to)
+                .map(box => (
+                  <BoxCell key={box.number} box={box} />
+                ))}
+            </View>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const Footer = ({ generatedAt }: { generatedAt: Date }) => (
+  <View style={s.footer} fixed>
+    <Text style={{ flex: 1 }}>
+      Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta.
+    </Text>
+    <Text render={({ pageNumber, totalPages }) => `${String(pageNumber)} / ${String(totalPages)}`} />
+  </View>
+);
+
+/**
+ * Letter width with a height that follows the content, so each part of the PDF is one page
+ * (ADR 0059). The content and its styles are the same as on letter pages.
+ */
+const PAGE_SIZE = { width: 612 };
 
 type DraftDocumentProps = {
   taxpayer: Taxpayer;
@@ -120,14 +276,17 @@ type DraftDocumentProps = {
   year: number;
 };
 
-/** PDF of the draft: summary (screen 08) followed by every box of the 210 (ADR 0019). */
+/**
+ * PDF of the draft in three pages, one per part (ADR 0059): summary (screen 08), every box of the
+ * 210 (ADR 0019) and the 210 in table format.
+ */
 export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: DraftDocumentProps) => (
   <Document
     title={`Borrador Formulario 210 · Año gravable ${String(year)}`}
     author='Declara tu renta'
     language='es-CO'
   >
-    <Page size='LETTER' style={s.page}>
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
       <View style={s.brand}>
         <Isotype />
         <Text style={s.brandName}>Declara tu renta</Text>
@@ -180,9 +339,11 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
         })}
       </View>
 
-      <Text style={s.h2} break>
-        Formulario 210 · todas las casillas
-      </Text>
+      <Footer generatedAt={generatedAt} />
+    </Page>
+
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
+      <Text style={[s.h2, { marginTop: 0 }]}>Formulario 210 · todas las casillas</Text>
       <View style={s.table}>
         {FORM_SECTIONS.map(section => (
           <View key={section.title}>
@@ -199,7 +360,7 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
                     {box.formula && <Text style={s.formula}>{box.formula}</Text>}
                   </View>
                   <Text style={[s.value, box.kind === 'not-applicable' ? { color: C.muted } : {}]}>
-                    {box.number === 138 ? formatNumber(box.value) : formatCurrency(box.value)}
+                    {boxValue(box)}
                   </Text>
                 </View>
               ))}
@@ -207,12 +368,17 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
         ))}
       </View>
 
-      <View style={s.footer} fixed>
-        <Text style={{ flex: 1 }}>
-          Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta.
-        </Text>
-        <Text render={({ pageNumber, totalPages }) => `${String(pageNumber)} / ${String(totalPages)}`} />
-      </View>
+      <Footer generatedAt={generatedAt} />
+    </Page>
+
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
+      <Text style={[s.h2, { marginTop: 0 }]}>Formulario 210 · formato de tabla</Text>
+      <Text style={s.h2Note}>
+        Las mismas casillas, ordenadas como en el formulario de la DIAN, para transcribirlas en el portal.
+      </Text>
+      <Form210Table boxes={boxes} />
+
+      <Footer generatedAt={generatedAt} />
     </Page>
   </Document>
 );
