@@ -253,6 +253,21 @@ const Form210Table = ({ boxes }: { boxes: Form210Box[] }) => {
   );
 };
 
+const Footer = ({ generatedAt }: { generatedAt: Date }) => (
+  <View style={s.footer} fixed>
+    <Text style={{ flex: 1 }}>
+      Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta.
+    </Text>
+    <Text render={({ pageNumber, totalPages }) => `${String(pageNumber)} / ${String(totalPages)}`} />
+  </View>
+);
+
+/**
+ * Letter width with a height that follows the content, so each part of the PDF is one page
+ * (ADR 0059). The content and its styles are the same as on letter pages.
+ */
+const PAGE_SIZE = { width: 612 };
+
 type DraftDocumentProps = {
   taxpayer: Taxpayer;
   rows: DraftRow[];
@@ -262,8 +277,8 @@ type DraftDocumentProps = {
 };
 
 /**
- * PDF of the draft: summary (screen 08), every box of the 210 (ADR 0019) and the 210 in table
- * format (ADR 0059).
+ * PDF of the draft in three pages, one per part (ADR 0059): summary (screen 08), every box of the
+ * 210 (ADR 0019) and the 210 in table format.
  */
 export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: DraftDocumentProps) => (
   <Document
@@ -271,7 +286,7 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
     author='Declara tu renta'
     language='es-CO'
   >
-    <Page size='LETTER' style={s.page}>
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
       <View style={s.brand}>
         <Isotype />
         <Text style={s.brandName}>Declara tu renta</Text>
@@ -324,9 +339,11 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
         })}
       </View>
 
-      <Text style={s.h2} break>
-        Formulario 210 · todas las casillas
-      </Text>
+      <Footer generatedAt={generatedAt} />
+    </Page>
+
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
+      <Text style={[s.h2, { marginTop: 0 }]}>Formulario 210 · todas las casillas</Text>
       <View style={s.table}>
         {FORM_SECTIONS.map(section => (
           <View key={section.title}>
@@ -351,20 +368,17 @@ export const DraftDocument = ({ taxpayer, rows, boxes, generatedAt, year }: Draf
         ))}
       </View>
 
-      <Text style={s.h2} break>
-        Formulario 210 · formato de tabla
-      </Text>
+      <Footer generatedAt={generatedAt} />
+    </Page>
+
+    <Page size={PAGE_SIZE} style={s.page} wrap={false}>
+      <Text style={[s.h2, { marginTop: 0 }]}>Formulario 210 · formato de tabla</Text>
       <Text style={s.h2Note}>
         Las mismas casillas, ordenadas como en el formulario de la DIAN, para transcribirlas en el portal.
       </Text>
       <Form210Table boxes={boxes} />
 
-      <View style={s.footer} fixed>
-        <Text style={{ flex: 1 }}>
-          Generado el {formatLongDate(generatedAt.toISOString().slice(0, 10))} con Declara tu renta.
-        </Text>
-        <Text render={({ pageNumber, totalPages }) => `${String(pageNumber)} / ${String(totalPages)}`} />
-      </View>
+      <Footer generatedAt={generatedAt} />
     </Page>
   </Document>
 );
