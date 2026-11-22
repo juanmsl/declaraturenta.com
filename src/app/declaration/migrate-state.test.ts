@@ -75,4 +75,25 @@ describe('migrateState', () => {
     expect(migrated?.data.nonLabor.costConcepts[0]?.amount).toBe(40_000);
     expect(migrated?.data.nonLabor).not.toHaveProperty('costs');
   });
+
+  it('turns the losses, 95 and 96 of a version 15 state into concepts, only if their switch was on', () => {
+    const data = {
+      ...sampleDeclaration,
+      adjustments: {
+        ...sampleDeclaration.adjustments,
+        enabled: ['losses', 'ece'],
+        losses: { fees: 0, capital: 8_000_000, nonLabor: 0, until2018: 0 },
+        presumptiveExcess: 4_000_000,
+        taxableAdditions: 0,
+      },
+    };
+    const migrated = migrateState(oldState(15, data));
+    const adjustments = migrated?.data.adjustments;
+    expect(adjustments?.enabled).toEqual(['ece']);
+    expect(adjustments?.losses.capital.map(concept => concept.amount)).toEqual([8_000_000]);
+    expect(adjustments?.losses.fees).toEqual([]);
+    // The presumptive excess switch was off, so its amount did not count.
+    expect(adjustments?.presumptiveExcessConcepts).toEqual([]);
+    expect(adjustments).not.toHaveProperty('presumptiveExcess');
+  });
 });

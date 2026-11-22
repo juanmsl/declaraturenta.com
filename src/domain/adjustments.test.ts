@@ -14,6 +14,15 @@ const withAdjustments = (
   adjustments: { ...createEmptyAdjustments(), ...change, enabled },
 });
 
+/** A concept typed in a box panel. */
+const concept = (id: string, amount: number) => ({
+  id,
+  label: id,
+  entity: '',
+  amount,
+  origin: 'user' as const,
+});
+
 const capitalIncome = (amount: number): DeclarationData => ({
   ...sampleDeclaration,
   capital: {
@@ -24,22 +33,28 @@ const capitalIncome = (amount: number): DeclarationData => ({
 
 describe('«Otros ajustes» and the remaining boxes', () => {
   it('ignores values whose switch is off', () => {
-    const result = computeDeclaration(withAdjustments([], { taxableAdditions: 50_000_000 }));
-    expect(result.taxableAdditions).toBe(0);
+    const result = computeDeclaration(
+      withAdjustments([], {
+        ece: { capitalIncome: 20_000_000, capitalCosts: 0, nonLaborIncome: 0, nonLaborCosts: 0 },
+      }),
+    );
+    expect(result.ece.capital).toBe(0);
     expect(result.taxableIncome).toBe(94_694_472);
   });
 
   it('adds rentas gravables (96) to the taxable income without benefits', () => {
     const result = computeDeclaration(
-      withAdjustments(['taxable-additions'], { taxableAdditions: 10_000_000 }),
+      withAdjustments([], {
+        taxableAdditionConcepts: [concept('omitted', 6_000_000), concept('debt', 4_000_000)],
+      }),
     );
     expect(result.taxableIncome).toBe(104_694_472);
   });
 
   it('compensates losses of each column only up to its ordinary income (72)', () => {
     const data = withAdjustments(
-      ['losses'],
-      { losses: { fees: 0, capital: 90_000_000, nonLabor: 0, until2018: 0 } },
+      [],
+      { losses: { fees: [], capital: [concept('2022', 90_000_000)], nonLabor: [], until2018: [] } },
       capitalIncome(30_000_000),
     );
     const result = computeDeclaration(data);
@@ -51,7 +66,9 @@ describe('«Otros ajustes» and the remaining boxes', () => {
 
   it('keeps 2018 losses (94) away from labor income', () => {
     const result = computeDeclaration(
-      withAdjustments(['losses'], { losses: { fees: 0, capital: 0, nonLabor: 0, until2018: 50_000_000 } }),
+      withAdjustments([], {
+        losses: { fees: [], capital: [], nonLabor: [], until2018: [concept('2017', 50_000_000)] },
+      }),
     );
     expect(result.compensations.until2018).toBe(0);
   });

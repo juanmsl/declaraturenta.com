@@ -104,3 +104,19 @@ test('boxes 60 and 75–77 add up their own concepts in their panel (ADR 0052)',
   await expect(page.getByRole('button', { name: /^Casilla 60,/ })).toContainText('$ 0');
   await expect(page.getByRole('button', { name: /^Casilla 75,/ })).toContainText('$ 0');
 });
+
+test('losses and boxes 95 and 96 add up their own concepts in their panel (ADR 0055)', async ({ page }) => {
+  await page.goto('/otros-ajustes');
+  await expect(page.getByText('Tengo pérdidas fiscales de años anteriores')).toHaveCount(0);
+  await expect(page.getByText('Debo sumar rentas gravables')).toHaveCount(0);
+
+  await page.goto('/formulario-210?casilla=96');
+  const panel = page.getByRole('dialog');
+  await panel.getByRole('button', { name: 'Agregar concepto' }).click();
+  await panel.getByLabel('Concepto', { exact: true }).fill('Activo omitido');
+  await panel.getByLabel('Valor', { exact: true }).fill('2000000');
+  await panel.getByRole('button', { name: 'Listo' }).click();
+  await panel.getByRole('button', { name: 'Guardar cambios' }).click();
+
+  await expect(page.getByRole('button', { name: /^Casilla 96,/ })).toContainText('$ 2.000.000');
+});

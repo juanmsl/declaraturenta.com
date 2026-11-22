@@ -55,4 +55,25 @@ describe('box concepts', () => {
     // Box 74 is not touched by its sibling boxes.
     expect(data.nonLabor.concepts).toEqual(sampleDeclaration.nonLabor.concepts);
   });
+
+  it('adds concepts to the loss boxes and to boxes 95 and 96 (ADR 0055)', () => {
+    const concept = (id: string, amount: number) => ({
+      id,
+      label: id,
+      detail: '',
+      amount,
+      origin: 'user' as const,
+    });
+    let data = applyBoxConcepts(72, sampleDeclaration, [
+      concept('2022', 5_000_000),
+      concept('2023', 1_000_000),
+    ]);
+    data = applyBoxConcepts(94, data, [concept('2017', 2_000_000)]);
+    data = applyBoxConcepts(96, data, [concept('omitted', 3_000_000)]);
+    expect(data.adjustments.losses.capital.map(item => item.amount)).toEqual([5_000_000, 1_000_000]);
+    expect(data.adjustments.losses.fees).toEqual([]);
+    expect(getBoxConcepts(94, data)).toHaveLength(1);
+    expect(getBoxConcepts(95, data)).toEqual([]);
+    expect(data.adjustments.taxableAdditionConcepts[0]?.amount).toBe(3_000_000);
+  });
 });

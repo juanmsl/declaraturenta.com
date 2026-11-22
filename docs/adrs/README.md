@@ -60,3 +60,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0052](./0052-concepts-in-boxes-60-and-75-77.md)                | Boxes 60, 75, 76 and 77 add up their own concepts in their panel           | Accepted |
 | [0053](./0053-initial-loader.md)                                | A loader while the page loads for the first time                           | Accepted |
 | [0054](./0054-polpo-switch-as-it-comes.md)                      | Every switch is the Polpo Switch as it comes                               | Accepted |
+| [0055](./0055-concepts-in-loss-and-adjustment-boxes.md)         | Boxes 56, 72, 89, 94, 95 and 96 add up their own concepts in their panel   | Accepted |
