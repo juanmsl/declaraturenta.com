@@ -8,6 +8,7 @@ import { useDeclaration } from '../declaration/declaration-context';
 import { useHelp } from '../help/help-context';
 
 import { CopyMenu } from './CopyMenu';
+import { ViewSwitcher } from './ViewSwitcher';
 import type { StepProgress } from './useFlowProgress';
 
 type TopBarProps = {
@@ -16,7 +17,7 @@ type TopBarProps = {
   steps: StepProgress[];
 };
 
-/** Figma "Barra superior": current step, braid progress, save status and help. */
+/** Figma "Barra superior": view switcher, current step, braid progress, save status and help. */
 export const TopBar = ({ location, steps }: TopBarProps) => {
   const { state } = useDeclaration();
   const now = useNow();
@@ -24,6 +25,7 @@ export const TopBar = ({ location, steps }: TopBarProps) => {
 
   return (
     <header className='flex h-18 shrink-0 items-center gap-6 border-b border-line bg-canvas pr-8 pl-10'>
+      <ViewSwitcher view='steps' />
       <Text variant='caption' className='shrink-0 text-fg-secondary'>
         {location}
       </Text>

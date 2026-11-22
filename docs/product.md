@@ -137,6 +137,7 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | Every page shows the isotype and the braid lighting up while it first loads (ADR 0053).                        |
 | 2026-11-21 | Every switch is Polpo's, color='primary', size='small', width='large', without restyling (ADR 0054).           |
 | 2026-11-21 | Boxes 56, 72, 89, 94, 95 and 96 are lists of concepts in their 210 panel; they leave Otros ajustes (ADR 0055). |
+| 2026-11-21 | «Pasos                                                                                                         | Formulario 210» switcher in the top bar of every step and of the 210 (ADR 0056). |
 
 ## Not defined yet
 
