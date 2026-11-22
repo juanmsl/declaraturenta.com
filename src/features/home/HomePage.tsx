@@ -26,20 +26,22 @@ export const HomePage = () => {
 
   return (
     <div className='flex flex-col gap-8 px-14 py-12'>
-      <header className='flex flex-col gap-3.5'>
-        <Text variant='display' className='max-w-205'>
-          {taxpayer.firstName ? `Hola, ${taxpayer.firstName}. ` : ''}Preparemos tu declaración de renta del
-          año gravable {taxYear.year}.
-        </Text>
-        <Text variant='body-l' className='max-w-170 text-fg-secondary'>
-          {state.exogenous.fileName
-            ? 'Te hacemos preguntas sencillas, prellenamos lo que la DIAN ya sabe de ti y te mostramos de dónde sale cada cifra. Al final tendrás tu Formulario 210 listo para revisar.'
-            : 'Empieza por tu información exógena: la descargas del portal de la DIAN y llevamos cada dato a su casilla. Si no la tienes, puedes llenar todo a mano.'}
-        </Text>
-      </header>
-
+      {/* Figma 01: the title goes in the left column, so the cards on the right start at the top. */}
       <div className='flex items-start gap-12'>
-        <JourneyList />
+        <div className='flex min-w-0 flex-1 flex-col gap-8'>
+          <header className='flex flex-col gap-3.5'>
+            <Text variant='display' className='max-w-205'>
+              {taxpayer.firstName ? `Hola, ${taxpayer.firstName}. ` : ''}Preparemos tu declaración de renta
+              del año gravable {taxYear.year}.
+            </Text>
+            <Text variant='body-l' className='max-w-170 text-fg-secondary'>
+              {state.exogenous.fileName
+                ? 'Te hacemos preguntas sencillas, prellenamos lo que la DIAN ya sabe de ti y te mostramos de dónde sale cada cifra. Al final tendrás tu Formulario 210 listo para revisar.'
+                : 'Empieza por tu información exógena: la descargas del portal de la DIAN y llevamos cada dato a su casilla. Si no la tienes, puedes llenar todo a mano.'}
+            </Text>
+          </header>
+          <JourneyList />
+        </div>
         <div className='flex w-100 shrink-0 flex-col gap-5'>
           {!state.helpIntroDismissed && (
             <section
