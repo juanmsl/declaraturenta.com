@@ -141,6 +141,7 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | Inicio: title in the left column; the cards on the right start at the top (ADR 0057).                          |
 | 2026-11-21 | The 210 top bar has the logo, «Mis datos» and «Ayuda» too (ADR 0056).                                          |
 | 2026-11-21 | The braid and «Paso X de 7» leave the top bar; the side rail shows the progress (ADR 0058).                    |
+| 2026-11-21 | The draft PDF ends with the 210 in table format (cédula general as a matrix) (ADR 0059).                       |
 
 ## Not defined yet
 
