@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { Switch } from 'polpo/components';
+
+import { ViewSwitcher } from '@/app/layout/ViewSwitcher';
 import { cn } from 'polpo/helpers';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
 import { useTaxYear } from '@/app/declaration/tax-year-context';
-import { getStep } from '@/app/flow';
 import { useAppPageMeta } from '@/app/seo/use-page-meta';
 import { isCountBox } from '@/domain/box-concepts';
 import type { FilingCount } from '@/domain/advance-payment';
@@ -15,8 +16,6 @@ import type { Form210, Form210Box } from '@/domain/form-210';
 import { BoxField, Button, MoneyField, SelectField, Text } from '@/shared/ui';
 
 import { BoxDetailDrawer } from './BoxDetailDrawer';
-
-const draftStep = getStep('draft-210');
 
 const FILING_COUNT_OPTIONS: readonly { value: FilingCount; label: string }[] = [
   { value: 'first', label: 'Primera vez' },
@@ -36,7 +35,6 @@ const LEGEND = [
 export const Form210Page = () => {
   useAppPageMeta('Formulario 210');
   const { taxYear } = useTaxYear();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { state, dispatch, result } = useDeclaration();
   const [isDownloading, setIsDownloading] = useState(false);
@@ -98,9 +96,7 @@ export const Form210Page = () => {
   return (
     <div className='min-h-dvh min-w-7xl bg-canvas'>
       <header className='sticky top-0 z-10 flex h-18 items-center gap-4 border-b border-line bg-surface pr-30 pl-26'>
-        <Button variant='ghost' onClick={() => void navigate(draftStep.path)}>
-          Volver al borrador
-        </Button>
+        <ViewSwitcher view='form-210' />
         <div className='flex-1' />
         <Text variant='note' className='text-fg-muted'>
           {state.taxpayer.fullName}

@@ -61,3 +61,4 @@ accepted: to change a decision, write a new ADR that supersedes the old one.
 | [0053](./0053-initial-loader.md)                                | A loader while the page loads for the first time                           | Accepted |
 | [0054](./0054-polpo-switch-as-it-comes.md)                      | Every switch is the Polpo Switch as it comes                               | Accepted |
 | [0055](./0055-concepts-in-loss-and-adjustment-boxes.md)         | Boxes 56, 72, 89, 94, 95 and 96 add up their own concepts in their panel   | Accepted |
+| [0056](./0056-steps-or-form-210-switcher.md)                    | A switcher between the steps and the Formulario 210                        | Accepted |
