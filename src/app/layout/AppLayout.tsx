@@ -6,7 +6,6 @@ import { HelpProvider } from '../help/HelpProvider';
 import { useAppPageMeta } from '../seo/use-page-meta';
 import { TermsDialog } from '../terms/TermsDialog';
 
-import { FLOW_STEPS } from '../flow';
 import { PageTransition } from './PageTransition';
 import { SideRail } from './SideRail';
 import { TopBar } from './TopBar';
@@ -22,9 +21,6 @@ export const AppLayout = () => {
     if (currentStepId) dispatch({ type: 'visitStep', step: currentStepId });
   }, [currentStepId, dispatch]);
 
-  const location = currentStep
-    ? `Paso ${currentStep.index + 1} de ${FLOW_STEPS.length} · ${currentStep.title}`
-    : 'Inicio · Antes de empezar';
   useAppPageMeta(currentStep?.title ?? 'Inicio');
 
   return (
@@ -32,7 +28,7 @@ export const AppLayout = () => {
       <div className='flex min-h-dvh min-w-7xl bg-canvas'>
         <SideRail steps={steps} />
         <div className='flex min-w-0 flex-1 flex-col'>
-          <TopBar location={location} />
+          <TopBar />
           <main className='flex flex-1 flex-col'>
             <PageTransition steps className='flex flex-1 flex-col'>
               <Outlet />

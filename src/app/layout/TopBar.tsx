@@ -10,25 +10,17 @@ import { CopyMenu } from './CopyMenu';
 import { HelpButton } from './HelpButton';
 import { ViewSwitcher } from './ViewSwitcher';
 
-type TopBarProps = {
-  /** Where the user is, e.g. "Paso 3 de 7 · Ingresos". */
-  location: string;
-};
-
 /**
- * Figma "Barra superior": view switcher, current step, save status and help. The braid left it;
- * the side rail shows the progress (ADR 0058).
+ * Figma "Barra superior": view switcher, save status, «Mis datos» and help. The braid and «Paso X
+ * de 7» left it; the side rail shows where you are and the progress (ADR 0058).
  */
-export const TopBar = ({ location }: TopBarProps) => {
+export const TopBar = () => {
   const { state } = useDeclaration();
   const now = useNow();
 
   return (
     <header className='flex h-18 shrink-0 items-center gap-6 border-b border-line bg-canvas pr-8 pl-10'>
       <ViewSwitcher view='steps' />
-      <Text variant='caption' className='shrink-0 text-fg-secondary'>
-        {location}
-      </Text>
       <div className='min-w-2.5 flex-1' />
       {state.savedAt && (
         <div className='flex shrink-0 items-center gap-1.5' role='status'>
