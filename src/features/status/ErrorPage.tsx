@@ -47,7 +47,7 @@ export const ErrorPage = () => {
           </Button>
         </>
       }
-      note='Si el problema sigue, descarga una copia de tus datos antes de cerrar.'
+      note='Si el problema sigue, descarga tus datos antes de cerrar.'
       extraAction={
         <Button
           variant='secondary'
@@ -55,7 +55,7 @@ export const ErrorPage = () => {
             downloadBackup(state);
           }}
         >
-          Descargar copia de mis datos
+          Descargar mis datos
         </Button>
       }
     />

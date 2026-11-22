@@ -37,7 +37,7 @@ export const GUIDE_STEPS: readonly { title: string; text: string }[] = [
 export const GUIDE_TIPS: readonly string[] = [
   'El panel «Así va tu declaración» se actualiza con cada respuesta.',
   'En el Formulario 210 toca una casilla para ver qué conceptos la forman y editarlos.',
-  'Tus datos se guardan solos en este navegador. Con «Copia» los descargas en un archivo y los abres en otro computador.',
+  'Tus datos se guardan solos en este navegador. Con «Mis datos» los descargas en un archivo y los cargas en otro computador.',
 ];
 
 export type FaqCategory = 'La plataforma' | 'Conceptos' | 'Tus datos';
@@ -105,7 +105,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: 'Tus datos',
     question: '¿Dónde quedan mis datos?',
     answer:
-      'Solo en este navegador. No tenemos cuentas ni servidores con tu información. Si borras los datos del navegador o cambias de computador, usa «Copia» para no perderlos.',
+      'Solo en este navegador. No tenemos cuentas ni servidores con tu información. Si borras los datos del navegador o cambias de computador, usa «Mis datos» para no perderlos.',
     keywords: 'privacidad seguridad navegador guardar',
   },
   {
@@ -113,8 +113,8 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: 'Tus datos',
     question: '¿Cómo guardo mis datos o los paso a otro computador?',
     answer:
-      'En la barra superior toca «Copia» y luego «Descargar copia»: se descarga un archivo .json. En el otro computador toca «Copia» y «Abrir copia» y elige ese archivo. Guárdalo en un lugar seguro: tiene tu información personal.',
-    keywords: 'copia respaldo backup json descargar abrir',
+      'En la barra superior toca «Mis datos» y luego «Descargar datos»: se descarga un archivo .json. En el otro computador toca «Mis datos» y «Cargar datos» y elige ese archivo. Guárdalo en un lugar seguro: tiene tu información personal.',
+    keywords: 'mis datos copia respaldo backup json descargar cargar abrir',
   },
   {
     id: 'no-exogenous',
