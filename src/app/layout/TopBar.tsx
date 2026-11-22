@@ -2,12 +2,12 @@ import { LuCheck } from 'react-icons/lu';
 
 import { formatTimeAgo } from '@/shared/lib/format';
 import { useNow } from '@/shared/lib/useNow';
-import { Braid, Button, Icon, Text } from '@/shared/ui';
+import { Braid, Icon, Text } from '@/shared/ui';
 
 import { useDeclaration } from '../declaration/declaration-context';
-import { useHelp } from '../help/help-context';
 
 import { CopyMenu } from './CopyMenu';
+import { HelpButton } from './HelpButton';
 import { ViewSwitcher } from './ViewSwitcher';
 import type { StepProgress } from './useFlowProgress';
 
@@ -21,7 +21,6 @@ type TopBarProps = {
 export const TopBar = ({ location, steps }: TopBarProps) => {
   const { state } = useDeclaration();
   const now = useNow();
-  const { openHelp } = useHelp();
 
   return (
     <header className='flex h-18 shrink-0 items-center gap-6 border-b border-line bg-canvas pr-8 pl-10'>
@@ -40,16 +39,7 @@ export const TopBar = ({ location, steps }: TopBarProps) => {
         </div>
       )}
       <CopyMenu />
-      <Button
-        variant='ghost'
-        type='button'
-        className='shrink-0'
-        onClick={() => {
-          openHelp('guide');
-        }}
-      >
-        Ayuda
-      </Button>
+      <HelpButton />
     </header>
   );
 };

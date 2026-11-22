@@ -139,6 +139,7 @@ $ 120.000.000 · net assets $ 208.500.000.
 | 2026-11-21 | Boxes 56, 72, 89, 94, 95 and 96 are lists of concepts in their 210 panel; they leave Otros ajustes (ADR 0055). |
 | 2026-11-21 | «Pasos \| Formulario 210» switcher in the top bar of every step and of the 210 (ADR 0056).                     |
 | 2026-11-21 | Inicio: title in the left column; the cards on the right start at the top (ADR 0057).                          |
+| 2026-11-21 | The 210 top bar has the logo, «Mis datos» and «Ayuda» too (ADR 0056).                                          |
 
 ## Not defined yet
 
