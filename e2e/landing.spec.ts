@@ -37,15 +37,14 @@ test.describe('landing', () => {
     await expect(page.getByRole('dialog', { name: 'Antes de empezar' })).toBeVisible();
   });
 
-  test('works on a phone, while the full 210 asks for a computer', async ({ page }) => {
+  test('works on a phone, like the app', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('#debo-declarar')).toBeVisible();
 
-    await page.goto('/formulario-210');
-    await expect(
-      page.getByRole('heading', { name: 'El Formulario 210 se usa en un computador' }),
-    ).toBeVisible();
+    // The app opens too, asking first to accept the terms.
+    await page.goto('/inicio');
+    await expect(page.getByRole('dialog', { name: 'Antes de empezar' })).toBeVisible();
   });
 });

@@ -1,6 +1,6 @@
 # 0060. The steps work on phones and tablets
 
-- Status: Accepted
+- Status: Accepted; the Formulario 210 part is superseded by [ADR 0061](./0061-form-210-on-phones-and-tablets.md)
 - Date: 2026-11-22
 
 ## Context

@@ -1,6 +1,6 @@
 # 0021. Small-screen view: "Usa un computador" below 1280 px
 
-- Status: Accepted; the small-screen part is superseded by [ADR 0060](./0060-steps-on-phones-and-tablets.md)
+- Status: Superseded by [ADR 0060](./0060-steps-on-phones-and-tablets.md) and [ADR 0061](./0061-form-210-on-phones-and-tablets.md); screen 10 was removed
 - Date: 2026-11-19
 
 ## Context
