@@ -13,20 +13,24 @@ import type { StepProgress } from './useFlowProgress';
 type MobileTopBarProps = {
   steps: StepProgress[];
   currentStep: StepProgress | undefined;
+  /** Replaces «Paso N de 7 · Sección», e.g. «Formulario 210». */
+  location?: string;
 };
 
 /**
  * Figma «Barra superior · Móvil» (199:13535): isotype to Inicio, where you are (opens the steps)
  * and the menu. Phones and tablets (ADR 0060).
  */
-export const MobileTopBar = ({ steps, currentStep }: MobileTopBarProps) => {
+export const MobileTopBar = ({ steps, currentStep, location: label }: MobileTopBarProps) => {
   const [open, setOpen] = useState<'steps' | 'menu' | null>(null);
   const close = () => {
     setOpen(null);
   };
-  const location = currentStep
-    ? `Paso ${String(currentStep.index + 1)} de ${String(FLOW_STEPS.length)} · ${currentStep.railLabel}`
-    : 'Inicio';
+  const location =
+    label ??
+    (currentStep
+      ? `Paso ${String(currentStep.index + 1)} de ${String(FLOW_STEPS.length)} · ${currentStep.railLabel}`
+      : 'Inicio');
 
   return (
     <header className='sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-line bg-canvas pr-2 pl-4'>

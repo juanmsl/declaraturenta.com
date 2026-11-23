@@ -22,6 +22,7 @@ import { buildForm210, findDependentBoxes, scheduleColumnOf } from '@/domain/for
 import type { AdjustmentId } from '@/domain/declaration';
 import { uvtToPesos } from '@/domain/uvt';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
+import { useIsCompact } from '@/shared/lib/use-compact';
 import { Alert, Button, CalcRow, Chip, Drawer, MoneyField, Text } from '@/shared/ui';
 
 import { ConceptsEditor } from './ConceptsEditor';
@@ -131,18 +132,36 @@ const Footer = ({
   onClose: () => void;
   onSave?: () => void;
   canSave?: boolean;
-}) => (
-  <div className='mt-auto flex items-center justify-between border-t border-line pt-5'>
-    <Button type='button' variant='ghost' onClick={onClose}>
-      Cerrar
-    </Button>
-    {onSave && (
-      <Button type='button' onClick={onSave} disabled={!canSave}>
-        Guardar cambios
+}) => {
+  const isCompact = useIsCompact();
+  // Phones and tablets: stuck to the bottom of the sheet, main action on top (Figma M09b).
+  if (isCompact) {
+    return (
+      <div className='sticky -bottom-5 -mx-5 mt-auto -mb-5 flex flex-col gap-2 border-t border-line bg-surface px-5 pt-3 pb-5'>
+        {onSave && (
+          <Button type='button' className='w-full' onClick={onSave} disabled={!canSave}>
+            Guardar cambios
+          </Button>
+        )}
+        <Button type='button' variant='ghost' className='w-full' onClick={onClose}>
+          Cerrar
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className='mt-auto flex items-center justify-between border-t border-line pt-5'>
+      <Button type='button' variant='ghost' onClick={onClose}>
+        Cerrar
       </Button>
-    )}
-  </div>
-);
+      {onSave && (
+        <Button type='button' onClick={onSave} disabled={!canSave}>
+          Guardar cambios
+        </Button>
+      )}
+    </div>
+  );
+};
 
 const BoxDetail = ({ form, box, onClose }: { form: Form210; box: Form210Box; onClose: () => void }) => {
   const { taxYear } = useTaxYear();

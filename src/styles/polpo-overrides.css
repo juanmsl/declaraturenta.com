@@ -235,6 +235,12 @@
     }
   }
 
+  /* Drawer on phones and tablets: from the bottom, 90 % tall (Figma M09b, ADR 0061) */
+  .drawer-sheet.polpo-aside-modal {
+    height: 90dvh;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+
   /* Drawer: Polpo AsideModal (Figma screen 09b panel) */
   .drawer.polpo-aside-modal {
     max-width: 100vw;

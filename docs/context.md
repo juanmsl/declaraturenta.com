@@ -32,7 +32,7 @@ the business model comes last, after the platform is fully functional.
 - Brand: compact braid with one diamond per step, violet plate favicon and the diamond as
   section marker (ADR 0029).
 - Domain: declaraturenta.com.
-- The steps work on phones and tablets; the full Formulario 210 needs a computer (ADR 0060).
+- The whole app works on phones and tablets: steps (ADR 0060) and Formulario 210 (ADR 0061).
 
 ## Known gaps and open questions
 

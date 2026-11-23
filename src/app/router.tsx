@@ -18,7 +18,6 @@ import { FORM_210_PATH, LANDING_PATH, PRIVACY_PATH, TERMS_PATH } from './flow';
 import { HelpProvider } from './help/HelpProvider';
 import { AppLayout } from './layout/AppLayout';
 import { RootLayout } from './layout/RootLayout';
-import { DesktopOnly } from './layout/DesktopOnly';
 
 export const router = createBrowserRouter([
   {
@@ -45,15 +44,13 @@ export const router = createBrowserRouter([
           { path: 'borrador-210', element: <DraftPage /> },
         ],
       },
-      // Screen 09 has its own layout (no side rail) and still needs a computer (ADR 0060).
+      // Screen 09 has its own layout (no side rail); on phones and tablets too since ADR 0061.
       {
         path: FORM_210_PATH,
         element: (
-          <DesktopOnly>
-            <HelpProvider>
-              <Form210Page />
-            </HelpProvider>
-          </DesktopOnly>
+          <HelpProvider>
+            <Form210Page />
+          </HelpProvider>
         ),
         errorElement: <ErrorPage />,
       },

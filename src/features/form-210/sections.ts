@@ -8,7 +8,7 @@ export const BOX_SECTIONS: { title: string; from: number; to: number }[] = [
   { title: 'Impuesto sobre las rentas líquidas gravables', from: 116, to: 121 },
   { title: 'Descuentos tributarios', from: 122, to: 125 },
   { title: 'Liquidación privada', from: 126, to: 133 },
-  { title: 'Saldo', from: 134, to: 139 },
+  { title: 'Saldo', from: 134, to: 141 },
 ];
 
 export const sectionOf = (box: number): string =>

@@ -38,16 +38,27 @@ test.describe('phone layout', () => {
     await expect(page.getByRole('heading', { name: 'Así va tu declaración' })).toBeVisible();
   });
 
-  test('explains that the full 210 needs a computer', async ({ page }) => {
+  test('fills the Formulario 210 by sections (ADR 0061)', async ({ page }) => {
     await page.goto('/patrimonio');
     await page
       .getByRole('navigation', { name: 'Cómo llenar tu declaración' })
       .getByRole('button', { name: 'Formulario 210' })
       .click();
-    const sheet = page.getByRole('dialog', { name: 'El Formulario 210 se usa en un computador' });
-    await expect(sheet).toBeVisible();
-    await sheet.getByRole('button', { name: 'Seguir por pasos' }).click();
-    await expect(page).toHaveURL(/\/patrimonio$/);
+    await expect(page).toHaveURL(/\/formulario-210$/);
+    await expect(page.getByRole('heading', { level: 1, name: /Formulario 210/ })).toBeVisible();
+
+    await page.getByRole('button', { name: /^Cédula general/ }).click();
+    await expect(page.getByLabel(/^Casilla 32,/)).toBeVisible();
+    await page.getByRole('button', { name: 'Honorarios y servicios' }).click();
+    await expect(page.getByLabel(/^Casilla 43,/)).toBeVisible();
+    await expect(page.getByLabel(/^Casilla 32,/)).toHaveCount(0);
+
+    await page.getByLabel('Ir a la casilla').fill('31');
+    await expect(page.getByLabel(/^Casilla 31,/)).toBeInViewport();
+
+    await page.getByRole('button', { name: /^Casilla 29,/ }).click();
+    await expect(page.getByRole('dialog').getByText('Casilla 29', { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 
   test('opens «Mis datos» and help from the menu', async ({ page }) => {

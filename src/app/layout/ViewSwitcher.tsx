@@ -1,16 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { LuFileText, LuList } from 'react-icons/lu';
 import type { IconType } from 'react-icons';
 import { Button } from 'polpo/components';
 import { useLocation, useNavigate } from 'react-router';
 
-import { useIsCompact } from '@/shared/lib/use-compact';
 import { Icon } from '@/shared/ui';
 
 import { useDeclaration } from '../declaration/declaration-context';
 import { FORM_210_PATH, findResumeStep } from '../flow';
-
-import { Form210NoticeSheet } from './Form210NoticeSheet';
 
 type View = 'steps' | 'form-210';
 
@@ -33,15 +30,12 @@ const readLastStep = (): string | null => {
 /**
  * «Pasos | Formulario 210» (Figma «Selector de vista», ADR 0056): the two ways to fill the same
  * return, as two Polpo buttons (Polpo Tabs kept the page from changing route in the top bar). In the steps it remembers the page; «Pasos» from the 210 goes back to it, or to the step
- * to resume when there is none. On phones and tablets «Formulario 210» opens a notice instead
- * (ADR 0060).
+ * to resume when there is none.
  */
 export const ViewSwitcher = ({ view }: { view: View }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { state } = useDeclaration();
-  const isCompact = useIsCompact();
-  const [showNotice, setShowNotice] = useState(false);
 
   useEffect(() => {
     if (view !== 'steps') return;
@@ -54,10 +48,6 @@ export const ViewSwitcher = ({ view }: { view: View }) => {
 
   const go = (id: View) => {
     if (id === view) return;
-    if (id === 'form-210' && isCompact) {
-      setShowNotice(true);
-      return;
-    }
     void navigate(
       id === 'form-210' ? FORM_210_PATH : (readLastStep() ?? findResumeStep(state.completedSteps).path),
     );
@@ -87,12 +77,6 @@ export const ViewSwitcher = ({ view }: { view: View }) => {
           </Button>
         );
       })}
-      <Form210NoticeSheet
-        isOpen={showNotice}
-        onClose={() => {
-          setShowNotice(false);
-        }}
-      />
     </nav>
   );
 };

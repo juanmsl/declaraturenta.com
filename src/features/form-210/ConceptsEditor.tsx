@@ -4,7 +4,7 @@ import { LuPlus } from 'react-icons/lu';
 import type { BoxConcept } from '@/domain/box-concepts';
 import { editConcept } from '@/domain/box-concepts';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
-import { Button, Chip, Icon, MoneyField, Text, TextField } from '@/shared/ui';
+import { Button, Chip, Icon, MoneyField, RowContent, Text, TextField } from '@/shared/ui';
 
 type ConceptsEditorProps = {
   boxNumber: number;
@@ -117,24 +117,26 @@ export const ConceptsEditor = ({ boxNumber, concepts, onChange, isCount }: Conce
                   aria-label={`Editar ${concept.label || 'concepto'}`}
                   className='-mx-4 flex w-[calc(100%+2rem)] cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-canvas focus-visible:bg-canvas focus-visible:outline-none'
                 >
-                  <span className='flex min-w-0 flex-1 flex-col gap-0.5'>
-                    <Text as='span' variant='body-m-strong'>
-                      {concept.label || 'Concepto sin nombre'}
-                    </Text>
-                    <Text as='span' variant='note' className='text-fg-muted'>
-                      {concept.exogenousAmount !== undefined && concept.exogenousAmount !== concept.amount
+                  <RowContent
+                    title={concept.label || 'Concepto sin nombre'}
+                    detail={
+                      concept.exogenousAmount !== undefined && concept.exogenousAmount !== concept.amount
                         ? `La exógena decía ${format(concept.exogenousAmount)}`
-                        : concept.detail}
-                    </Text>
-                  </span>
-                  {concept.origin === 'exogenous' ? (
-                    <Chip variant='exogenous'>Exógena</Chip>
-                  ) : (
-                    <Chip variant='box'>Por ti</Chip>
-                  )}
-                  <Text as='span' variant='figure-m' className='w-30 shrink-0 text-right'>
-                    {format(concept.amount)}
-                  </Text>
+                        : concept.detail
+                    }
+                    badge={
+                      concept.origin === 'exogenous' ? (
+                        <Chip variant='exogenous'>Exógena</Chip>
+                      ) : (
+                        <Chip variant='box'>Por ti</Chip>
+                      )
+                    }
+                    value={
+                      <Text as='span' variant='figure-m' className='w-30 shrink-0 text-right max-xl:w-auto'>
+                        {format(concept.amount)}
+                      </Text>
+                    }
+                  />
                 </button>
               )}
             </li>
