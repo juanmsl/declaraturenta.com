@@ -9,7 +9,7 @@ import { EstimatePanel } from '@/features/estimate/EstimatePanel';
 import { reportedTotal } from '@/domain/exogenous';
 import { formatCurrency, formatNumber } from '@/shared/lib/format';
 import { detectZeroSlip } from '@/shared/lib/zero-slip';
-import { Button, CalcRow, Chip, MoneyField, StepHeader, StepLayout, Text } from '@/shared/ui';
+import { Button, CalcRow, Chip, MoneyField, StepHeader, StepLayout, Text, StepActions } from '@/shared/ui';
 
 import { TaxRows } from '@/features/estimate/TaxRows';
 
@@ -153,14 +153,14 @@ export const IncomePage = () => {
 
       <OtherSchedulesSection />
 
-      <div className='flex items-start justify-between'>
+      <StepActions>
         <Button variant='ghost' onClick={() => void navigate(assetsStep.path)}>
           Atrás
         </Button>
         <Button icon={LuArrowRight} onClick={handleContinue}>
           Guardar y seguir
         </Button>
-      </div>
+      </StepActions>
     </StepLayout>
   );
 };

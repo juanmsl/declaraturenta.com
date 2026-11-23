@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { LuCalendar, LuDownload, LuFileText, LuHouse, LuLandmark } from 'react-icons/lu';
 
 import { useDeclaration } from '@/app/declaration/declaration-context';
+import { FORM_210_PATH, findResumeStep } from '@/app/flow';
 import laptopBase from '@/assets/illustrations/laptop-base.svg';
 import laptopScreen from '@/assets/illustrations/laptop-screen.svg';
 import { formatLongDate } from '@/shared/lib/format';
@@ -16,11 +18,16 @@ const DOCUMENTS = [
 
 const COPIED_FEEDBACK_MS = 2000;
 
-/** Screen 10 · Móvil · Usa un computador (Figma 23:3012). Shown below 1280 px (ADR 0021). */
+/**
+ * Screen 10 · Móvil · Usa un computador (Figma 23:3012). Since ADR 0060 the steps work on phones and
+ * tablets, so it only shows for the full Formulario 210 below 1280 px, with the copy of M04d and a way
+ * back to the steps.
+ */
 export const UseComputerPage = () => {
-  const { taxpayer } = useDeclaration().state;
-  const link = window.location.origin;
-  const displayLink = window.location.host;
+  const { taxpayer, completedSteps } = useDeclaration().state;
+  const navigate = useNavigate();
+  const link = `${window.location.origin}${FORM_210_PATH}`;
+  const displayLink = `${window.location.host}${FORM_210_PATH}`;
   const canShare = typeof navigator.share === 'function';
   const [isCopied, setIsCopied] = useState(false);
 
@@ -63,12 +70,12 @@ export const UseComputerPage = () => {
 
         <div className='flex flex-col gap-3'>
           <Text variant='title-l' as='h1'>
-            Tu declaración se hace mejor en un computador
+            El Formulario 210 se usa en un computador
           </Text>
           <Text variant='body-l' className='text-fg-secondary'>
-            El Formulario 210 tiene más de 100 casillas, tablas y cálculos que necesitan espacio para
-            revisarlos con calma. Abre Declara tu renta en un computador o portátil con pantalla de al menos
-            1280 px de ancho.
+            La vista del formulario completo, casilla por casilla, necesita una pantalla de al menos 1280 px
+            de ancho. Para usarla en un computador, descarga tus datos con «Mis datos» y cárgalos allá. Aquí
+            puedes seguir llenando por pasos.
           </Text>
         </div>
 
@@ -82,6 +89,13 @@ export const UseComputerPage = () => {
         <div className='flex flex-col gap-3'>
           <Button className='w-full' onClick={() => void copyLink()}>
             {isCopied ? 'Enlace copiado' : 'Copiar enlace'}
+          </Button>
+          <Button
+            variant='secondary'
+            className='w-full'
+            onClick={() => void navigate(findResumeStep(completedSteps).path)}
+          >
+            Seguir por pasos
           </Button>
           {canShare && (
             <Button variant='secondary' className='w-full' onClick={() => void shareLink()}>

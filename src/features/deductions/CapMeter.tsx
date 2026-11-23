@@ -31,7 +31,7 @@ export const CapMeter = ({ segments, cap, capDescription }: CapMeterProps) => {
 
   return (
     <section className='flex flex-col gap-3 rounded-lg border border-line bg-surface p-5'>
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-2 max-md:flex-col max-md:items-start max-md:gap-1'>
         <Text variant='title-s' as='h2' className='flex-1'>
           Tus beneficios frente al tope
         </Text>
@@ -70,7 +70,7 @@ export const CapMeter = ({ segments, cap, capDescription }: CapMeterProps) => {
         <div className='absolute top-0 h-9 w-0.5 bg-coral' style={{ left: `calc(${capPercent}% - 1px)` }} />
       </div>
 
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-2 max-md:flex-col max-md:items-start max-md:gap-1'>
         <Text variant='note' className='flex-1 text-fg-secondary'>
           Tope legal: {formatCurrency(cap)} ({capDescription})
         </Text>

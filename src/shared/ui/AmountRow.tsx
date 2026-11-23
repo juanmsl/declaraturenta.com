@@ -4,7 +4,7 @@ import type { IconType } from 'react-icons';
 import { Chip } from './Chip';
 import { Icon } from './Icon';
 import { InlineMoneyField } from './MoneyField';
-import { Text } from './Text';
+import { RowContent } from './RowContent';
 
 type AmountRowProps = {
   icon: IconType;
@@ -35,17 +35,16 @@ export const AmountRow = ({
   origin,
   children,
 }: AmountRowProps) => (
-  <li className='flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0'>
-    <Icon icon={icon} size={20} className='text-fg-secondary' />
-    <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-      <Text variant='body-m-strong'>{label}</Text>
-      <Text variant='note' className='text-fg-muted'>
-        {detail}
-      </Text>
+  <li className='flex border-b border-line py-2.5 last:border-b-0 max-xl:py-3.5'>
+    <RowContent
+      icon={<Icon icon={icon} size={20} className='shrink-0 text-fg-secondary' />}
+      title={label}
+      detail={detail}
+      badge={origin && <Chip variant='exogenous'>{origin}</Chip>}
+      value={<InlineMoneyField name={name} label={label} value={value} onChange={onChange} />}
+    >
       {children}
-    </div>
-    {origin && <Chip variant='exogenous'>{origin}</Chip>}
-    <InlineMoneyField name={name} label={label} value={value} onChange={onChange} />
+    </RowContent>
   </li>
 );
 

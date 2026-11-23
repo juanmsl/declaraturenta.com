@@ -22,7 +22,19 @@ import { buildExogenousReport, clearExogenous, countReportingEntities } from '@/
 import type { ExogenousItem, ExogenousItemKind } from '@/domain/exogenous';
 import { parseExogenousSheet } from '@/domain/exogenous-file';
 import { formatCurrency } from '@/shared/lib/format';
-import { Alert, Button, Chip, FileDropzone, Icon, NoteBox, StepHeader, StepLayout, Text } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  Chip,
+  FileDropzone,
+  Icon,
+  NoteBox,
+  StepHeader,
+  StepLayout,
+  Text,
+  StepActions,
+  RowContent,
+} from '@/shared/ui';
 
 import { PreviousReturnCard } from './PreviousReturnCard';
 import { VatQuestion } from './VatQuestion';
@@ -201,27 +213,31 @@ export const ExogenousPage = () => {
                   {items.map(item => (
                     <li
                       key={item.id}
-                      className='flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0'
+                      className='flex border-b border-line py-2.5 last:border-b-0 max-xl:py-3.5'
                     >
-                      <Icon
-                        icon={item.assetKind === 'vehicle' ? LuCar : ICONS[item.kind]}
-                        size={20}
-                        className='text-fg-secondary'
+                      <RowContent
+                        icon={
+                          <Icon
+                            icon={item.assetKind === 'vehicle' ? LuCar : ICONS[item.kind]}
+                            size={20}
+                            className='shrink-0 text-fg-secondary'
+                          />
+                        }
+                        title={item.label}
+                        detail={item.entity}
+                        badge={
+                          isConfirmed(item) ? (
+                            <Chip variant='exogenous'>Listo</Chip>
+                          ) : (
+                            <Chip variant='review'>Confirma</Chip>
+                          )
+                        }
+                        value={
+                          <Text variant='figure-m' className='w-32.5 shrink-0 text-right max-xl:w-auto'>
+                            {formatCurrency(item.amount)}
+                          </Text>
+                        }
                       />
-                      <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
-                        <Text variant='body-m-strong'>{item.label}</Text>
-                        <Text variant='note' className='text-fg-muted'>
-                          {item.entity}
-                        </Text>
-                      </div>
-                      {isConfirmed(item) ? (
-                        <Chip variant='exogenous'>Listo</Chip>
-                      ) : (
-                        <Chip variant='review'>Confirma</Chip>
-                      )}
-                      <Text variant='figure-m' className='w-32.5 shrink-0 text-right'>
-                        {formatCurrency(item.amount)}
-                      </Text>
                     </li>
                   ))}
                 </ul>
@@ -240,18 +256,19 @@ export const ExogenousPage = () => {
 
       <VatQuestion />
 
-      <div className='flex items-center gap-3'>
+      <StepActions className='items-center gap-3'>
         <Button variant='ghost' onClick={() => void navigate(HOME_PATH)}>
           Atrás
         </Button>
-        <div className='flex-1' />
-        <Button variant='secondary' onClick={handleSkip}>
+        <div className='flex-1 max-xl:hidden' />
+        {/* On phones and tablets it goes last, under «Atrás» (Figma M03). */}
+        <Button variant='secondary' onClick={handleSkip} className='max-xl:order-first'>
           Llenar sin exógena
         </Button>
         <Button icon={LuArrowRight} onClick={handleUseData} disabled={!exogenous.fileName}>
           Usar estos datos
         </Button>
-      </div>
+      </StepActions>
     </StepLayout>
   );
 };

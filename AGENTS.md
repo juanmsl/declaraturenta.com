@@ -36,4 +36,4 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm e2e
 ```
 
 `main` is protected: work on a branch and open a pull request; GitHub runs the same checks
-([ADR 0042](./docs/adrs/0042-ci-and-end-to-end-tests.md)). Compare any new screen with its Figma node at 1440 px wide, and check 1280 px (minimum width).
+([ADR 0042](./docs/adrs/0042-ci-and-end-to-end-tests.md)). Compare any new screen with its Figma node at 1440 px wide, and check 1280 px (minimum desktop width), 834 px (tablet) and 390 px (phone) ([ADR 0060](./docs/adrs/0060-steps-on-phones-and-tablets.md)).

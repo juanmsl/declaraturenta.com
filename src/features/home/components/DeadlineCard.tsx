@@ -22,7 +22,7 @@ export const DeadlineCard = () => {
   };
 
   return (
-    <section className='flex flex-col gap-1.5 rounded-lg bg-sun-soft p-6'>
+    <section className='flex flex-col gap-1.5 rounded-lg bg-sun-soft p-6 max-md:p-5'>
       <div className='flex items-center gap-2'>
         <Icon icon={LuCalendar} size={18} className='text-fg-warning' />
         <Text variant='caption' className='text-fg-warning'>
